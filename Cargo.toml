@@ -1,0 +1,14 @@
+cargo-features = ["edition2021"]
+
+[workspace]
+members = [
+  "oxicrypt-sys",
+]
+
+[package]
+name = "oxicrypt"
+version = "0.1.0"
+edition = "2021"
+
+[dev-dependencies]
+hex = "0.4"
