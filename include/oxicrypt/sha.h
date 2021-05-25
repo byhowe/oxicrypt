@@ -5,10 +5,14 @@
 extern "C" {
 #endif
 
-#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
-#include "internal.h"
+void oxi_sha1_compress_generic(uint32_t *state, const uint8_t *block);
+
+void oxi_sha256_compress_generic(uint32_t *state, const uint8_t *block);
+
+void oxi_sha512_compress_generic(uint64_t *state, const uint8_t *block);
 
 typedef struct oxi_sha1_ctx_t {
   uint32_t h[5];
