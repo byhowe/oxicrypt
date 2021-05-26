@@ -27,6 +27,7 @@ macro_rules! sha2_32_f {
 /// of 64 (64 bytes).
 #[allow(clippy::many_single_char_names)]
 #[allow(unused_assignments)]
+#[inline(always)]
 pub unsafe fn sha256_compress_generic(state: *mut u32, block: *const u8)
 {
   let mut a: u32 = *state.add(0);
