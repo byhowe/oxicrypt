@@ -6,6 +6,7 @@
 #![feature(num_as_ne_bytes)]
 
 pub mod sha;
+pub mod aes;
 
 #[cfg(test)]
 mod tests;

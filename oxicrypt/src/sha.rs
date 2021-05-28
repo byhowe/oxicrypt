@@ -1,13 +1,9 @@
 use std::mem::MaybeUninit;
 use std::{cmp, mem};
 
-mod sha1_compress_generic;
-mod sha256_compress_generic;
-mod sha512_compress_generic;
-
-pub use sha1_compress_generic::sha1_compress_generic;
-pub use sha256_compress_generic::sha256_compress_generic;
-pub use sha512_compress_generic::sha512_compress_generic;
+use oxicrypt_core::sha::sha1_compress_generic;
+use oxicrypt_core::sha::sha256_compress_generic;
+use oxicrypt_core::sha::sha512_compress_generic;
 
 #[rustfmt::skip]
 const H1: [u32; 5] = [
