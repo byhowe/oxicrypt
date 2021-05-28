@@ -1,7 +1,7 @@
 cargo-features = ["edition2021"]
 
 [package]
-name = "liboxicrypt"
+name = "liboxicry"
 version = "0.1.0"
 authors = ["B. Howe <37745048+byhowe@users.noreply.github.com>"]
 edition = "2021"
