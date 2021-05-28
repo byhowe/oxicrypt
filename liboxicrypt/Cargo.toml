@@ -13,7 +13,7 @@ categories = ["cryptography"]
 workspace = ".."
 
 [lib]
-name = "oxicrypt"
+name = "oxicry"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies.oxicrypt-core]
