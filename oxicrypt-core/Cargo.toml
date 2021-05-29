@@ -11,3 +11,6 @@ license = "MIT"
 keywords = ["crypto"]
 categories = ["cryptography"]
 workspace = ".."
+
+[dependencies]
+cfg-if = "1"

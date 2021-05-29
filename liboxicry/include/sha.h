@@ -5,9 +5,8 @@
 extern "C" {
 #endif
 
-#include <endian.h>
 #include <stdint.h>
-#include <string.h>
+#include <stddef.h>
 
 /* Compress functions from Rust. */
 

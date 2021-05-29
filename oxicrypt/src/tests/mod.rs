@@ -1,3 +1,5 @@
+mod aes;
+
 mod sha1;
 mod sha224;
 mod sha256;

@@ -5,8 +5,8 @@
 #![feature(maybe_uninit_ref)]
 #![feature(num_as_ne_bytes)]
 
-pub mod sha;
 pub mod aes;
+pub mod sha;
 
 #[cfg(test)]
 mod tests;
