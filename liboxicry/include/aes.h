@@ -34,6 +34,9 @@ typedef struct oxi_aes256_ctx_t {
 void oxi_aes128_set_encrypt_key(oxi_aes128_ctx_t* ctx, const uint8_t* key);
 void oxi_aes192_set_encrypt_key(oxi_aes192_ctx_t* ctx, const uint8_t* key);
 void oxi_aes256_set_encrypt_key(oxi_aes256_ctx_t* ctx, const uint8_t* key);
+void oxi_aes128_set_decrypt_key(oxi_aes128_ctx_t* ctx, const uint8_t* key);
+void oxi_aes192_set_decrypt_key(oxi_aes192_ctx_t* ctx, const uint8_t* key);
+void oxi_aes256_set_decrypt_key(oxi_aes256_ctx_t* ctx, const uint8_t* key);
 
 /* Encrypt functions. */
 
