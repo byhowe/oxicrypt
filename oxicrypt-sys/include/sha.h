@@ -8,12 +8,6 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 
-/* Compress functions from Rust. */
-
-void oxi_sha1_compress_generic(uint32_t* state, const uint8_t* block);
-void oxi_sha256_compress_generic(uint32_t* state, const uint8_t* block);
-void oxi_sha512_compress_generic(uint64_t* state, const uint8_t* block);
-
 /* Type definitions. */
 
 typedef struct oxi_sha1_ctx_t {
@@ -30,8 +24,6 @@ typedef struct oxi_sha256_ctx_t {
   size_t blocklen;
 } oxi_sha256_ctx_t;
 
-typedef oxi_sha256_ctx_t oxi_sha224_ctx_t;
-
 typedef struct oxi_sha512_ctx_t {
   uint64_t h[8];
   uint8_t block[128];
@@ -39,10 +31,9 @@ typedef struct oxi_sha512_ctx_t {
   size_t blocklen;
 } oxi_sha512_ctx_t;
 
+typedef oxi_sha256_ctx_t oxi_sha224_ctx_t;
 typedef oxi_sha512_ctx_t oxi_sha384_ctx_t;
-
 typedef oxi_sha512_ctx_t oxi_sha512_224_ctx_t;
-
 typedef oxi_sha512_ctx_t oxi_sha512_256_ctx_t;
 
 /* Constants that could be useful while working with SHA algorithms. */
