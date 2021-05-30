@@ -17,5 +17,9 @@ cfg_if! {
 mod aes128_decrypt_generic;
 mod aes128_encrypt_generic;
 
-pub use aes128_decrypt_generic::{aes128_decrypt8_generic, aes128_decrypt_generic, aes128_expand_decrypt_key_generic};
-pub use aes128_encrypt_generic::{aes128_encrypt8_generic, aes128_encrypt_generic, aes128_expand_encrypt_key_generic};
+pub use aes128_decrypt_generic::aes128_decrypt8_generic;
+pub use aes128_decrypt_generic::aes128_decrypt_generic;
+pub use aes128_decrypt_generic::aes128_expand_decrypt_key_generic;
+pub use aes128_encrypt_generic::aes128_encrypt8_generic;
+pub use aes128_encrypt_generic::aes128_encrypt_generic;
+pub use aes128_encrypt_generic::aes128_expand_encrypt_key_generic;

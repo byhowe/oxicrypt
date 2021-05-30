@@ -1,10 +1,17 @@
+use std::cmp;
+use std::mem;
 use std::mem::MaybeUninit;
-use std::{cmp, mem};
 
-use oxicrypt_core::sha::{
-  sha1_compress_autodetect, sha256_compress_autodetect, sha512_compress_autodetect, H1, H224, H256, H384, H512,
-  H512_224, H512_256,
-};
+use oxicrypt_core::sha::sha1_compress_autodetect;
+use oxicrypt_core::sha::sha256_compress_autodetect;
+use oxicrypt_core::sha::sha512_compress_autodetect;
+use oxicrypt_core::sha::H1;
+use oxicrypt_core::sha::H224;
+use oxicrypt_core::sha::H256;
+use oxicrypt_core::sha::H384;
+use oxicrypt_core::sha::H512;
+use oxicrypt_core::sha::H512_224;
+use oxicrypt_core::sha::H512_256;
 
 macro_rules! impl_sha {
   (
