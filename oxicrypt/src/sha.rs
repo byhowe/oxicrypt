@@ -1,88 +1,10 @@
 use std::mem::MaybeUninit;
 use std::{cmp, mem};
 
-use oxicrypt_core::sha::{sha1_compress_generic, sha256_compress_generic, sha512_compress_generic};
-
-#[rustfmt::skip]
-const H1: [u32; 5] = [
-  0x67452301,
-  0xefcdab89,
-  0x98badcfe,
-  0x10325476,
-  0xc3d2e1f0,
-];
-
-#[rustfmt::skip]
-const H224: [u32; 8] = [
-  0xc1059ed8,
-  0x367cd507,
-  0x3070dd17,
-  0xf70e5939,
-  0xffc00b31,
-  0x68581511,
-  0x64f98fa7,
-  0xbefa4fa4,
-];
-
-#[rustfmt::skip]
-const H256: [u32; 8] = [
-  0x6a09e667,
-  0xbb67ae85,
-  0x3c6ef372,
-  0xa54ff53a,
-  0x510e527f,
-  0x9b05688c,
-  0x1f83d9ab,
-  0x5be0cd19,
-];
-
-#[rustfmt::skip]
-const H384: [u64; 8] = [
-  0xcbbb9d5dc1059ed8,
-  0x629a292a367cd507,
-  0x9159015a3070dd17,
-  0x152fecd8f70e5939,
-  0x67332667ffc00b31,
-  0x8eb44a8768581511,
-  0xdb0c2e0d64f98fa7,
-  0x47b5481dbefa4fa4,
-];
-
-#[rustfmt::skip]
-const H512: [u64; 8] = [
-  0x6a09e667f3bcc908,
-  0xbb67ae8584caa73b,
-  0x3c6ef372fe94f82b,
-  0xa54ff53a5f1d36f1,
-  0x510e527fade682d1,
-  0x9b05688c2b3e6c1f,
-  0x1f83d9abfb41bd6b,
-  0x5be0cd19137e2179,
-];
-
-#[rustfmt::skip]
-const H512_224: [u64; 8] = [
-  0x8c3d37c819544da2,
-  0x73e1996689dcd4d6,
-  0x1dfab7ae32ff9c82,
-  0x679dd514582f9fcf,
-  0x0f6d2b697bd44da8,
-  0x77e36f7304c48942,
-  0x3f9d85a86a1d36c8,
-  0x1112e6ad91d692a1,
-];
-
-#[rustfmt::skip]
-const H512_256: [u64; 8] = [
-  0x22312194fc2bf72c,
-  0x9f555fa3c84c64c2,
-  0x2393b86b6f53b151,
-  0x963877195940eabd,
-  0x96283ee2a88effe3,
-  0xbe5e1e2553863992,
-  0x2b0199fc2c85b8aa,
-  0x0eb72ddc81c52ca2,
-];
+use oxicrypt_core::sha::{
+  sha1_compress_autodetect, sha256_compress_autodetect, sha512_compress_autodetect, H1, H224, H256, H384, H512,
+  H512_224, H512_256,
+};
 
 macro_rules! impl_sha {
   (
@@ -224,7 +146,7 @@ impl_sha! {
     const INITIAL_H: [u32; 5] = H1;
     const BLOCK_LEN: usize = 64;
     const DIGEST_LEN: usize = 20;
-    fn compress = sha1_compress_generic;
+    fn compress = sha1_compress_autodetect;
 }
 
 impl_sha! {
@@ -233,7 +155,7 @@ impl_sha! {
     const INITIAL_H: [u32; 8] = H224;
     const BLOCK_LEN: usize = 64;
     const DIGEST_LEN: usize = 28;
-    fn compress = sha256_compress_generic;
+    fn compress = sha256_compress_autodetect;
 }
 
 impl_sha! {
@@ -242,7 +164,7 @@ impl_sha! {
     const INITIAL_H: [u32; 8] = H256;
     const BLOCK_LEN: usize = 64;
     const DIGEST_LEN: usize = 32;
-    fn compress = sha256_compress_generic;
+    fn compress = sha256_compress_autodetect;
 }
 
 impl_sha! {
@@ -251,7 +173,7 @@ impl_sha! {
     const INITIAL_H: [u64; 8] = H384;
     const BLOCK_LEN: usize = 128;
     const DIGEST_LEN: usize = 48;
-    fn compress = sha512_compress_generic;
+    fn compress = sha512_compress_autodetect;
 }
 
 impl_sha! {
@@ -260,7 +182,7 @@ impl_sha! {
     const INITIAL_H: [u64; 8] = H512;
     const BLOCK_LEN: usize = 128;
     const DIGEST_LEN: usize = 64;
-    fn compress = sha512_compress_generic;
+    fn compress = sha512_compress_autodetect;
 }
 
 impl_sha! {
@@ -269,7 +191,7 @@ impl_sha! {
     const INITIAL_H: [u64; 8] = H512_224;
     const BLOCK_LEN: usize = 128;
     const DIGEST_LEN: usize = 28;
-    fn compress = sha512_compress_generic;
+    fn compress = sha512_compress_autodetect;
 }
 
 impl_sha! {
@@ -278,5 +200,5 @@ impl_sha! {
     const INITIAL_H: [u64; 8] = H512_256;
     const BLOCK_LEN: usize = 128;
     const DIGEST_LEN: usize = 32;
-    fn compress = sha512_compress_generic;
+    fn compress = sha512_compress_autodetect;
 }
