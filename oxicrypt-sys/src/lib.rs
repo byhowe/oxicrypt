@@ -1,4 +1,12 @@
+#![no_std]
 #![allow(clippy::missing_safety_doc)]
+
+#[cfg(not(test))]
+#[panic_handler]
+fn panic_handler(_panic: &core::panic::PanicInfo<'_>) -> !
+{
+  loop {}
+}
 
 /// See [`oxicrypt_core::aes::aes128_expand_encrypt_key_x86_aesni`].
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
