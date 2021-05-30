@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 /* Type definitions. */
 
@@ -71,13 +71,13 @@ void oxi_sha512_256_init(oxi_sha512_256_ctx_t* ctx);
 
 /* Update functions. */
 
-void oxi_sha1_update(oxi_sha1_ctx_t* ctx, const uint8_t* in, size_t inlen);
-void oxi_sha224_update(oxi_sha224_ctx_t* ctx, const uint8_t* in, size_t inlen);
-void oxi_sha256_update(oxi_sha256_ctx_t* ctx, const uint8_t* in, size_t inlen);
-void oxi_sha384_update(oxi_sha384_ctx_t* ctx, const uint8_t* in, size_t inlen);
-void oxi_sha512_update(oxi_sha512_ctx_t* ctx, const uint8_t* in, size_t inlen);
-void oxi_sha512_224_update(oxi_sha512_224_ctx_t* ctx, const uint8_t* in, size_t inlen);
-void oxi_sha512_256_update(oxi_sha512_256_ctx_t* ctx, const uint8_t* in, size_t inlen);
+void oxi_sha1_update(oxi_sha1_ctx_t* ctx, const uint8_t* data, size_t datalen);
+void oxi_sha224_update(oxi_sha224_ctx_t* ctx, const uint8_t* data, size_t datalen);
+void oxi_sha256_update(oxi_sha256_ctx_t* ctx, const uint8_t* data, size_t datalen);
+void oxi_sha384_update(oxi_sha384_ctx_t* ctx, const uint8_t* data, size_t datalen);
+void oxi_sha512_update(oxi_sha512_ctx_t* ctx, const uint8_t* data, size_t datalen);
+void oxi_sha512_224_update(oxi_sha512_224_ctx_t* ctx, const uint8_t* data, size_t datalen);
+void oxi_sha512_256_update(oxi_sha512_256_ctx_t* ctx, const uint8_t* data, size_t datalen);
 
 /* Finish functions. Note: unlike their Rust counterparts, these functions do not reinitialize the
  * context afterwards. */
@@ -92,13 +92,13 @@ void oxi_sha512_256_finish(oxi_sha512_256_ctx_t* ctx, uint8_t* out, size_t outle
 
 /* Convenience functions. */
 
-void oxi_sha1_oneshot(const uint8_t* in, size_t inlen, uint8_t* out, size_t outlen);
-void oxi_sha224_oneshot(const uint8_t* in, size_t inlen, uint8_t* out, size_t outlen);
-void oxi_sha256_oneshot(const uint8_t* in, size_t inlen, uint8_t* out, size_t outlen);
-void oxi_sha384_oneshot(const uint8_t* in, size_t inlen, uint8_t* out, size_t outlen);
-void oxi_sha512_oneshot(const uint8_t* in, size_t inlen, uint8_t* out, size_t outlen);
-void oxi_sha512_224_oneshot(const uint8_t* in, size_t inlen, uint8_t* out, size_t outlen);
-void oxi_sha512_256_oneshot(const uint8_t* in, size_t inlen, uint8_t* out, size_t outlen);
+void oxi_sha1_oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen);
+void oxi_sha224_oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen);
+void oxi_sha256_oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen);
+void oxi_sha384_oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen);
+void oxi_sha512_oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen);
+void oxi_sha512_224_oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen);
+void oxi_sha512_256_oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen);
 
 #ifdef __cplusplus
 }
