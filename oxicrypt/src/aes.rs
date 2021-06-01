@@ -61,23 +61,6 @@ impl Aes128
     Ok(())
   }
 
-  pub fn encrypt8(&self, data: &mut [u8]) -> Result<(), Error>
-  {
-    if data.len() != 16 * 8 {
-      return Err(Error::DataLength {
-        expected: 16 * 8,
-        got: data.len(),
-      });
-    }
-    unsafe {
-      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-      oxicrypt_core::aes::aes128_encrypt8_x86_aesni(data.as_mut_ptr(), self.round_keys.as_ptr());
-      #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-      oxicrypt_core::aes::aes128_encrypt8_generic(data.as_mut_ptr(), self.round_keys.as_ptr());
-    };
-    Ok(())
-  }
-
   pub fn decrypt(&self, data: &mut [u8]) -> Result<(), Error>
   {
     if data.len() != 16 {
@@ -91,23 +74,6 @@ impl Aes128
       oxicrypt_core::aes::aes128_decrypt_x86_aesni(data.as_mut_ptr(), self.round_keys.as_ptr());
       #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
       oxicrypt_core::aes::aes128_decrypt_generic(data.as_mut_ptr(), self.round_keys.as_ptr());
-    };
-    Ok(())
-  }
-
-  pub fn decrypt8(&self, data: &mut [u8]) -> Result<(), Error>
-  {
-    if data.len() != 16 * 8 {
-      return Err(Error::DataLength {
-        expected: 16 * 8,
-        got: data.len(),
-      });
-    }
-    unsafe {
-      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-      oxicrypt_core::aes::aes128_decrypt8_x86_aesni(data.as_mut_ptr(), self.round_keys.as_ptr());
-      #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-      oxicrypt_core::aes::aes128_decrypt8_generic(data.as_mut_ptr(), self.round_keys.as_ptr());
     };
     Ok(())
   }

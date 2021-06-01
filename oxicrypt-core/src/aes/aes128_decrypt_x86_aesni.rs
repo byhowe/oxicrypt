@@ -3,36 +3,10 @@ use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
 
-macro_rules! aes_dec_8_rounds {
-  ($b0:ident, $b1:ident, $b2:ident, $b3:ident, $b4:ident, $b5:ident, $b6:ident, $b7:ident, $k:ident) => {
-    $b0 = _mm_aesdec_si128($b0, $k);
-    $b1 = _mm_aesdec_si128($b1, $k);
-    $b2 = _mm_aesdec_si128($b2, $k);
-    $b3 = _mm_aesdec_si128($b3, $k);
-    $b4 = _mm_aesdec_si128($b4, $k);
-    $b5 = _mm_aesdec_si128($b5, $k);
-    $b6 = _mm_aesdec_si128($b6, $k);
-    $b7 = _mm_aesdec_si128($b7, $k);
-  };
-}
-
-macro_rules! aes_dec_last_8_rounds {
-  ($b0:ident, $b1:ident, $b2:ident, $b3:ident, $b4:ident, $b5:ident, $b6:ident, $b7:ident, $k:ident) => {
-    $b0 = _mm_aesdeclast_si128($b0, $k);
-    $b1 = _mm_aesdeclast_si128($b1, $k);
-    $b2 = _mm_aesdeclast_si128($b2, $k);
-    $b3 = _mm_aesdeclast_si128($b3, $k);
-    $b4 = _mm_aesdeclast_si128($b4, $k);
-    $b5 = _mm_aesdeclast_si128($b5, $k);
-    $b6 = _mm_aesdeclast_si128($b6, $k);
-    $b7 = _mm_aesdeclast_si128($b7, $k);
-  };
-}
-
 macro_rules! aes_expand_round {
   ($k:ident, $round:expr) => {{
     let mut k = $k;
-    let t1 = _mm_shuffle_epi32(_mm_aeskeygenassist_si128($k, $round), 0xff);
+    let t1 = _mm_shuffle_epi32(_mm_aeskeygenassist_si128($k, $round), _MM_SHUFFLE(3, 3, 3, 3));
     k = _mm_xor_si128(k, _mm_slli_si128(k, 4));
     k = _mm_xor_si128(k, _mm_slli_si128(k, 4));
     k = _mm_xor_si128(k, _mm_slli_si128(k, 4));
@@ -68,80 +42,34 @@ pub unsafe fn aes128_expand_decrypt_key_x86_aesni(key: *const u8, round_keys: *m
 }
 
 #[inline(always)]
-pub unsafe fn aes128_decrypt_x86_aesni(block: *mut u8, round_key: *const u8)
+pub unsafe fn aes128_decrypt_x86_aesni(block: *mut u8, round_keys: *const u8)
 {
-  let k00: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(0));
-  let k01: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(1));
-  let k02: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(2));
-  let k03: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(3));
-  let k04: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(4));
-  let k05: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(5));
-  let k06: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(6));
-  let k07: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(7));
-  let k08: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(8));
-  let k09: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(9));
-  let k10: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(10));
-  let mut b = _mm_loadu_si128(block as *const __m128i);
-  b = _mm_xor_si128(b, k00);
-  b = _mm_aesdec_si128(b, k01);
-  b = _mm_aesdec_si128(b, k02);
-  b = _mm_aesdec_si128(b, k03);
-  b = _mm_aesdec_si128(b, k04);
-  b = _mm_aesdec_si128(b, k05);
-  b = _mm_aesdec_si128(b, k06);
-  b = _mm_aesdec_si128(b, k07);
-  b = _mm_aesdec_si128(b, k08);
-  b = _mm_aesdec_si128(b, k09);
-  b = _mm_aesdeclast_si128(b, k10);
-  _mm_storeu_si128(block as *mut __m128i, b)
-}
-
-#[inline(always)]
-pub unsafe fn aes128_decrypt8_x86_aesni(blocks: *mut u8, round_key: *const u8)
-{
-  let k00: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(0));
-  let k01: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(1));
-  let k02: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(2));
-  let k03: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(3));
-  let k04: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(4));
-  let k05: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(5));
-  let k06: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(6));
-  let k07: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(7));
-  let k08: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(8));
-  let k09: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(9));
-  let k10: __m128i = _mm_loadu_si128((round_key as *const __m128i).add(10));
-  let mut b0 = _mm_loadu_si128((blocks as *const __m128i).add(0));
-  let mut b1 = _mm_loadu_si128((blocks as *const __m128i).add(1));
-  let mut b2 = _mm_loadu_si128((blocks as *const __m128i).add(2));
-  let mut b3 = _mm_loadu_si128((blocks as *const __m128i).add(3));
-  let mut b4 = _mm_loadu_si128((blocks as *const __m128i).add(4));
-  let mut b5 = _mm_loadu_si128((blocks as *const __m128i).add(5));
-  let mut b6 = _mm_loadu_si128((blocks as *const __m128i).add(6));
-  let mut b7 = _mm_loadu_si128((blocks as *const __m128i).add(7));
-  b0 = _mm_xor_si128(b0, k00);
-  b1 = _mm_xor_si128(b1, k00);
-  b2 = _mm_xor_si128(b2, k00);
-  b3 = _mm_xor_si128(b3, k00);
-  b4 = _mm_xor_si128(b4, k00);
-  b5 = _mm_xor_si128(b5, k00);
-  b6 = _mm_xor_si128(b6, k00);
-  b7 = _mm_xor_si128(b7, k00);
-  aes_dec_8_rounds!(b0, b1, b2, b3, b4, b5, b6, b7, k01);
-  aes_dec_8_rounds!(b0, b1, b2, b3, b4, b5, b6, b7, k02);
-  aes_dec_8_rounds!(b0, b1, b2, b3, b4, b5, b6, b7, k03);
-  aes_dec_8_rounds!(b0, b1, b2, b3, b4, b5, b6, b7, k04);
-  aes_dec_8_rounds!(b0, b1, b2, b3, b4, b5, b6, b7, k05);
-  aes_dec_8_rounds!(b0, b1, b2, b3, b4, b5, b6, b7, k06);
-  aes_dec_8_rounds!(b0, b1, b2, b3, b4, b5, b6, b7, k07);
-  aes_dec_8_rounds!(b0, b1, b2, b3, b4, b5, b6, b7, k08);
-  aes_dec_8_rounds!(b0, b1, b2, b3, b4, b5, b6, b7, k09);
-  aes_dec_last_8_rounds!(b0, b1, b2, b3, b4, b5, b6, b7, k10);
-  _mm_storeu_si128((blocks as *mut __m128i).add(0), b0);
-  _mm_storeu_si128((blocks as *mut __m128i).add(1), b1);
-  _mm_storeu_si128((blocks as *mut __m128i).add(2), b2);
-  _mm_storeu_si128((blocks as *mut __m128i).add(3), b3);
-  _mm_storeu_si128((blocks as *mut __m128i).add(4), b4);
-  _mm_storeu_si128((blocks as *mut __m128i).add(5), b5);
-  _mm_storeu_si128((blocks as *mut __m128i).add(6), b6);
-  _mm_storeu_si128((blocks as *mut __m128i).add(7), b7);
+  asm! {
+    "movdqa     xmm0,  xmmword ptr [{0}]", // Move the 16 bytes stored in block to the xmm0 register.
+    "movups     xmm1,  xmmword ptr [{1}]", // Move the round keys to their respective registers.
+    "movups     xmm2,  xmmword ptr [{1} + 16]",
+    "movups     xmm3,  xmmword ptr [{1} + 32]",
+    "movups     xmm4,  xmmword ptr [{1} + 48]",
+    "movups     xmm5,  xmmword ptr [{1} + 64]",
+    "movups     xmm6,  xmmword ptr [{1} + 80]",
+    "movups     xmm7,  xmmword ptr [{1} + 96]",
+    "movups     xmm8,  xmmword ptr [{1} + 112]",
+    "movups     xmm9,  xmmword ptr [{1} + 128]",
+    "movups     xmm10, xmmword ptr [{1} + 144]",
+    "movups     xmm11, xmmword ptr [{1} + 160]",
+    "xorps      xmm0,  xmm1", // Perform xor between xmm0 and xmm1, then store the result in xmm0.
+    "aesdec     xmm0,  xmm2", // Perform aes encryption.
+    "aesdec     xmm0,  xmm3",
+    "aesdec     xmm0,  xmm4",
+    "aesdec     xmm0,  xmm5",
+    "aesdec     xmm0,  xmm6",
+    "aesdec     xmm0,  xmm7",
+    "aesdec     xmm0,  xmm8",
+    "aesdec     xmm0,  xmm9",
+    "aesdec     xmm0,  xmm10",
+    "aesdeclast xmm0,  xmm11",
+    "movdqu     xmmword ptr [{0}], xmm0", // Store the computed result back into block.
+    in(reg) block,
+    in(reg) round_keys,
+  }
 }
