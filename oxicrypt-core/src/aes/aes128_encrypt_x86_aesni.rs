@@ -44,36 +44,52 @@ pub unsafe fn aes128_expand_encrypt_key_x86_aesni(key: *const u8, round_keys: *m
 // I decided to write this function in assembly with my limited assembly knowledge. I think i
 // succeeded, but i am not responsible if your PC blows up in flames.
 // TODO: Q: Does this work on x86?
+//       A: Yes.
 // TODO: Q: Is it actually faster than the Rust implementation?
+//       A: Seems to be approximately 1.8 times faster than the Rust implementation using the
+//          core::arch::* functions for AES-NI.
 #[inline(always)]
 pub unsafe fn aes128_encrypt_x86_aesni(block: *mut u8, round_keys: *const u8)
 {
   asm! {
-    "movdqa     xmm0,  xmmword ptr [{0}]", // Move the 16 bytes stored in block to the xmm0 register.
-    "movups     xmm1,  xmmword ptr [{1}]", // Move the round keys to their respective registers.
-    "movups     xmm2,  xmmword ptr [{1} + 16]",
-    "movups     xmm3,  xmmword ptr [{1} + 32]",
-    "movups     xmm4,  xmmword ptr [{1} + 48]",
-    "movups     xmm5,  xmmword ptr [{1} + 64]",
-    "movups     xmm6,  xmmword ptr [{1} + 80]",
-    "movups     xmm7,  xmmword ptr [{1} + 96]",
-    "xorps      xmm0,  xmm1", // Perform xor between xmm0 and xmm1, then store the result in xmm0.
-    "aesenc     xmm0,  xmm2", // Perform aes encryption.
-    "aesenc     xmm0,  xmm3",
-    "aesenc     xmm0,  xmm4",
-    "aesenc     xmm0,  xmm5",
-    "aesenc     xmm0,  xmm6",
-    "aesenc     xmm0,  xmm7",
-    "movups     xmm1,  xmmword ptr [{1} + 112]",
-    "movups     xmm2,  xmmword ptr [{1} + 128]",
-    "movups     xmm3,  xmmword ptr [{1} + 144]",
-    "movups     xmm4,  xmmword ptr [{1} + 160]",
-    "aesenc     xmm0,  xmm1",
-    "aesenc     xmm0,  xmm2",
-    "aesenc     xmm0,  xmm3",
-    "aesenclast xmm0,  xmm4",
-    "movdqu     xmmword ptr [{0}], xmm0", // Store the computed result back into block.
-    in(reg) block,
-    in(reg) round_keys,
+    // Copy the block into xmm0 register.
+    "movups xmm0, xmmword ptr [{block}]",
+    // Copy the first 16 bytes of the key (k00) into the xmm1 register.
+    "movups xmm1, xmmword ptr [{key}]",
+
+    // Xor the block with k00.
+    "xorps xmm0, xmm1",
+
+    // Copy the next bytes of the key into xmm1 register and perform the whole aesenc sequence.
+    "movups xmm1, xmmword ptr [{key} + 16]",
+    "aesenc xmm0, xmm1",
+    "movups xmm1, xmmword ptr [{key} + 32]",
+    "aesenc xmm0, xmm1",
+    "movups xmm1, xmmword ptr [{key} + 48]",
+    "aesenc xmm0, xmm1",
+    "movups xmm1, xmmword ptr [{key} + 64]",
+    "aesenc xmm0, xmm1",
+    "movups xmm1, xmmword ptr [{key} + 80]",
+    "aesenc xmm0, xmm1",
+    "movups xmm1, xmmword ptr [{key} + 96]",
+    "aesenc xmm0, xmm1",
+    "movups xmm1, xmmword ptr [{key} + 112]",
+    "aesenc xmm0, xmm1",
+    "movups xmm1, xmmword ptr [{key} + 128]",
+    "aesenc xmm0, xmm1",
+    "movups xmm1, xmmword ptr [{key} + 144]",
+    "aesenc xmm0, xmm1",
+    "movups xmm1, xmmword ptr [{key} + 160]",
+    "aesenclast xmm0, xmm1",
+
+    // Copy the resulting block back into the passed pointer.
+    "movups xmmword ptr [{block}], xmm0",
+
+    block = in(reg) block,
+    key = in(reg) round_keys,
+
+    // I am not sure if these do anything.
+    out("xmm0") _,
+    out("xmm1") _,
   }
 }
