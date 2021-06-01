@@ -246,7 +246,7 @@ macro_rules! sha_finish {
     $ctx.block[$ctx.blocklen .. ($blocklen - 8)].fill(0);
     $ctx.len *= 8;
     $ctx.len = $ctx.len.to_be();
-    $ctx.block[($blocklen - 8) .. $blocklen].copy_from_slice($ctx.len.as_ne_bytes());
+    $ctx.block[($blocklen - 8) .. $blocklen].copy_from_slice(&$ctx.len.to_ne_bytes());
     $ctx.compress();
 
     let mut cur_bytes = [0; mem::size_of::<$statewordty>()];

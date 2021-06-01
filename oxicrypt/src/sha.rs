@@ -108,7 +108,7 @@ macro_rules! impl_sha {
         self.block[self.blocklen .. ($blocklen - 8)].fill(0);
         self.len *= 8;
         self.len = self.len.to_be();
-        self.block[($blocklen - 8) .. $blocklen].copy_from_slice(self.len.as_ne_bytes());
+        self.block[($blocklen - 8) .. $blocklen].copy_from_slice(&self.len.to_ne_bytes());
         unsafe { $compressfn(self.h.as_mut_ptr(), self.block.as_ptr()) };
 
         let mut cur_bytes: [u8; mem::size_of::<$uint>()] = [0; mem::size_of::<$uint>()];
