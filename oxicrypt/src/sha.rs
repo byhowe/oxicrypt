@@ -2,9 +2,9 @@ use std::cmp;
 use std::mem;
 use std::mem::MaybeUninit;
 
-use oxicrypt_core::sha::sha1_compress_autodetect;
-use oxicrypt_core::sha::sha256_compress_autodetect;
-use oxicrypt_core::sha::sha512_compress_autodetect;
+use oxicrypt_core::sha::sha1_compress_generic;
+use oxicrypt_core::sha::sha256_compress_generic;
+use oxicrypt_core::sha::sha512_compress_generic;
 use oxicrypt_core::sha::H1;
 use oxicrypt_core::sha::H224;
 use oxicrypt_core::sha::H256;
@@ -153,7 +153,7 @@ impl_sha! {
     const INITIAL_H: [u32; 5] = H1;
     const BLOCK_LEN: usize = 64;
     const DIGEST_LEN: usize = 20;
-    fn compress = sha1_compress_autodetect;
+    fn compress = sha1_compress_generic;
 }
 
 impl_sha! {
@@ -162,7 +162,7 @@ impl_sha! {
     const INITIAL_H: [u32; 8] = H224;
     const BLOCK_LEN: usize = 64;
     const DIGEST_LEN: usize = 28;
-    fn compress = sha256_compress_autodetect;
+    fn compress = sha256_compress_generic;
 }
 
 impl_sha! {
@@ -171,7 +171,7 @@ impl_sha! {
     const INITIAL_H: [u32; 8] = H256;
     const BLOCK_LEN: usize = 64;
     const DIGEST_LEN: usize = 32;
-    fn compress = sha256_compress_autodetect;
+    fn compress = sha256_compress_generic;
 }
 
 impl_sha! {
@@ -180,7 +180,7 @@ impl_sha! {
     const INITIAL_H: [u64; 8] = H384;
     const BLOCK_LEN: usize = 128;
     const DIGEST_LEN: usize = 48;
-    fn compress = sha512_compress_autodetect;
+    fn compress = sha512_compress_generic;
 }
 
 impl_sha! {
@@ -189,7 +189,7 @@ impl_sha! {
     const INITIAL_H: [u64; 8] = H512;
     const BLOCK_LEN: usize = 128;
     const DIGEST_LEN: usize = 64;
-    fn compress = sha512_compress_autodetect;
+    fn compress = sha512_compress_generic;
 }
 
 impl_sha! {
@@ -198,7 +198,7 @@ impl_sha! {
     const INITIAL_H: [u64; 8] = H512_224;
     const BLOCK_LEN: usize = 128;
     const DIGEST_LEN: usize = 28;
-    fn compress = sha512_compress_autodetect;
+    fn compress = sha512_compress_generic;
 }
 
 impl_sha! {
@@ -207,5 +207,5 @@ impl_sha! {
     const INITIAL_H: [u64; 8] = H512_256;
     const BLOCK_LEN: usize = 128;
     const DIGEST_LEN: usize = 32;
-    fn compress = sha512_compress_autodetect;
+    fn compress = sha512_compress_generic;
 }
