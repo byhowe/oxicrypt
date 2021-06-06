@@ -1,5 +1,20 @@
 use cfg_if::cfg_if;
 
+mod aes_generic;
+
+pub use aes_generic::aes128_decrypt_generic;
+pub use aes_generic::aes128_encrypt_generic;
+pub use aes_generic::aes128_expand_key_generic;
+pub use aes_generic::aes128_inverse_key_generic;
+pub use aes_generic::aes192_decrypt_generic;
+pub use aes_generic::aes192_encrypt_generic;
+pub use aes_generic::aes192_expand_key_generic;
+pub use aes_generic::aes192_inverse_key_generic;
+pub use aes_generic::aes256_decrypt_generic;
+pub use aes_generic::aes256_encrypt_generic;
+pub use aes_generic::aes256_expand_key_generic;
+pub use aes_generic::aes256_inverse_key_generic;
+
 cfg_if! {
   if #[cfg(any(target_arch = "x86", target_arch = "x86_64"))] {
     mod aes_x86_aesni;
