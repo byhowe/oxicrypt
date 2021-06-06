@@ -1,6 +1,5 @@
 use core::cmp;
 use core::mem;
-use core::mem::MaybeUninit;
 
 use oxicrypt_core::sha::sha1_compress_generic;
 use oxicrypt_core::sha::sha256_compress_generic;
@@ -71,6 +70,45 @@ impl oxi_sha512_ctx_t
   fn compress(&mut self)
   {
     unsafe { sha512_compress_generic(self.h.as_mut_ptr(), self.block.as_ptr()) };
+  }
+}
+
+impl Default for oxi_sha1_ctx_t
+{
+  fn default() -> Self
+  {
+    Self {
+      h: [0; 5],
+      block: [0; 64],
+      len: 0,
+      blocklen: 0,
+    }
+  }
+}
+
+impl Default for oxi_sha256_ctx_t
+{
+  fn default() -> Self
+  {
+    Self {
+      h: [0; 8],
+      block: [0; 64],
+      len: 0,
+      blocklen: 0,
+    }
+  }
+}
+
+impl Default for oxi_sha512_ctx_t
+{
+  fn default() -> Self
+  {
+    Self {
+      h: [0; 8],
+      block: [0; 128],
+      len: 0,
+      blocklen: 0,
+    }
   }
 }
 
@@ -314,7 +352,7 @@ pub unsafe extern "C" fn oxi_sha512_256_finish(ctx: *mut oxi_sha512_256_ctx_t, o
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha1_oneshot(data: *const u8, datalen: usize, out: *mut u8, outlen: usize)
 {
-  let mut ctx = MaybeUninit::uninit().assume_init();
+  let mut ctx = oxi_sha1_ctx_t::default();
   oxi_sha1_init(&mut ctx);
   oxi_sha1_update(&mut ctx, data, datalen);
   oxi_sha1_finish(&mut ctx, out, outlen);
@@ -323,7 +361,7 @@ pub unsafe extern "C" fn oxi_sha1_oneshot(data: *const u8, datalen: usize, out: 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha224_oneshot(data: *const u8, datalen: usize, out: *mut u8, outlen: usize)
 {
-  let mut ctx = MaybeUninit::uninit().assume_init();
+  let mut ctx = oxi_sha256_ctx_t::default();
   oxi_sha224_init(&mut ctx);
   oxi_sha224_update(&mut ctx, data, datalen);
   oxi_sha224_finish(&mut ctx, out, outlen);
@@ -332,7 +370,7 @@ pub unsafe extern "C" fn oxi_sha224_oneshot(data: *const u8, datalen: usize, out
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha256_oneshot(data: *const u8, datalen: usize, out: *mut u8, outlen: usize)
 {
-  let mut ctx = MaybeUninit::uninit().assume_init();
+  let mut ctx = oxi_sha256_ctx_t::default();
   oxi_sha256_init(&mut ctx);
   oxi_sha256_update(&mut ctx, data, datalen);
   oxi_sha256_finish(&mut ctx, out, outlen);
@@ -341,7 +379,7 @@ pub unsafe extern "C" fn oxi_sha256_oneshot(data: *const u8, datalen: usize, out
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha384_oneshot(data: *const u8, datalen: usize, out: *mut u8, outlen: usize)
 {
-  let mut ctx = MaybeUninit::uninit().assume_init();
+  let mut ctx = oxi_sha512_ctx_t::default();
   oxi_sha384_init(&mut ctx);
   oxi_sha384_update(&mut ctx, data, datalen);
   oxi_sha384_finish(&mut ctx, out, outlen);
@@ -350,7 +388,7 @@ pub unsafe extern "C" fn oxi_sha384_oneshot(data: *const u8, datalen: usize, out
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha512_oneshot(data: *const u8, datalen: usize, out: *mut u8, outlen: usize)
 {
-  let mut ctx = MaybeUninit::uninit().assume_init();
+  let mut ctx = oxi_sha512_ctx_t::default();
   oxi_sha512_init(&mut ctx);
   oxi_sha512_update(&mut ctx, data, datalen);
   oxi_sha512_finish(&mut ctx, out, outlen);
@@ -359,7 +397,7 @@ pub unsafe extern "C" fn oxi_sha512_oneshot(data: *const u8, datalen: usize, out
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha512_224_oneshot(data: *const u8, datalen: usize, out: *mut u8, outlen: usize)
 {
-  let mut ctx = MaybeUninit::uninit().assume_init();
+  let mut ctx = oxi_sha512_ctx_t::default();
   oxi_sha512_224_init(&mut ctx);
   oxi_sha512_224_update(&mut ctx, data, datalen);
   oxi_sha512_224_finish(&mut ctx, out, outlen);
@@ -368,7 +406,7 @@ pub unsafe extern "C" fn oxi_sha512_224_oneshot(data: *const u8, datalen: usize,
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha512_256_oneshot(data: *const u8, datalen: usize, out: *mut u8, outlen: usize)
 {
-  let mut ctx = MaybeUninit::uninit().assume_init();
+  let mut ctx = oxi_sha512_ctx_t::default();
   oxi_sha512_256_init(&mut ctx);
   oxi_sha512_256_update(&mut ctx, data, datalen);
   oxi_sha512_256_finish(&mut ctx, out, outlen);
