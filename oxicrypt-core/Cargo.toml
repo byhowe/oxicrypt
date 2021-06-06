@@ -12,5 +12,9 @@ keywords = ["crypto"]
 categories = ["cryptography"]
 workspace = ".."
 
+[features]
+# Use assembly version of some functions whenever possible.
+asm = []
+
 [dependencies]
 cfg-if = "1"
