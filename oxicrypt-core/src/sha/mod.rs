@@ -86,21 +86,3 @@ pub const H512_256: [u64; 8] = [
   0x2b0199fc2c85b8aa,
   0x0eb72ddc81c52ca2,
 ];
-
-#[inline(always)]
-pub unsafe fn sha1_compress_autodetect(state: *mut u32, block: *const u8)
-{
-  sha1_compress_generic(state, block);
-}
-
-#[inline(always)]
-pub unsafe fn sha256_compress_autodetect(state: *mut u32, block: *const u8)
-{
-  sha256_compress_generic(state, block);
-}
-
-#[inline(always)]
-pub unsafe fn sha512_compress_autodetect(state: *mut u64, block: *const u8)
-{
-  sha512_compress_generic(state, block);
-}
