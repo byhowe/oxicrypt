@@ -51,6 +51,7 @@ pub type oxi_sha512_256_ctx_t = oxi_sha512_ctx_t;
 
 impl oxi_sha1_ctx_t
 {
+  #[inline(always)]
   fn compress(&mut self)
   {
     unsafe { sha1_compress_generic(self.h.as_mut_ptr(), self.block.as_ptr()) };
@@ -59,6 +60,7 @@ impl oxi_sha1_ctx_t
 
 impl oxi_sha256_ctx_t
 {
+  #[inline(always)]
   fn compress(&mut self)
   {
     unsafe { sha256_compress_generic(self.h.as_mut_ptr(), self.block.as_ptr()) };
@@ -67,6 +69,7 @@ impl oxi_sha256_ctx_t
 
 impl oxi_sha512_ctx_t
 {
+  #[inline(always)]
   fn compress(&mut self)
   {
     unsafe { sha512_compress_generic(self.h.as_mut_ptr(), self.block.as_ptr()) };
@@ -75,6 +78,7 @@ impl oxi_sha512_ctx_t
 
 impl Default for oxi_sha1_ctx_t
 {
+  #[inline(always)]
   fn default() -> Self
   {
     Self {
@@ -88,6 +92,7 @@ impl Default for oxi_sha1_ctx_t
 
 impl Default for oxi_sha256_ctx_t
 {
+  #[inline(always)]
   fn default() -> Self
   {
     Self {
@@ -101,6 +106,7 @@ impl Default for oxi_sha256_ctx_t
 
 impl Default for oxi_sha512_ctx_t
 {
+  #[inline(always)]
   fn default() -> Self
   {
     Self {
