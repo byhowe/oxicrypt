@@ -16,7 +16,7 @@ pub use aes_generic::aes256_expand_key_generic;
 pub use aes_generic::aes256_inverse_key_generic;
 
 cfg_if! {
-  if #[cfg(any(target_arch = "x86", target_arch = "x86_64"))] {
+  if #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))] {
     mod aes_x86_aesni;
 
     pub use aes_x86_aesni::aes128_expand_key_x86_aesni;
