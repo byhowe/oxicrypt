@@ -4,7 +4,7 @@
 #![feature(new_uninit)]
 #![feature(maybe_uninit_ref)]
 
-pub mod aes;
+// pub mod aes;
 pub mod sha;
 
 #[cfg(test)]
