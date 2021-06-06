@@ -1,6 +1,5 @@
 #![no_std]
-#![feature(asm)]
-#![feature(stdarch)]
+#![cfg_attr(feature = "asm", feature(asm))]
 
 pub mod aes;
 pub mod sha;
