@@ -15,9 +15,6 @@ workspace = ".."
 [features]
 default = ["aesni"]
 
-# Use assembly version of some functions whenever possible.
-asm = []
-
 # Enable AES-NI. Does not do anything on architectures that do not support it.
 aesni = []
 

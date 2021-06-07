@@ -1,5 +1,7 @@
+#![feature(avx512_target_feature)]
 #![no_std]
-#![cfg_attr(feature = "asm", feature(asm))]
+
+pub mod hwfeatures;
 
 pub mod aes;
 pub mod sha;
