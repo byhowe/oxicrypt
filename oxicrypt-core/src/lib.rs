@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(doc_cfg)]
 
 pub mod hwfeatures;
 
