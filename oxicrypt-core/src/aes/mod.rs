@@ -1,6 +1,7 @@
 use cfg_if::cfg_if;
 
 mod aes_generic;
+mod aes_lut;
 
 pub use aes_generic::aes128_decrypt_generic;
 pub use aes_generic::aes128_encrypt_generic;
