@@ -29,6 +29,10 @@ typedef struct oxi_aes256_ctx_t {
 #define OXI_AES192_KEY_LEN 24
 #define OXI_AES256_KEY_LEN 32
 
+#define OXI_AES128_KEY_SCHEDULE_LEN 176
+#define OXI_AES192_KEY_SCHEDULE_LEN 208
+#define OXI_AES256_KEY_SCHEDULE_LEN 240
+
 /* Set key functions. */
 
 void oxi_aes128_set_encrypt_key(oxi_aes128_ctx_t* ctx, const uint8_t* key);
@@ -38,23 +42,23 @@ void oxi_aes128_set_decrypt_key(oxi_aes128_ctx_t* ctx, const uint8_t* key);
 void oxi_aes192_set_decrypt_key(oxi_aes192_ctx_t* ctx, const uint8_t* key);
 void oxi_aes256_set_decrypt_key(oxi_aes256_ctx_t* ctx, const uint8_t* key);
 
+/* Inverse key functions. */
+
+void oxi_aes128_inverse_key(oxi_aes128_ctx_t* ctx);
+void oxi_aes192_inverse_key(oxi_aes192_ctx_t* ctx);
+void oxi_aes256_inverse_key(oxi_aes256_ctx_t* ctx);
+
 /* Encrypt functions. */
 
 void oxi_aes128_encrypt(oxi_aes128_ctx_t* ctx, uint8_t* block);
 void oxi_aes192_encrypt(oxi_aes192_ctx_t* ctx, uint8_t* block);
 void oxi_aes256_encrypt(oxi_aes256_ctx_t* ctx, uint8_t* block);
-void oxi_aes128_encrypt8(oxi_aes128_ctx_t* ctx, uint8_t* blocks);
-void oxi_aes192_encrypt8(oxi_aes192_ctx_t* ctx, uint8_t* blocks);
-void oxi_aes256_encrypt8(oxi_aes256_ctx_t* ctx, uint8_t* blocks);
 
 /* Decrypt functions. */
 
 void oxi_aes128_decrypt(oxi_aes128_ctx_t* ctx, uint8_t* block);
 void oxi_aes192_decrypt(oxi_aes192_ctx_t* ctx, uint8_t* block);
 void oxi_aes256_decrypt(oxi_aes256_ctx_t* ctx, uint8_t* block);
-void oxi_aes128_decrypt8(oxi_aes128_ctx_t* ctx, uint8_t* blocks);
-void oxi_aes192_decrypt8(oxi_aes192_ctx_t* ctx, uint8_t* blocks);
-void oxi_aes256_decrypt8(oxi_aes256_ctx_t* ctx, uint8_t* blocks);
 
 #ifdef __cplusplus
 }
