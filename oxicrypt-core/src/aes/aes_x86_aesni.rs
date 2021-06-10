@@ -452,6 +452,7 @@ mod tests
   extern crate std;
 
   use super::*;
+  use crate::test_vectors::*;
 
   #[test]
   #[cfg_attr(
@@ -460,12 +461,8 @@ mod tests
   )]
   fn test_aes128_expand_key()
   {
-    let tests: &[([u8; 16], [u8; 176])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes128-expand-key.txt"
-    ));
     let mut key_schedule = [0; 176];
-    tests.iter().for_each(|t| {
+    AES128_EXPAND_KEY.iter().for_each(|t| {
       unsafe { aes128_expand_key_x86_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
     });
@@ -478,12 +475,8 @@ mod tests
   )]
   fn test_aes192_expand_key()
   {
-    let tests: &[([u8; 24], [u8; 208])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes192-expand-key.txt"
-    ));
     let mut key_schedule = [0; 208];
-    tests.iter().for_each(|t| {
+    AES192_EXPAND_KEY.iter().for_each(|t| {
       unsafe { aes192_expand_key_x86_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
     });
@@ -496,12 +489,8 @@ mod tests
   )]
   fn test_aes256_expand_key()
   {
-    let tests: &[([u8; 32], [u8; 240])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes256-expand-key.txt"
-    ));
     let mut key_schedule = [0; 240];
-    tests.iter().for_each(|t| {
+    AES256_EXPAND_KEY.iter().for_each(|t| {
       unsafe { aes256_expand_key_x86_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
     });
@@ -518,12 +507,8 @@ mod tests
   )]
   fn test_aes128_expand_key_avx()
   {
-    let tests: &[([u8; 16], [u8; 176])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes128-expand-key.txt"
-    ));
     let mut key_schedule = [0; 176];
-    tests.iter().for_each(|t| {
+    AES128_EXPAND_KEY.iter().for_each(|t| {
       unsafe { aes128_expand_key_x86_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
     });
@@ -540,12 +525,8 @@ mod tests
   )]
   fn test_aes192_expand_key_avx()
   {
-    let tests: &[([u8; 24], [u8; 208])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes192-expand-key.txt"
-    ));
     let mut key_schedule = [0; 208];
-    tests.iter().for_each(|t| {
+    AES192_EXPAND_KEY.iter().for_each(|t| {
       unsafe { aes192_expand_key_x86_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
     });
@@ -562,12 +543,8 @@ mod tests
   )]
   fn test_aes256_expand_key_avx()
   {
-    let tests: &[([u8; 32], [u8; 240])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes256-expand-key.txt"
-    ));
     let mut key_schedule = [0; 240];
-    tests.iter().for_each(|t| {
+    AES256_EXPAND_KEY.iter().for_each(|t| {
       unsafe { aes256_expand_key_x86_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
     });
@@ -580,12 +557,8 @@ mod tests
   )]
   fn test_aes128_inverse_key()
   {
-    let tests: &[([u8; 176], [u8; 176])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes128-inverse-key.txt"
-    ));
     let mut key_schedule = [0; 176];
-    tests.iter().for_each(|t| {
+    AES128_INVERSE_KEY.iter().for_each(|t| {
       key_schedule = t.0;
       unsafe { aes128_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
@@ -599,12 +572,8 @@ mod tests
   )]
   fn test_aes192_inverse_key()
   {
-    let tests: &[([u8; 208], [u8; 208])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes192-inverse-key.txt"
-    ));
     let mut key_schedule = [0; 208];
-    tests.iter().for_each(|t| {
+    AES192_INVERSE_KEY.iter().for_each(|t| {
       key_schedule = t.0;
       unsafe { aes192_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
@@ -618,12 +587,8 @@ mod tests
   )]
   fn test_aes256_inverse_key()
   {
-    let tests: &[([u8; 240], [u8; 240])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes256-inverse-key.txt"
-    ));
     let mut key_schedule = [0; 240];
-    tests.iter().for_each(|t| {
+    AES256_INVERSE_KEY.iter().for_each(|t| {
       key_schedule = t.0;
       unsafe { aes256_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
@@ -641,12 +606,8 @@ mod tests
   )]
   fn test_aes128_inverse_key_avx()
   {
-    let tests: &[([u8; 176], [u8; 176])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes128-inverse-key.txt"
-    ));
     let mut key_schedule = [0; 176];
-    tests.iter().for_each(|t| {
+    AES128_INVERSE_KEY.iter().for_each(|t| {
       key_schedule = t.0;
       unsafe { aes128_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
@@ -664,12 +625,8 @@ mod tests
   )]
   fn test_aes192_inverse_key_avx()
   {
-    let tests: &[([u8; 208], [u8; 208])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes192-inverse-key.txt"
-    ));
     let mut key_schedule = [0; 208];
-    tests.iter().for_each(|t| {
+    AES192_INVERSE_KEY.iter().for_each(|t| {
       key_schedule = t.0;
       unsafe { aes192_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
@@ -687,12 +644,8 @@ mod tests
   )]
   fn test_aes256_inverse_key_avx()
   {
-    let tests: &[([u8; 240], [u8; 240])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes256-inverse-key.txt"
-    ));
     let mut key_schedule = [0; 240];
-    tests.iter().for_each(|t| {
+    AES256_INVERSE_KEY.iter().for_each(|t| {
       key_schedule = t.0;
       unsafe { aes256_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
@@ -706,10 +659,8 @@ mod tests
   )]
   fn test_aes128_encrypt()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 176])] =
-      &include!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-vectors/aes128-encrypt.txt"));
     let mut block = [0; 16];
-    tests.iter().for_each(|t| {
+    AES128_ENCRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes128_encrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
@@ -723,10 +674,8 @@ mod tests
   )]
   fn test_aes192_encrypt()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 208])] =
-      &include!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-vectors/aes192-encrypt.txt"));
     let mut block = [0; 16];
-    tests.iter().for_each(|t| {
+    AES192_ENCRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes192_encrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
@@ -740,10 +689,8 @@ mod tests
   )]
   fn test_aes256_encrypt()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 240])] =
-      &include!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-vectors/aes256-encrypt.txt"));
     let mut block = [0; 16];
-    tests.iter().for_each(|t| {
+    AES256_ENCRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes256_encrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
@@ -761,10 +708,8 @@ mod tests
   )]
   fn test_aes128_encrypt_avx()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 176])] =
-      &include!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-vectors/aes128-encrypt.txt"));
     let mut block = [0; 16];
-    tests.iter().for_each(|t| {
+    AES128_ENCRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes128_encrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
@@ -782,10 +727,8 @@ mod tests
   )]
   fn test_aes192_encrypt_avx()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 208])] =
-      &include!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-vectors/aes192-encrypt.txt"));
     let mut block = [0; 16];
-    tests.iter().for_each(|t| {
+    AES192_ENCRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes192_encrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
@@ -803,10 +746,8 @@ mod tests
   )]
   fn test_aes256_encrypt_avx()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 240])] =
-      &include!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-vectors/aes256-encrypt.txt"));
     let mut block = [0; 16];
-    tests.iter().for_each(|t| {
+    AES256_ENCRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes256_encrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
@@ -820,10 +761,8 @@ mod tests
   )]
   fn test_aes128_decrypt()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 176])] =
-      &include!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-vectors/aes128-decrypt.txt"));
     let mut block = [0; 16];
-    tests.iter().for_each(|t| {
+    AES128_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes128_decrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
@@ -837,10 +776,8 @@ mod tests
   )]
   fn test_aes192_decrypt()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 208])] =
-      &include!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-vectors/aes192-decrypt.txt"));
     let mut block = [0; 16];
-    tests.iter().for_each(|t| {
+    AES192_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes192_decrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
@@ -854,10 +791,8 @@ mod tests
   )]
   fn test_aes256_decrypt()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 240])] =
-      &include!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-vectors/aes256-decrypt.txt"));
     let mut block = [0; 16];
-    tests.iter().for_each(|t| {
+    AES256_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes256_decrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
@@ -875,10 +810,8 @@ mod tests
   )]
   fn test_aes128_decrypt_avx()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 176])] =
-      &include!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-vectors/aes128-decrypt.txt"));
     let mut block = [0; 16];
-    tests.iter().for_each(|t| {
+    AES128_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes128_decrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
@@ -896,10 +829,8 @@ mod tests
   )]
   fn test_aes192_decrypt_avx()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 208])] =
-      &include!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-vectors/aes192-decrypt.txt"));
     let mut block = [0; 16];
-    tests.iter().for_each(|t| {
+    AES192_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes192_decrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
@@ -917,10 +848,8 @@ mod tests
   )]
   fn test_aes256_decrypt_avx()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 240])] =
-      &include!(concat!(env!("CARGO_MANIFEST_DIR"), "/test-vectors/aes256-decrypt.txt"));
     let mut block = [0; 16];
-    tests.iter().for_each(|t| {
+    AES256_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes256_decrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
@@ -934,13 +863,9 @@ mod tests
   )]
   fn test_aes128_encrypt_decrypt()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 16])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes128-encrypt-decrypt.txt"
-    ));
     let mut block = [0; 16];
     let mut key_schedule = [0; 176];
-    tests.iter().for_each(|t| {
+    AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes128_expand_key_x86_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
       unsafe { aes128_encrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
@@ -958,13 +883,9 @@ mod tests
   )]
   fn test_aes192_encrypt_decrypt()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 24])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes192-encrypt-decrypt.txt"
-    ));
     let mut block = [0; 16];
     let mut key_schedule = [0; 208];
-    tests.iter().for_each(|t| {
+    AES192_ENCRYPT_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes192_expand_key_x86_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
       unsafe { aes192_encrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
@@ -982,13 +903,9 @@ mod tests
   )]
   fn test_aes256_encrypt_decrypt()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 32])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes256-encrypt-decrypt.txt"
-    ));
     let mut block = [0; 16];
     let mut key_schedule = [0; 240];
-    tests.iter().for_each(|t| {
+    AES256_ENCRYPT_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes256_expand_key_x86_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
       unsafe { aes256_encrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
@@ -1010,13 +927,9 @@ mod tests
   )]
   fn test_aes128_encrypt_decrypt_avx()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 16])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes128-encrypt-decrypt.txt"
-    ));
     let mut block = [0; 16];
     let mut key_schedule = [0; 176];
-    tests.iter().for_each(|t| {
+    AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes128_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
       unsafe { aes128_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
@@ -1038,13 +951,9 @@ mod tests
   )]
   fn test_aes192_encrypt_decrypt_avx()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 24])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes192-encrypt-decrypt.txt"
-    ));
     let mut block = [0; 16];
     let mut key_schedule = [0; 208];
-    tests.iter().for_each(|t| {
+    AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes192_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
       unsafe { aes192_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
@@ -1066,13 +975,9 @@ mod tests
   )]
   fn test_aes256_encrypt_decrypt_avx()
   {
-    let tests: &[([u8; 16], [u8; 16], [u8; 32])] = &include!(concat!(
-      env!("CARGO_MANIFEST_DIR"),
-      "/test-vectors/aes256-encrypt-decrypt.txt"
-    ));
     let mut block = [0; 16];
     let mut key_schedule = [0; 240];
-    tests.iter().for_each(|t| {
+    AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes256_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
       unsafe { aes256_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
