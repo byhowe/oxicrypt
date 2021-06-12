@@ -1,20 +1,26 @@
 use cfg_if::cfg_if;
 
-mod aes_generic;
 mod aes_lut;
 
-pub use aes_generic::aes128_decrypt_generic;
-pub use aes_generic::aes128_encrypt_generic;
-pub use aes_generic::aes128_expand_key_generic;
-pub use aes_generic::aes128_inverse_key_generic;
-pub use aes_generic::aes192_decrypt_generic;
-pub use aes_generic::aes192_encrypt_generic;
-pub use aes_generic::aes192_expand_key_generic;
-pub use aes_generic::aes192_inverse_key_generic;
-pub use aes_generic::aes256_decrypt_generic;
-pub use aes_generic::aes256_encrypt_generic;
-pub use aes_generic::aes256_expand_key_generic;
-pub use aes_generic::aes256_inverse_key_generic;
+// Expand key.
+pub use aes_lut::aes128_expand_key_lut;
+pub use aes_lut::aes192_expand_key_lut;
+pub use aes_lut::aes256_expand_key_lut;
+
+// Inverse key.
+pub use aes_lut::aes128_inverse_key_lut;
+pub use aes_lut::aes192_inverse_key_lut;
+pub use aes_lut::aes256_inverse_key_lut;
+
+// Encrypt.
+pub use aes_lut::aes128_encrypt_lut;
+pub use aes_lut::aes192_encrypt_lut;
+pub use aes_lut::aes256_encrypt_lut;
+
+// Decrypt.
+pub use aes_lut::aes128_decrypt_lut;
+pub use aes_lut::aes192_decrypt_lut;
+pub use aes_lut::aes256_decrypt_lut;
 
 // ((x86 || x86_64) && aesni) || doc
 #[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
