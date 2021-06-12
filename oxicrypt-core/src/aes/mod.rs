@@ -6,17 +6,14 @@ mod aes_lut;
 pub use aes_lut::aes128_expand_key_lut;
 pub use aes_lut::aes192_expand_key_lut;
 pub use aes_lut::aes256_expand_key_lut;
-
 // Inverse key.
 pub use aes_lut::aes128_inverse_key_lut;
 pub use aes_lut::aes192_inverse_key_lut;
 pub use aes_lut::aes256_inverse_key_lut;
-
 // Encrypt.
 pub use aes_lut::aes128_encrypt_lut;
 pub use aes_lut::aes192_encrypt_lut;
 pub use aes_lut::aes256_encrypt_lut;
-
 // Decrypt.
 pub use aes_lut::aes128_decrypt_lut;
 pub use aes_lut::aes192_decrypt_lut;
