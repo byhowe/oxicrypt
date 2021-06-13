@@ -161,6 +161,11 @@ const MUL14: [u8; 256] = [
   0xd7, 0xd9, 0xcb, 0xc5, 0xef, 0xe1, 0xf3, 0xfd, 0xa7, 0xa9, 0xbb, 0xb5, 0x9f, 0x91, 0x83, 0x8d,
 ];
 
+#[rustfmt::skip]
+const RCON: [u8; 10] = [
+  0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36,
+];
+
 #[inline(always)]
 unsafe fn add_round_key(b0: *mut u8, k0: *const u8)
 {
@@ -318,6 +323,45 @@ unsafe fn inverse_mix_columns(block: *mut u8)
 }
 
 #[inline(always)]
+unsafe fn aes_expand_key<const N: usize>(key: *const u8, key_schedule: *mut u8)
+{
+  let nk = N - 6;
+  core::intrinsics::copy_nonoverlapping(key, key_schedule, nk * 4);
+
+  for i in nk .. (N + 1) * 4 {
+    let k = (i - 1) * 4;
+    let mut t = [
+      *key_schedule.add(k + 0),
+      *key_schedule.add(k + 1),
+      *key_schedule.add(k + 2),
+      *key_schedule.add(k + 3),
+    ];
+
+    if i % nk == 0 {
+      let t0 = t[0];
+      t[0] = SBOX[t[1] as usize];
+      t[1] = SBOX[t[2] as usize];
+      t[2] = SBOX[t[3] as usize];
+      t[3] = SBOX[t0 as usize];
+
+      t[0] ^= RCON[i / nk - 1];
+    }
+
+    if N == 14 && i % nk == 4 {
+      t[0] = SBOX[t[0] as usize];
+      t[1] = SBOX[t[1] as usize];
+      t[2] = SBOX[t[2] as usize];
+      t[3] = SBOX[t[3] as usize];
+    }
+
+    *key_schedule.add(i * 4 + 0) = *key_schedule.add((i - nk) * 4 + 0) ^ t[0];
+    *key_schedule.add(i * 4 + 1) = *key_schedule.add((i - nk) * 4 + 1) ^ t[1];
+    *key_schedule.add(i * 4 + 2) = *key_schedule.add((i - nk) * 4 + 2) ^ t[2];
+    *key_schedule.add(i * 4 + 3) = *key_schedule.add((i - nk) * 4 + 3) ^ t[3];
+  }
+}
+
+#[inline(always)]
 unsafe fn aes_inverse_key<const N: usize>(key_schedule: *mut u8)
 {
   let mut k0: [u8; 16] = *key_schedule.cast::<[u8; 16]>().add(0);
@@ -377,13 +421,22 @@ unsafe fn aes_decrypt<const N: usize>(block: *mut u8, key_schedule: *const u8)
 }
 
 #[inline(always)]
-pub unsafe fn aes128_expand_key_lut(key: *const u8, key_schedule: *mut u8) {}
+pub unsafe fn aes128_expand_key_lut(key: *const u8, key_schedule: *mut u8)
+{
+  aes_expand_key::<10>(key, key_schedule);
+}
 
 #[inline(always)]
-pub unsafe fn aes192_expand_key_lut(key: *const u8, key_schedule: *mut u8) {}
+pub unsafe fn aes192_expand_key_lut(key: *const u8, key_schedule: *mut u8)
+{
+  aes_expand_key::<12>(key, key_schedule);
+}
 
 #[inline(always)]
-pub unsafe fn aes256_expand_key_lut(key: *const u8, key_schedule: *mut u8) {}
+pub unsafe fn aes256_expand_key_lut(key: *const u8, key_schedule: *mut u8)
+{
+  aes_expand_key::<14>(key, key_schedule);
+}
 
 #[inline(always)]
 pub unsafe fn aes128_inverse_key_lut(key_schedule: *mut u8)
