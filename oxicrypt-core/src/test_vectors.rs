@@ -1,3 +1,10 @@
+pub const SHA1_COMPRESS: &[([u32; 5], [u32; 5], [u8; 64])] =
+  &include!(concat!(env!("OXICRYPT_TEST_VECS"), "sha1-compress.txt"));
+pub const SHA256_COMPRESS: &[([u32; 8], [u32; 8], [u8; 64])] =
+  &include!(concat!(env!("OXICRYPT_TEST_VECS"), "sha256-compress.txt"));
+pub const SHA512_COMPRESS: &[([u64; 8], [u64; 8], [u8; 128])] =
+  &include!(concat!(env!("OXICRYPT_TEST_VECS"), "sha512-compress.txt"));
+
 pub const AES128_EXPAND_KEY: &[([u8; 16], [u8; 176])] =
   &include!(concat!(env!("OXICRYPT_TEST_VECS"), "aes128-expand-key.txt"));
 pub const AES192_EXPAND_KEY: &[([u8; 24], [u8; 208])] =

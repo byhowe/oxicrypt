@@ -171,3 +171,21 @@ pub unsafe fn sha1_compress_generic(state: *mut u32, block: *const u8)
   state.add(3).write((*state.add(3)).wrapping_add(d));
   state.add(4).write((*state.add(4)).wrapping_add(e));
 }
+
+#[cfg(test)]
+mod tests
+{
+  use super::*;
+  use crate::test_vectors::*;
+
+  #[test]
+  fn test_sha1_compress()
+  {
+    let mut state = [0; 5];
+    SHA1_COMPRESS.iter().for_each(|t| {
+      state = t.0;
+      unsafe { sha1_compress_generic(state.as_mut_ptr(), t.2.as_ptr()) };
+      assert_eq!(t.1, state);
+    });
+  }
+}

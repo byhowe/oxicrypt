@@ -151,3 +151,21 @@ pub unsafe fn sha512_compress_generic(state: *mut u64, block: *const u8)
   state.add(6).write((*state.add(6)).wrapping_add(g));
   state.add(7).write((*state.add(7)).wrapping_add(h));
 }
+
+#[cfg(test)]
+mod tests
+{
+  use super::*;
+  use crate::test_vectors::*;
+
+  #[test]
+  fn test_sha512_compress()
+  {
+    let mut state = [0; 8];
+    SHA512_COMPRESS.iter().for_each(|t| {
+      state = t.0;
+      unsafe { sha512_compress_generic(state.as_mut_ptr(), t.2.as_ptr()) };
+      assert_eq!(t.1, state);
+    });
+  }
+}
