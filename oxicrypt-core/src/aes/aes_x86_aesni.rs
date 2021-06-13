@@ -211,6 +211,7 @@ unsafe fn aes_decrypt<const N: usize>(block: *mut u8, key_schedule: *const u8)
   feature = "aesni"
 )))]
 #[cfg(not(target_feature = "avx"))]
+#[inline]
 pub unsafe fn aes128_expand_key_x86_aesni(key: *const u8, key_schedule: *mut u8)
 {
   aes128_expand_key(key, key_schedule);
@@ -223,6 +224,7 @@ pub unsafe fn aes128_expand_key_x86_aesni(key: *const u8, key_schedule: *mut u8)
   feature = "aesni"
 )))]
 #[cfg(not(target_feature = "avx"))]
+#[inline]
 pub unsafe fn aes192_expand_key_x86_aesni(key: *const u8, key_schedule: *mut u8)
 {
   aes192_expand_key(key, key_schedule);
@@ -235,6 +237,7 @@ pub unsafe fn aes192_expand_key_x86_aesni(key: *const u8, key_schedule: *mut u8)
   feature = "aesni"
 )))]
 #[cfg(not(target_feature = "avx"))]
+#[inline]
 pub unsafe fn aes256_expand_key_x86_aesni(key: *const u8, key_schedule: *mut u8)
 {
   aes256_expand_key(key, key_schedule);
@@ -244,6 +247,7 @@ pub unsafe fn aes256_expand_key_x86_aesni(key: *const u8, key_schedule: *mut u8)
 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+#[inline]
 pub unsafe fn aes128_expand_key_x86_avx_aesni(key: *const u8, key_schedule: *mut u8)
 {
   aes128_expand_key(key, key_schedule);
@@ -251,6 +255,7 @@ pub unsafe fn aes128_expand_key_x86_avx_aesni(key: *const u8, key_schedule: *mut
 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+#[inline]
 pub unsafe fn aes192_expand_key_x86_avx_aesni(key: *const u8, key_schedule: *mut u8)
 {
   aes192_expand_key(key, key_schedule);
@@ -258,6 +263,7 @@ pub unsafe fn aes192_expand_key_x86_avx_aesni(key: *const u8, key_schedule: *mut
 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+#[inline]
 pub unsafe fn aes256_expand_key_x86_avx_aesni(key: *const u8, key_schedule: *mut u8)
 {
   aes256_expand_key(key, key_schedule);
@@ -272,6 +278,7 @@ pub unsafe fn aes256_expand_key_x86_avx_aesni(key: *const u8, key_schedule: *mut
   feature = "aesni"
 )))]
 #[cfg(not(target_feature = "avx"))]
+#[inline]
 pub unsafe fn aes128_inverse_key_x86_aesni(key_schedule: *mut u8)
 {
   aes_inverse_key::<10>(key_schedule);
@@ -284,6 +291,7 @@ pub unsafe fn aes128_inverse_key_x86_aesni(key_schedule: *mut u8)
   feature = "aesni"
 )))]
 #[cfg(not(target_feature = "avx"))]
+#[inline]
 pub unsafe fn aes192_inverse_key_x86_aesni(key_schedule: *mut u8)
 {
   aes_inverse_key::<12>(key_schedule);
@@ -296,6 +304,7 @@ pub unsafe fn aes192_inverse_key_x86_aesni(key_schedule: *mut u8)
   feature = "aesni"
 )))]
 #[cfg(not(target_feature = "avx"))]
+#[inline]
 pub unsafe fn aes256_inverse_key_x86_aesni(key_schedule: *mut u8)
 {
   aes_inverse_key::<14>(key_schedule);
@@ -305,6 +314,7 @@ pub unsafe fn aes256_inverse_key_x86_aesni(key_schedule: *mut u8)
 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+#[inline]
 pub unsafe fn aes128_inverse_key_x86_avx_aesni(key_schedule: *mut u8)
 {
   aes_inverse_key::<10>(key_schedule);
@@ -312,6 +322,7 @@ pub unsafe fn aes128_inverse_key_x86_avx_aesni(key_schedule: *mut u8)
 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+#[inline]
 pub unsafe fn aes192_inverse_key_x86_avx_aesni(key_schedule: *mut u8)
 {
   aes_inverse_key::<12>(key_schedule);
@@ -319,6 +330,7 @@ pub unsafe fn aes192_inverse_key_x86_avx_aesni(key_schedule: *mut u8)
 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+#[inline]
 pub unsafe fn aes256_inverse_key_x86_avx_aesni(key_schedule: *mut u8)
 {
   aes_inverse_key::<14>(key_schedule);
@@ -333,6 +345,7 @@ pub unsafe fn aes256_inverse_key_x86_avx_aesni(key_schedule: *mut u8)
   feature = "aesni"
 )))]
 #[cfg(not(target_feature = "avx"))]
+#[inline]
 pub unsafe fn aes128_encrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_encrypt::<10>(block, key_schedule);
@@ -345,6 +358,7 @@ pub unsafe fn aes128_encrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
   feature = "aesni"
 )))]
 #[cfg(not(target_feature = "avx"))]
+#[inline]
 pub unsafe fn aes192_encrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_encrypt::<12>(block, key_schedule);
@@ -357,6 +371,7 @@ pub unsafe fn aes192_encrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
   feature = "aesni"
 )))]
 #[cfg(not(target_feature = "avx"))]
+#[inline]
 pub unsafe fn aes256_encrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_encrypt::<14>(block, key_schedule);
@@ -366,6 +381,7 @@ pub unsafe fn aes256_encrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+#[inline]
 pub unsafe fn aes128_encrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_encrypt::<10>(block, key_schedule);
@@ -373,6 +389,7 @@ pub unsafe fn aes128_encrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const 
 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+#[inline]
 pub unsafe fn aes192_encrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_encrypt::<12>(block, key_schedule);
@@ -380,6 +397,7 @@ pub unsafe fn aes192_encrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const 
 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+#[inline]
 pub unsafe fn aes256_encrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_encrypt::<14>(block, key_schedule);
@@ -394,6 +412,7 @@ pub unsafe fn aes256_encrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const 
   feature = "aesni"
 )))]
 #[cfg(not(target_feature = "avx"))]
+#[inline]
 pub unsafe fn aes128_decrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_decrypt::<10>(block, key_schedule);
@@ -406,6 +425,7 @@ pub unsafe fn aes128_decrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
   feature = "aesni"
 )))]
 #[cfg(not(target_feature = "avx"))]
+#[inline]
 pub unsafe fn aes192_decrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_decrypt::<12>(block, key_schedule);
@@ -418,6 +438,7 @@ pub unsafe fn aes192_decrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
   feature = "aesni"
 )))]
 #[cfg(not(target_feature = "avx"))]
+#[inline]
 pub unsafe fn aes256_decrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_decrypt::<14>(block, key_schedule);
@@ -427,6 +448,7 @@ pub unsafe fn aes256_decrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+#[inline]
 pub unsafe fn aes128_decrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_decrypt::<10>(block, key_schedule);
@@ -434,6 +456,7 @@ pub unsafe fn aes128_decrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const 
 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+#[inline]
 pub unsafe fn aes192_decrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_decrypt::<12>(block, key_schedule);
@@ -441,6 +464,7 @@ pub unsafe fn aes192_decrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const 
 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+#[inline]
 pub unsafe fn aes256_decrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_decrypt::<14>(block, key_schedule);

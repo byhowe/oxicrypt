@@ -1,4 +1,3 @@
-#![allow(unused_variables)]
 #![allow(clippy::missing_safety_doc)]
 #![allow(clippy::identity_op)]
 
