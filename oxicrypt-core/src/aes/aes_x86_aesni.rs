@@ -953,7 +953,7 @@ mod tests
   {
     let mut block = [0; 16];
     let mut key_schedule = [0; 208];
-    AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
+    AES192_ENCRYPT_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes192_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
       unsafe { aes192_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
@@ -977,7 +977,7 @@ mod tests
   {
     let mut block = [0; 16];
     let mut key_schedule = [0; 240];
-    AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
+    AES256_ENCRYPT_DECRYPT.iter().for_each(|t| {
       block = t.0;
       unsafe { aes256_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
       unsafe { aes256_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
