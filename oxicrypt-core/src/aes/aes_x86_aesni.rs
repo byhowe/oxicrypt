@@ -473,542 +473,345 @@ pub unsafe fn aes256_decrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const 
 #[cfg(test)]
 mod tests
 {
-  extern crate std;
-
   use super::*;
   use crate::test_vectors::*;
 
   #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes128_expand_key()
   {
-    let mut key_schedule = [0; 176];
-    AES128_EXPAND_KEY.iter().for_each(|t| {
-      unsafe { aes128_expand_key_x86_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
-      assert_eq!(t.1, key_schedule);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut key_schedule = [0; 176];
+      AES128_EXPAND_KEY.iter().for_each(|t| {
+        unsafe { aes128_expand_key_x86_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        assert_eq!(t.1, key_schedule);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut key_schedule = [0; 176];
+      AES128_EXPAND_KEY.iter().for_each(|t| {
+        unsafe { aes128_expand_key_x86_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        assert_eq!(t.1, key_schedule);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes192_expand_key()
   {
-    let mut key_schedule = [0; 208];
-    AES192_EXPAND_KEY.iter().for_each(|t| {
-      unsafe { aes192_expand_key_x86_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
-      assert_eq!(t.1, key_schedule);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut key_schedule = [0; 208];
+      AES192_EXPAND_KEY.iter().for_each(|t| {
+        unsafe { aes192_expand_key_x86_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        assert_eq!(t.1, key_schedule);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut key_schedule = [0; 208];
+      AES192_EXPAND_KEY.iter().for_each(|t| {
+        unsafe { aes192_expand_key_x86_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        assert_eq!(t.1, key_schedule);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes256_expand_key()
   {
-    let mut key_schedule = [0; 240];
-    AES256_EXPAND_KEY.iter().for_each(|t| {
-      unsafe { aes256_expand_key_x86_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
-      assert_eq!(t.1, key_schedule);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut key_schedule = [0; 240];
+      AES256_EXPAND_KEY.iter().for_each(|t| {
+        unsafe { aes256_expand_key_x86_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        assert_eq!(t.1, key_schedule);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut key_schedule = [0; 240];
+      AES256_EXPAND_KEY.iter().for_each(|t| {
+        unsafe { aes256_expand_key_x86_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        assert_eq!(t.1, key_schedule);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes128_expand_key_avx()
-  {
-    let mut key_schedule = [0; 176];
-    AES128_EXPAND_KEY.iter().for_each(|t| {
-      unsafe { aes128_expand_key_x86_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
-      assert_eq!(t.1, key_schedule);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes192_expand_key_avx()
-  {
-    let mut key_schedule = [0; 208];
-    AES192_EXPAND_KEY.iter().for_each(|t| {
-      unsafe { aes192_expand_key_x86_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
-      assert_eq!(t.1, key_schedule);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes256_expand_key_avx()
-  {
-    let mut key_schedule = [0; 240];
-    AES256_EXPAND_KEY.iter().for_each(|t| {
-      unsafe { aes256_expand_key_x86_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
-      assert_eq!(t.1, key_schedule);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes128_inverse_key()
   {
-    let mut key_schedule = [0; 176];
-    AES128_INVERSE_KEY.iter().for_each(|t| {
-      key_schedule = t.0;
-      unsafe { aes128_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
-      assert_eq!(t.1, key_schedule);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut key_schedule = [0; 176];
+      AES128_INVERSE_KEY.iter().for_each(|t| {
+        key_schedule = t.0;
+        unsafe { aes128_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
+        assert_eq!(t.1, key_schedule);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut key_schedule = [0; 176];
+      AES128_INVERSE_KEY.iter().for_each(|t| {
+        key_schedule = t.0;
+        unsafe { aes128_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
+        assert_eq!(t.1, key_schedule);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes192_inverse_key()
   {
-    let mut key_schedule = [0; 208];
-    AES192_INVERSE_KEY.iter().for_each(|t| {
-      key_schedule = t.0;
-      unsafe { aes192_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
-      assert_eq!(t.1, key_schedule);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut key_schedule = [0; 208];
+      AES192_INVERSE_KEY.iter().for_each(|t| {
+        key_schedule = t.0;
+        unsafe { aes192_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
+        assert_eq!(t.1, key_schedule);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut key_schedule = [0; 208];
+      AES192_INVERSE_KEY.iter().for_each(|t| {
+        key_schedule = t.0;
+        unsafe { aes192_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
+        assert_eq!(t.1, key_schedule);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes256_inverse_key()
   {
-    let mut key_schedule = [0; 240];
-    AES256_INVERSE_KEY.iter().for_each(|t| {
-      key_schedule = t.0;
-      unsafe { aes256_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
-      assert_eq!(t.1, key_schedule);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut key_schedule = [0; 240];
+      AES256_INVERSE_KEY.iter().for_each(|t| {
+        key_schedule = t.0;
+        unsafe { aes256_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
+        assert_eq!(t.1, key_schedule);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut key_schedule = [0; 240];
+      AES256_INVERSE_KEY.iter().for_each(|t| {
+        key_schedule = t.0;
+        unsafe { aes256_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
+        assert_eq!(t.1, key_schedule);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes128_inverse_key_avx()
-  {
-    let mut key_schedule = [0; 176];
-    AES128_INVERSE_KEY.iter().for_each(|t| {
-      key_schedule = t.0;
-      unsafe { aes128_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
-      assert_eq!(t.1, key_schedule);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes192_inverse_key_avx()
-  {
-    let mut key_schedule = [0; 208];
-    AES192_INVERSE_KEY.iter().for_each(|t| {
-      key_schedule = t.0;
-      unsafe { aes192_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
-      assert_eq!(t.1, key_schedule);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes256_inverse_key_avx()
-  {
-    let mut key_schedule = [0; 240];
-    AES256_INVERSE_KEY.iter().for_each(|t| {
-      key_schedule = t.0;
-      unsafe { aes256_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
-      assert_eq!(t.1, key_schedule);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes128_encrypt()
   {
-    let mut block = [0; 16];
-    AES128_ENCRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes128_encrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
-      assert_eq!(t.1, block);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut block = [0; 16];
+      AES128_ENCRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes128_encrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        assert_eq!(t.1, block);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut block = [0; 16];
+      AES128_ENCRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes128_encrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        assert_eq!(t.1, block);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes192_encrypt()
   {
-    let mut block = [0; 16];
-    AES192_ENCRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes192_encrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
-      assert_eq!(t.1, block);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut block = [0; 16];
+      AES192_ENCRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes192_encrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        assert_eq!(t.1, block);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut block = [0; 16];
+      AES192_ENCRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes192_encrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        assert_eq!(t.1, block);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes256_encrypt()
   {
-    let mut block = [0; 16];
-    AES256_ENCRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes256_encrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
-      assert_eq!(t.1, block);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut block = [0; 16];
+      AES256_ENCRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes256_encrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        assert_eq!(t.1, block);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut block = [0; 16];
+      AES256_ENCRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes256_encrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        assert_eq!(t.1, block);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes128_encrypt_avx()
-  {
-    let mut block = [0; 16];
-    AES128_ENCRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes128_encrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
-      assert_eq!(t.1, block);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes192_encrypt_avx()
-  {
-    let mut block = [0; 16];
-    AES192_ENCRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes192_encrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
-      assert_eq!(t.1, block);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes256_encrypt_avx()
-  {
-    let mut block = [0; 16];
-    AES256_ENCRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes256_encrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
-      assert_eq!(t.1, block);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes128_decrypt()
   {
-    let mut block = [0; 16];
-    AES128_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes128_decrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
-      assert_eq!(t.1, block);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut block = [0; 16];
+      AES128_DECRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes128_decrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        assert_eq!(t.1, block);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut block = [0; 16];
+      AES128_DECRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes128_decrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        assert_eq!(t.1, block);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes192_decrypt()
   {
-    let mut block = [0; 16];
-    AES192_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes192_decrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
-      assert_eq!(t.1, block);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut block = [0; 16];
+      AES192_DECRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes192_decrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        assert_eq!(t.1, block);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut block = [0; 16];
+      AES192_DECRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes192_decrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        assert_eq!(t.1, block);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes256_decrypt()
   {
-    let mut block = [0; 16];
-    AES256_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes256_decrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
-      assert_eq!(t.1, block);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut block = [0; 16];
+      AES256_DECRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes256_decrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        assert_eq!(t.1, block);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut block = [0; 16];
+      AES256_DECRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes256_decrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        assert_eq!(t.1, block);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes128_decrypt_avx()
-  {
-    let mut block = [0; 16];
-    AES128_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes128_decrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
-      assert_eq!(t.1, block);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes192_decrypt_avx()
-  {
-    let mut block = [0; 16];
-    AES192_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes192_decrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
-      assert_eq!(t.1, block);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes256_decrypt_avx()
-  {
-    let mut block = [0; 16];
-    AES256_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes256_decrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
-      assert_eq!(t.1, block);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes128_encrypt_decrypt()
   {
-    let mut block = [0; 16];
-    let mut key_schedule = [0; 176];
-    AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes128_expand_key_x86_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-      unsafe { aes128_encrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
-      assert_eq!(t.1, block);
-      unsafe { aes128_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
-      unsafe { aes128_decrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
-      assert_eq!(t.0, block);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut block = [0; 16];
+      let mut key_schedule = [0; 176];
+      AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes128_expand_key_x86_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes128_encrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        assert_eq!(t.1, block);
+        unsafe { aes128_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes128_decrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        assert_eq!(t.0, block);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut block = [0; 16];
+      let mut key_schedule = [0; 176];
+      AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes128_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes128_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        assert_eq!(t.1, block);
+        unsafe { aes128_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes128_decrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        assert_eq!(t.0, block);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes192_encrypt_decrypt()
   {
-    let mut block = [0; 16];
-    let mut key_schedule = [0; 208];
-    AES192_ENCRYPT_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes192_expand_key_x86_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-      unsafe { aes192_encrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
-      assert_eq!(t.1, block);
-      unsafe { aes192_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
-      unsafe { aes192_decrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
-      assert_eq!(t.0, block);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut block = [0; 16];
+      let mut key_schedule = [0; 208];
+      AES192_ENCRYPT_DECRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes192_expand_key_x86_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes192_encrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        assert_eq!(t.1, block);
+        unsafe { aes192_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes192_decrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        assert_eq!(t.0, block);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut block = [0; 16];
+      let mut key_schedule = [0; 208];
+      AES192_ENCRYPT_DECRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes192_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes192_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        assert_eq!(t.1, block);
+        unsafe { aes192_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes192_decrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        assert_eq!(t.0, block);
+      });
+    }
   }
 
   #[test]
-  #[cfg_attr(
-    not(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes")),
-    ignore
-  )]
   fn test_aes256_encrypt_decrypt()
   {
-    let mut block = [0; 16];
-    let mut key_schedule = [0; 240];
-    AES256_ENCRYPT_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes256_expand_key_x86_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-      unsafe { aes256_encrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
-      assert_eq!(t.1, block);
-      unsafe { aes256_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
-      unsafe { aes256_decrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
-      assert_eq!(t.0, block);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes128_encrypt_decrypt_avx()
-  {
-    let mut block = [0; 16];
-    let mut key_schedule = [0; 176];
-    AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes128_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-      unsafe { aes128_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
-      assert_eq!(t.1, block);
-      unsafe { aes128_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
-      unsafe { aes128_decrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
-      assert_eq!(t.0, block);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes192_encrypt_decrypt_avx()
-  {
-    let mut block = [0; 16];
-    let mut key_schedule = [0; 208];
-    AES192_ENCRYPT_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes192_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-      unsafe { aes192_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
-      assert_eq!(t.1, block);
-      unsafe { aes192_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
-      unsafe { aes192_decrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
-      assert_eq!(t.0, block);
-    });
-  }
-
-  #[test]
-  #[cfg_attr(
-    not(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "avx",
-      target_feature = "aes"
-    )),
-    ignore
-  )]
-  fn test_aes256_encrypt_decrypt_avx()
-  {
-    let mut block = [0; 16];
-    let mut key_schedule = [0; 240];
-    AES256_ENCRYPT_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes256_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-      unsafe { aes256_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
-      assert_eq!(t.1, block);
-      unsafe { aes256_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
-      unsafe { aes256_decrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
-      assert_eq!(t.0, block);
-    });
+    if is_x86_feature_detected!("aes") {
+      let mut block = [0; 16];
+      let mut key_schedule = [0; 240];
+      AES256_ENCRYPT_DECRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes256_expand_key_x86_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes256_encrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        assert_eq!(t.1, block);
+        unsafe { aes256_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes256_decrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        assert_eq!(t.0, block);
+      });
+    }
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
+      let mut block = [0; 16];
+      let mut key_schedule = [0; 240];
+      AES256_ENCRYPT_DECRYPT.iter().for_each(|t| {
+        block = t.0;
+        unsafe { aes256_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes256_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        assert_eq!(t.1, block);
+        unsafe { aes256_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes256_decrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        assert_eq!(t.0, block);
+      });
+    }
   }
 }
