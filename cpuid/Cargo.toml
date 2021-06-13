@@ -1,0 +1,13 @@
+cargo-features = ["edition2021"]
+
+[package]
+name = "cpuid"
+version = "0.1.0"
+authors = ["B. Howe <37745048+byhowe@users.noreply.github.com>"]
+edition = "2021"
+description = "x86 dynamic hardware feature detection"
+repository = "https://github.com/byhowe/oxicrypt.git"
+license = "MIT"
+keywords = ["cpuid"]
+categories = ["configuration"]
+workspace = ".."

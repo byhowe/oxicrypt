@@ -3,6 +3,8 @@ members = [
   "oxicrypt-core",
   "oxicrypt-sys",
   "oxicrypt",
+
+  "cpuid",
 ]
 
 [profile.dev]
