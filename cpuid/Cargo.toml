@@ -11,3 +11,7 @@ license = "MIT"
 keywords = ["cpuid"]
 categories = ["configuration"]
 workspace = ".."
+
+[[bin]]
+name = "cpuid-tell"
+path = "cpuid-tell/main.rs"
