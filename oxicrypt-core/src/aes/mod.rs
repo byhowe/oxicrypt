@@ -27,7 +27,7 @@ mod aes_x86_aesni;
 
 cfg_if! {
   // (x86 || x86_64) && aesni
-  if #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))] {
+  if #[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))] {
     cfg_if! {
       if #[cfg(not(target_feature = "avx"))] {
         // Expand key.
