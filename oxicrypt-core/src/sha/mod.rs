@@ -2,10 +2,14 @@ mod sha1_compress_generic;
 mod sha256_compress_generic;
 mod sha512_compress_generic;
 
-pub use sha1_compress_generic::sha1_compress_generic;
-pub use sha256_compress_generic::sha256_compress_generic;
-pub use sha512_compress_generic::sha512_compress_generic;
+pub mod generic
+{
+  pub use super::sha1_compress_generic::sha1_compress_generic;
+  pub use super::sha256_compress_generic::sha256_compress_generic;
+  pub use super::sha512_compress_generic::sha512_compress_generic;
+}
 
+/// Initial state of the SHA-1 algorithm.
 #[rustfmt::skip]
 pub const H1: [u32; 5] = [
   0x67452301,
@@ -15,6 +19,7 @@ pub const H1: [u32; 5] = [
   0xc3d2e1f0,
 ];
 
+/// Initial state of the SHA-224 algorithm.
 #[rustfmt::skip]
 pub const H224: [u32; 8] = [
   0xc1059ed8,
@@ -27,6 +32,7 @@ pub const H224: [u32; 8] = [
   0xbefa4fa4,
 ];
 
+/// Initial state of the SHA-256 algorithm.
 #[rustfmt::skip]
 pub const H256: [u32; 8] = [
   0x6a09e667,
@@ -39,6 +45,7 @@ pub const H256: [u32; 8] = [
   0x5be0cd19,
 ];
 
+/// Initial state of the SHA-384 algorithm.
 #[rustfmt::skip]
 pub const H384: [u64; 8] = [
   0xcbbb9d5dc1059ed8,
@@ -51,6 +58,7 @@ pub const H384: [u64; 8] = [
   0x47b5481dbefa4fa4,
 ];
 
+/// Initial state of the SHA-512 algorithm.
 #[rustfmt::skip]
 pub const H512: [u64; 8] = [
   0x6a09e667f3bcc908,
@@ -63,6 +71,7 @@ pub const H512: [u64; 8] = [
   0x5be0cd19137e2179,
 ];
 
+/// Initial state of the SHA-512/224 algorithm.
 #[rustfmt::skip]
 pub const H512_224: [u64; 8] = [
   0x8c3d37c819544da2,
@@ -75,6 +84,7 @@ pub const H512_224: [u64; 8] = [
   0x1112e6ad91d692a1,
 ];
 
+/// Initial state of the SHA-512/256 algorithm.
 #[rustfmt::skip]
 pub const H512_256: [u64; 8] = [
   0x22312194fc2bf72c,
