@@ -207,7 +207,7 @@ unsafe fn aes_decrypt<const N: usize>(block: *mut u8, key_schedule: *const u8)
 #[target_feature(enable = "aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes128_expand_key_x86_aesni(key: *const u8, key_schedule: *mut u8)
+pub unsafe fn aes128_expand_key_aesni(key: *const u8, key_schedule: *mut u8)
 {
   aes128_expand_key(key, key_schedule);
 }
@@ -215,7 +215,7 @@ pub unsafe fn aes128_expand_key_x86_aesni(key: *const u8, key_schedule: *mut u8)
 #[target_feature(enable = "aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes192_expand_key_x86_aesni(key: *const u8, key_schedule: *mut u8)
+pub unsafe fn aes192_expand_key_aesni(key: *const u8, key_schedule: *mut u8)
 {
   aes192_expand_key(key, key_schedule);
 }
@@ -223,7 +223,7 @@ pub unsafe fn aes192_expand_key_x86_aesni(key: *const u8, key_schedule: *mut u8)
 #[target_feature(enable = "aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes256_expand_key_x86_aesni(key: *const u8, key_schedule: *mut u8)
+pub unsafe fn aes256_expand_key_aesni(key: *const u8, key_schedule: *mut u8)
 {
   aes256_expand_key(key, key_schedule);
 }
@@ -233,7 +233,7 @@ pub unsafe fn aes256_expand_key_x86_aesni(key: *const u8, key_schedule: *mut u8)
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes128_expand_key_x86_avx_aesni(key: *const u8, key_schedule: *mut u8)
+pub unsafe fn aes128_expand_key_avx_aesni(key: *const u8, key_schedule: *mut u8)
 {
   aes128_expand_key(key, key_schedule);
 }
@@ -241,7 +241,7 @@ pub unsafe fn aes128_expand_key_x86_avx_aesni(key: *const u8, key_schedule: *mut
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes192_expand_key_x86_avx_aesni(key: *const u8, key_schedule: *mut u8)
+pub unsafe fn aes192_expand_key_avx_aesni(key: *const u8, key_schedule: *mut u8)
 {
   aes192_expand_key(key, key_schedule);
 }
@@ -249,7 +249,7 @@ pub unsafe fn aes192_expand_key_x86_avx_aesni(key: *const u8, key_schedule: *mut
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes256_expand_key_x86_avx_aesni(key: *const u8, key_schedule: *mut u8)
+pub unsafe fn aes256_expand_key_avx_aesni(key: *const u8, key_schedule: *mut u8)
 {
   aes256_expand_key(key, key_schedule);
 }
@@ -259,7 +259,7 @@ pub unsafe fn aes256_expand_key_x86_avx_aesni(key: *const u8, key_schedule: *mut
 #[target_feature(enable = "aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes128_inverse_key_x86_aesni(key_schedule: *mut u8)
+pub unsafe fn aes128_inverse_key_aesni(key_schedule: *mut u8)
 {
   aes_inverse_key::<10>(key_schedule);
 }
@@ -267,7 +267,7 @@ pub unsafe fn aes128_inverse_key_x86_aesni(key_schedule: *mut u8)
 #[target_feature(enable = "aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes192_inverse_key_x86_aesni(key_schedule: *mut u8)
+pub unsafe fn aes192_inverse_key_aesni(key_schedule: *mut u8)
 {
   aes_inverse_key::<12>(key_schedule);
 }
@@ -275,7 +275,7 @@ pub unsafe fn aes192_inverse_key_x86_aesni(key_schedule: *mut u8)
 #[target_feature(enable = "aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes256_inverse_key_x86_aesni(key_schedule: *mut u8)
+pub unsafe fn aes256_inverse_key_aesni(key_schedule: *mut u8)
 {
   aes_inverse_key::<14>(key_schedule);
 }
@@ -285,7 +285,7 @@ pub unsafe fn aes256_inverse_key_x86_aesni(key_schedule: *mut u8)
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes128_inverse_key_x86_avx_aesni(key_schedule: *mut u8)
+pub unsafe fn aes128_inverse_key_avx_aesni(key_schedule: *mut u8)
 {
   aes_inverse_key::<10>(key_schedule);
 }
@@ -293,7 +293,7 @@ pub unsafe fn aes128_inverse_key_x86_avx_aesni(key_schedule: *mut u8)
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes192_inverse_key_x86_avx_aesni(key_schedule: *mut u8)
+pub unsafe fn aes192_inverse_key_avx_aesni(key_schedule: *mut u8)
 {
   aes_inverse_key::<12>(key_schedule);
 }
@@ -301,7 +301,7 @@ pub unsafe fn aes192_inverse_key_x86_avx_aesni(key_schedule: *mut u8)
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes256_inverse_key_x86_avx_aesni(key_schedule: *mut u8)
+pub unsafe fn aes256_inverse_key_avx_aesni(key_schedule: *mut u8)
 {
   aes_inverse_key::<14>(key_schedule);
 }
@@ -311,7 +311,7 @@ pub unsafe fn aes256_inverse_key_x86_avx_aesni(key_schedule: *mut u8)
 #[target_feature(enable = "aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes128_encrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_encrypt_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_encrypt::<10>(block, key_schedule);
 }
@@ -319,7 +319,7 @@ pub unsafe fn aes128_encrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 #[target_feature(enable = "aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes192_encrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_encrypt_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_encrypt::<12>(block, key_schedule);
 }
@@ -327,7 +327,7 @@ pub unsafe fn aes192_encrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 #[target_feature(enable = "aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes256_encrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_encrypt_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_encrypt::<14>(block, key_schedule);
 }
@@ -337,7 +337,7 @@ pub unsafe fn aes256_encrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes128_encrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_encrypt_avx_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_encrypt::<10>(block, key_schedule);
 }
@@ -345,7 +345,7 @@ pub unsafe fn aes128_encrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes192_encrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_encrypt_avx_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_encrypt::<12>(block, key_schedule);
 }
@@ -353,7 +353,7 @@ pub unsafe fn aes192_encrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes256_encrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_encrypt_avx_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_encrypt::<14>(block, key_schedule);
 }
@@ -363,7 +363,7 @@ pub unsafe fn aes256_encrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const 
 #[target_feature(enable = "aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes128_decrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_decrypt_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_decrypt::<10>(block, key_schedule);
 }
@@ -371,7 +371,7 @@ pub unsafe fn aes128_decrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 #[target_feature(enable = "aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes192_decrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_decrypt_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_decrypt::<12>(block, key_schedule);
 }
@@ -379,7 +379,7 @@ pub unsafe fn aes192_decrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 #[target_feature(enable = "aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes256_decrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_decrypt_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_decrypt::<14>(block, key_schedule);
 }
@@ -389,7 +389,7 @@ pub unsafe fn aes256_decrypt_x86_aesni(block: *mut u8, key_schedule: *const u8)
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes128_decrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_decrypt_avx_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_decrypt::<10>(block, key_schedule);
 }
@@ -397,7 +397,7 @@ pub unsafe fn aes128_decrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes192_decrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_decrypt_avx_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_decrypt::<12>(block, key_schedule);
 }
@@ -405,7 +405,7 @@ pub unsafe fn aes192_decrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const 
 #[target_feature(enable = "avx,aes")]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 #[inline]
-pub unsafe fn aes256_decrypt_x86_avx_aesni(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_decrypt_avx_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes_decrypt::<14>(block, key_schedule);
 }
@@ -422,14 +422,14 @@ mod tests
     if is_x86_feature_detected!("aes") {
       let mut key_schedule = [0; 176];
       AES128_EXPAND_KEY.iter().for_each(|t| {
-        unsafe { aes128_expand_key_x86_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes128_expand_key_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
     if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
       let mut key_schedule = [0; 176];
       AES128_EXPAND_KEY.iter().for_each(|t| {
-        unsafe { aes128_expand_key_x86_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes128_expand_key_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
@@ -441,14 +441,14 @@ mod tests
     if is_x86_feature_detected!("aes") {
       let mut key_schedule = [0; 208];
       AES192_EXPAND_KEY.iter().for_each(|t| {
-        unsafe { aes192_expand_key_x86_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes192_expand_key_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
     if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
       let mut key_schedule = [0; 208];
       AES192_EXPAND_KEY.iter().for_each(|t| {
-        unsafe { aes192_expand_key_x86_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes192_expand_key_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
@@ -460,14 +460,14 @@ mod tests
     if is_x86_feature_detected!("aes") {
       let mut key_schedule = [0; 240];
       AES256_EXPAND_KEY.iter().for_each(|t| {
-        unsafe { aes256_expand_key_x86_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes256_expand_key_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
     if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
       let mut key_schedule = [0; 240];
       AES256_EXPAND_KEY.iter().for_each(|t| {
-        unsafe { aes256_expand_key_x86_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes256_expand_key_avx_aesni(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
@@ -480,7 +480,7 @@ mod tests
       let mut key_schedule = [0; 176];
       AES128_INVERSE_KEY.iter().for_each(|t| {
         key_schedule = t.0;
-        unsafe { aes128_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes128_inverse_key_aesni(key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
@@ -488,7 +488,7 @@ mod tests
       let mut key_schedule = [0; 176];
       AES128_INVERSE_KEY.iter().for_each(|t| {
         key_schedule = t.0;
-        unsafe { aes128_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes128_inverse_key_avx_aesni(key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
@@ -501,7 +501,7 @@ mod tests
       let mut key_schedule = [0; 208];
       AES192_INVERSE_KEY.iter().for_each(|t| {
         key_schedule = t.0;
-        unsafe { aes192_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes192_inverse_key_aesni(key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
@@ -509,7 +509,7 @@ mod tests
       let mut key_schedule = [0; 208];
       AES192_INVERSE_KEY.iter().for_each(|t| {
         key_schedule = t.0;
-        unsafe { aes192_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes192_inverse_key_avx_aesni(key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
@@ -522,7 +522,7 @@ mod tests
       let mut key_schedule = [0; 240];
       AES256_INVERSE_KEY.iter().for_each(|t| {
         key_schedule = t.0;
-        unsafe { aes256_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes256_inverse_key_aesni(key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
@@ -530,7 +530,7 @@ mod tests
       let mut key_schedule = [0; 240];
       AES256_INVERSE_KEY.iter().for_each(|t| {
         key_schedule = t.0;
-        unsafe { aes256_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes256_inverse_key_avx_aesni(key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
@@ -543,7 +543,7 @@ mod tests
       let mut block = [0; 16];
       AES128_ENCRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes128_encrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes128_encrypt_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -551,7 +551,7 @@ mod tests
       let mut block = [0; 16];
       AES128_ENCRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes128_encrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes128_encrypt_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -564,7 +564,7 @@ mod tests
       let mut block = [0; 16];
       AES192_ENCRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes192_encrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes192_encrypt_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -572,7 +572,7 @@ mod tests
       let mut block = [0; 16];
       AES192_ENCRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes192_encrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes192_encrypt_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -585,7 +585,7 @@ mod tests
       let mut block = [0; 16];
       AES256_ENCRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes256_encrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes256_encrypt_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -593,7 +593,7 @@ mod tests
       let mut block = [0; 16];
       AES256_ENCRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes256_encrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes256_encrypt_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -606,7 +606,7 @@ mod tests
       let mut block = [0; 16];
       AES128_DECRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes128_decrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes128_decrypt_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -614,7 +614,7 @@ mod tests
       let mut block = [0; 16];
       AES128_DECRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes128_decrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes128_decrypt_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -627,7 +627,7 @@ mod tests
       let mut block = [0; 16];
       AES192_DECRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes192_decrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes192_decrypt_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -635,7 +635,7 @@ mod tests
       let mut block = [0; 16];
       AES192_DECRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes192_decrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes192_decrypt_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -648,7 +648,7 @@ mod tests
       let mut block = [0; 16];
       AES256_DECRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes256_decrypt_x86_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes256_decrypt_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -656,7 +656,7 @@ mod tests
       let mut block = [0; 16];
       AES256_DECRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes256_decrypt_x86_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes256_decrypt_avx_aesni(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -670,11 +670,11 @@ mod tests
       let mut key_schedule = [0; 176];
       AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes128_expand_key_x86_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-        unsafe { aes128_encrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes128_expand_key_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes128_encrypt_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.1, block);
-        unsafe { aes128_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
-        unsafe { aes128_decrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes128_inverse_key_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes128_decrypt_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.0, block);
       });
     }
@@ -683,11 +683,11 @@ mod tests
       let mut key_schedule = [0; 176];
       AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes128_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-        unsafe { aes128_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes128_expand_key_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes128_encrypt_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.1, block);
-        unsafe { aes128_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
-        unsafe { aes128_decrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes128_inverse_key_avx_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes128_decrypt_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.0, block);
       });
     }
@@ -701,11 +701,11 @@ mod tests
       let mut key_schedule = [0; 208];
       AES192_ENCRYPT_DECRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes192_expand_key_x86_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-        unsafe { aes192_encrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes192_expand_key_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes192_encrypt_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.1, block);
-        unsafe { aes192_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
-        unsafe { aes192_decrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes192_inverse_key_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes192_decrypt_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.0, block);
       });
     }
@@ -714,11 +714,11 @@ mod tests
       let mut key_schedule = [0; 208];
       AES192_ENCRYPT_DECRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes192_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-        unsafe { aes192_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes192_expand_key_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes192_encrypt_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.1, block);
-        unsafe { aes192_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
-        unsafe { aes192_decrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes192_inverse_key_avx_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes192_decrypt_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.0, block);
       });
     }
@@ -732,11 +732,11 @@ mod tests
       let mut key_schedule = [0; 240];
       AES256_ENCRYPT_DECRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes256_expand_key_x86_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-        unsafe { aes256_encrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes256_expand_key_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes256_encrypt_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.1, block);
-        unsafe { aes256_inverse_key_x86_aesni(key_schedule.as_mut_ptr()) };
-        unsafe { aes256_decrypt_x86_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes256_inverse_key_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes256_decrypt_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.0, block);
       });
     }
@@ -745,11 +745,11 @@ mod tests
       let mut key_schedule = [0; 240];
       AES256_ENCRYPT_DECRYPT.iter().for_each(|t| {
         block = t.0;
-        unsafe { aes256_expand_key_x86_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-        unsafe { aes256_encrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes256_expand_key_avx_aesni(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes256_encrypt_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.1, block);
-        unsafe { aes256_inverse_key_x86_avx_aesni(key_schedule.as_mut_ptr()) };
-        unsafe { aes256_decrypt_x86_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes256_inverse_key_avx_aesni(key_schedule.as_mut_ptr()) };
+        unsafe { aes256_decrypt_avx_aesni(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.0, block);
       });
     }

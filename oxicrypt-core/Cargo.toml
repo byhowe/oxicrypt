@@ -17,6 +17,3 @@ default = ["aesni"]
 
 # Enable AES-NI. Does not do anything on architectures that do not support it.
 aesni = []
-
-[dependencies]
-cfg-if = "1"
