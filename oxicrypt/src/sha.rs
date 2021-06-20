@@ -3,6 +3,7 @@
 use std::cmp;
 use std::mem;
 use std::mem::MaybeUninit;
+use std::io::Write;
 
 use oxicrypt_core::sha::generic::sha1_compress_generic;
 use oxicrypt_core::sha::generic::sha256_compress_generic;
@@ -26,12 +27,21 @@ macro_rules! impl_sha {
     fn compress = $compressfn:ident;
   ) => {
     #[doc = concat!($algo_str, " algorithm.")]
+    #[derive(Clone, Copy)]
     pub struct $algo
     {
       h: [$uint; $statelen],
       block: [u8; $blocklen],
       len: u64,
       blocklen: usize,
+    }
+
+    impl Default for $algo
+    {
+      fn default() -> Self
+      {
+        Self::new()
+      }
     }
 
     impl $algo
@@ -256,6 +266,26 @@ macro_rules! impl_sha {
         let mut ctx = Self::new();
         ctx.update(data);
         ctx.finish_into(output);
+      }
+    }
+
+    impl Write for $algo
+    {
+      fn write(&mut self, buf: &[u8]) -> std::io::Result<usize>
+      {
+        self.update(buf);
+        Ok(buf.len())
+      }
+
+      fn flush(&mut self) -> std::io::Result<()>
+      {
+        Ok(())
+      }
+
+      fn write_all(&mut self, buf: &[u8]) -> std::io::Result<()>
+      {
+        self.update(buf);
+        Ok(())
       }
     }
   };
