@@ -1,9 +1,11 @@
 //! SHA family of hash functions.
 
-use std::cmp;
-use std::mem;
-use std::mem::MaybeUninit;
+use core::cmp;
+use core::mem;
+#[cfg(any(feature = "std", doc))]
 use std::io::Write;
+#[cfg(any(feature = "alloc", doc))]
+use alloc::boxed::Box;
 
 use oxicrypt_core::sha::generic::sha1_compress_generic;
 use oxicrypt_core::sha::generic::sha256_compress_generic;
@@ -76,8 +78,11 @@ macro_rules! impl_sha {
       #[doc = concat!("use oxicrypt::sha::", stringify!($algo), ";")]
       #[doc = concat!("let mut ctx = ", stringify!($algo), "::new_boxed();")]
       /// ```
+      #[cfg(any(feature = "alloc", doc))]
+      #[doc(cfg(any(feature = "std", feature = "alloc")))]
       pub fn new_boxed() -> Box<Self>
       {
+        use core::mem::MaybeUninit;
         let mut ctx: Box<MaybeUninit<Self>> = Box::new_uninit();
         unsafe { ctx.assume_init_mut() }.reset();
         unsafe { ctx.assume_init() }
@@ -167,6 +172,8 @@ macro_rules! impl_sha {
       /// ctx.update(b"Hello World");
       /// let digest = ctx.finish_boxed();
       /// ```
+      #[cfg(any(feature = "alloc", doc))]
+      #[doc(cfg(any(feature = "std", feature = "alloc")))]
       pub fn finish_boxed(&mut self) -> Box<[u8]>
       {
         let mut output = unsafe { Box::new_uninit_slice($digestlen).assume_init() };
@@ -242,6 +249,8 @@ macro_rules! impl_sha {
       #[doc = concat!("use oxicrypt::sha::", stringify!($algo), ";")]
       #[doc = concat!("let digest = ", stringify!($algo), "::oneshot_boxed(b\"Hello World\");")]
       /// ```
+      #[cfg(any(feature = "alloc", doc))]
+      #[doc(cfg(any(feature = "std", feature = "alloc")))]
       pub fn oneshot_boxed(data: &[u8]) -> Box<[u8]>
       {
         let mut ctx = Self::new();
@@ -269,6 +278,8 @@ macro_rules! impl_sha {
       }
     }
 
+    #[cfg(any(feature = "std", doc))]
+    #[doc(cfg(feature = "std"))]
     impl Write for $algo
     {
       fn write(&mut self, buf: &[u8]) -> std::io::Result<usize>

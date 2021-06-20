@@ -18,3 +18,7 @@ path = "../oxicrypt-core"
 
 [dev-dependencies]
 hex = "0.4"
+
+[features]
+std = ["alloc"]
+alloc = []
