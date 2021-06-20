@@ -1,9 +1,9 @@
 use core::cmp;
 use core::mem;
 
-use oxicrypt_core::sha::sha1_compress_generic;
-use oxicrypt_core::sha::sha256_compress_generic;
-use oxicrypt_core::sha::sha512_compress_generic;
+use oxicrypt_core::sha::generic::sha1_compress_generic;
+use oxicrypt_core::sha::generic::sha256_compress_generic;
+use oxicrypt_core::sha::generic::sha512_compress_generic;
 use oxicrypt_core::sha::H1;
 use oxicrypt_core::sha::H224;
 use oxicrypt_core::sha::H256;
