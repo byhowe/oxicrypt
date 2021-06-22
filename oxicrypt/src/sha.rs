@@ -48,6 +48,17 @@ macro_rules! impl_sha {
 
     impl $algo
     {
+      /// Digest length. It is equal to
+      #[doc = concat!("`", stringify!($digestlen), "`")]
+      /// for
+      #[doc = concat!($algo_str, ".")]
+      pub const DIGEST_LEN: usize = $digestlen;
+      /// Block length. It is equal to
+      #[doc = concat!("`", stringify!($blocklen), "`")]
+      /// for
+      #[doc = concat!($algo_str, ".")]
+      pub const BLOCK_LEN: usize = $blocklen;
+
       /// Creates a new instance of
       #[doc = $algo_str]
       /// on the stack.
