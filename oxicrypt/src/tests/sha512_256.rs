@@ -23,6 +23,7 @@ fn regular()
 }
 
 #[test]
+#[cfg(feature = "alloc")]
 fn regular_boxed()
 {
   let mut ctx = Sha512_256::new_boxed();
@@ -64,8 +65,11 @@ fn chunks()
 }
 
 #[test]
+#[cfg(feature = "alloc")]
 fn irregular_len()
 {
+  use alloc::vec;
+  use core::cmp;
   let mut ctx = Sha512_256::new();
   for i in 0 .. 34 {
     let mut digest = vec![0; i];
@@ -75,8 +79,8 @@ fn irregular_len()
     ctx.update(&msgb);
     ctx.finish_into(&mut digest);
     assert_eq!(
-      mdb[.. std::cmp::min(32, i)],
-      digest[.. std::cmp::min(32, i)],
+      mdb[.. cmp::min(32, i)],
+      digest[.. cmp::min(32, i)],
       "\nlen: {},\nexpected: {},\ngot:      {}",
       len,
       md,
