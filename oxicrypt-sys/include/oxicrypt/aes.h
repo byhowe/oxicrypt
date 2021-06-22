@@ -10,14 +10,17 @@ extern "C" {
 /* Type definitions. */
 
 typedef struct oxi_aes128_ctx_t {
+  const void* aes;
   uint8_t round_keys[176];
 } oxi_aes128_ctx_t;
 
 typedef struct oxi_aes192_ctx_t {
+  const void* aes;
   uint8_t round_keys[208];
 } oxi_aes192_ctx_t;
 
 typedef struct oxi_aes256_ctx_t {
+  const void* aes;
   uint8_t round_keys[240];
 } oxi_aes256_ctx_t;
 
@@ -32,6 +35,12 @@ typedef struct oxi_aes256_ctx_t {
 #define OXI_AES128_KEY_SCHEDULE_LEN 176
 #define OXI_AES192_KEY_SCHEDULE_LEN 208
 #define OXI_AES256_KEY_SCHEDULE_LEN 240
+
+/* Init functions. */
+
+void oxi_aes128_init(oxi_aes128_ctx_t* ctx);
+void oxi_aes192_init(oxi_aes192_ctx_t* ctx);
+void oxi_aes256_init(oxi_aes256_ctx_t* ctx);
 
 /* Set key functions. */
 

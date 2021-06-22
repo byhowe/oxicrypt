@@ -12,11 +12,6 @@ keywords = ["crypto"]
 categories = ["cryptography", "no-std"]
 workspace = ".."
 
-[dependencies.spin]
-version = "0.9"
-default-features = false
-features = ["lazy"]
-
 [target.'cfg(any(target_arch = "x86", target_arch = "x86_64"))'.dependencies.std_detect]
 version = "0.1"
 git = "https://github.com/rust-lang/stdarch.git"

@@ -1,24 +1,139 @@
 #![allow(non_upper_case_globals)]
 #![allow(clippy::missing_safety_doc)]
 
-use spin::Lazy;
 use std_detect::is_x86_feature_detected;
 
-pub static AES128: Lazy<Aes> = Lazy::new(|| {
-  Aes::aes128_avx_aesni()
-    .or_else(Aes::aes128_aesni)
-    .unwrap_or_else(Aes::aes128_lut)
-});
-pub static AES192: Lazy<Aes> = Lazy::new(|| {
-  Aes::aes192_avx_aesni()
-    .or_else(Aes::aes192_aesni)
-    .unwrap_or_else(Aes::aes192_lut)
-});
-pub static AES256: Lazy<Aes> = Lazy::new(|| {
-  Aes::aes256_avx_aesni()
-    .or_else(Aes::aes256_aesni)
-    .unwrap_or_else(Aes::aes256_lut)
-});
+pub static AES128_LUT: Aes = Aes {
+  expand_key_p: generic::aes128_expand_key_lut,
+  inverse_key_p: generic::aes128_inverse_key_lut,
+  encrypt_p: generic::aes128_encrypt_lut,
+  decrypt_p: generic::aes128_decrypt_lut,
+};
+
+pub static AES192_LUT: Aes = Aes {
+  expand_key_p: generic::aes192_expand_key_lut,
+  inverse_key_p: generic::aes192_inverse_key_lut,
+  encrypt_p: generic::aes192_encrypt_lut,
+  decrypt_p: generic::aes192_decrypt_lut,
+};
+
+pub static AES256_LUT: Aes = Aes {
+  expand_key_p: generic::aes256_expand_key_lut,
+  inverse_key_p: generic::aes256_inverse_key_lut,
+  encrypt_p: generic::aes256_encrypt_lut,
+  decrypt_p: generic::aes256_decrypt_lut,
+};
+
+#[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
+#[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+pub static AES128_AESNI: Aes = Aes {
+  expand_key_p: x86::aes128_expand_key_aesni,
+  inverse_key_p: x86::aes128_inverse_key_aesni,
+  encrypt_p: x86::aes128_encrypt_aesni,
+  decrypt_p: x86::aes128_decrypt_aesni,
+};
+
+#[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
+#[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+pub static AES192_AESNI: Aes = Aes {
+  expand_key_p: x86::aes192_expand_key_aesni,
+  inverse_key_p: x86::aes192_inverse_key_aesni,
+  encrypt_p: x86::aes192_encrypt_aesni,
+  decrypt_p: x86::aes192_decrypt_aesni,
+};
+
+#[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
+#[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+pub static AES256_AESNI: Aes = Aes {
+  expand_key_p: x86::aes256_expand_key_aesni,
+  inverse_key_p: x86::aes256_inverse_key_aesni,
+  encrypt_p: x86::aes256_encrypt_aesni,
+  decrypt_p: x86::aes256_decrypt_aesni,
+};
+
+#[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
+#[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+pub static AES128_AVX_AESNI: Aes = Aes {
+  expand_key_p: x86::aes128_expand_key_avx_aesni,
+  inverse_key_p: x86::aes128_inverse_key_avx_aesni,
+  encrypt_p: x86::aes128_encrypt_avx_aesni,
+  decrypt_p: x86::aes128_decrypt_avx_aesni,
+};
+
+#[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
+#[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+pub static AES192_AVX_AESNI: Aes = Aes {
+  expand_key_p: x86::aes192_expand_key_avx_aesni,
+  inverse_key_p: x86::aes192_inverse_key_avx_aesni,
+  encrypt_p: x86::aes192_encrypt_avx_aesni,
+  decrypt_p: x86::aes192_decrypt_avx_aesni,
+};
+
+#[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
+#[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+pub static AES256_AVX_AESNI: Aes = Aes {
+  expand_key_p: x86::aes256_expand_key_avx_aesni,
+  inverse_key_p: x86::aes256_inverse_key_avx_aesni,
+  encrypt_p: x86::aes256_encrypt_avx_aesni,
+  decrypt_p: x86::aes256_decrypt_avx_aesni,
+};
+
+pub enum Variant
+{
+  Aes128,
+  Aes192,
+  Aes256,
+}
+
+pub struct Control;
+
+impl Control
+{
+  #[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
+  #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+  pub fn is_aesni() -> bool
+  {
+    is_x86_feature_detected!("aes")
+  }
+
+  #[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
+  #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+  pub fn is_avx_aesni() -> bool
+  {
+    is_x86_feature_detected!("avx") && is_x86_feature_detected!("aes")
+  }
+
+  pub fn best_impl(variant: Variant) -> &'static Aes
+  {
+    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
+    if Self::is_avx_aesni() {
+      match variant {
+        | Variant::Aes128 => &AES128_AVX_AESNI,
+        | Variant::Aes192 => &AES192_AVX_AESNI,
+        | Variant::Aes256 => &AES256_AVX_AESNI,
+      }
+    } else if Self::is_aesni() {
+      match variant {
+        | Variant::Aes128 => &AES128_AESNI,
+        | Variant::Aes192 => &AES192_AESNI,
+        | Variant::Aes256 => &AES256_AESNI,
+      }
+    } else {
+      match variant {
+        | Variant::Aes128 => &AES128_LUT,
+        | Variant::Aes192 => &AES192_LUT,
+        | Variant::Aes256 => &AES256_LUT,
+      }
+    }
+
+    #[cfg(not(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+    match variant {
+      | Variant::Aes128 => &AES128_LUT,
+      | Variant::Aes192 => &AES192_LUT,
+      | Variant::Aes256 => &AES256_LUT,
+    }
+  }
+}
 
 pub struct Aes
 {
@@ -30,144 +145,6 @@ pub struct Aes
 
 impl Aes
 {
-  pub fn aes128_lut() -> Self
-  {
-    Self {
-      expand_key_p: generic::aes128_expand_key_lut,
-      inverse_key_p: generic::aes128_inverse_key_lut,
-      encrypt_p: generic::aes128_encrypt_lut,
-      decrypt_p: generic::aes128_decrypt_lut,
-    }
-  }
-
-  pub fn aes192_lut() -> Self
-  {
-    Self {
-      expand_key_p: generic::aes192_expand_key_lut,
-      inverse_key_p: generic::aes192_inverse_key_lut,
-      encrypt_p: generic::aes192_encrypt_lut,
-      decrypt_p: generic::aes192_decrypt_lut,
-    }
-  }
-
-  pub fn aes256_lut() -> Self
-  {
-    Self {
-      expand_key_p: generic::aes256_expand_key_lut,
-      inverse_key_p: generic::aes256_inverse_key_lut,
-      encrypt_p: generic::aes256_encrypt_lut,
-      decrypt_p: generic::aes256_decrypt_lut,
-    }
-  }
-
-  pub fn aes128_aesni() -> Option<Self>
-  {
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
-    if is_x86_feature_detected!("aes") {
-      Some(Self {
-        expand_key_p: x86::aes128_expand_key_aesni,
-        inverse_key_p: x86::aes128_inverse_key_aesni,
-        encrypt_p: x86::aes128_encrypt_aesni,
-        decrypt_p: x86::aes128_decrypt_aesni,
-      })
-    } else {
-      None
-    }
-
-    #[cfg(not(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-    None
-  }
-
-  pub fn aes192_aesni() -> Option<Self>
-  {
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
-    if is_x86_feature_detected!("aes") {
-      Some(Self {
-        expand_key_p: x86::aes192_expand_key_aesni,
-        inverse_key_p: x86::aes192_inverse_key_aesni,
-        encrypt_p: x86::aes192_encrypt_aesni,
-        decrypt_p: x86::aes192_decrypt_aesni,
-      })
-    } else {
-      None
-    }
-
-    #[cfg(not(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-    None
-  }
-
-  pub fn aes256_aesni() -> Option<Self>
-  {
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
-    if is_x86_feature_detected!("aes") {
-      Some(Self {
-        expand_key_p: x86::aes256_expand_key_aesni,
-        inverse_key_p: x86::aes256_inverse_key_aesni,
-        encrypt_p: x86::aes256_encrypt_aesni,
-        decrypt_p: x86::aes256_decrypt_aesni,
-      })
-    } else {
-      None
-    }
-
-    #[cfg(not(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-    None
-  }
-
-  pub fn aes128_avx_aesni() -> Option<Self>
-  {
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
-    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
-      Some(Self {
-        expand_key_p: x86::aes128_expand_key_avx_aesni,
-        inverse_key_p: x86::aes128_inverse_key_avx_aesni,
-        encrypt_p: x86::aes128_encrypt_avx_aesni,
-        decrypt_p: x86::aes128_decrypt_avx_aesni,
-      })
-    } else {
-      None
-    }
-
-    #[cfg(not(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-    None
-  }
-
-  pub fn aes192_avx_aesni() -> Option<Self>
-  {
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
-    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
-      Some(Self {
-        expand_key_p: x86::aes192_expand_key_avx_aesni,
-        inverse_key_p: x86::aes192_inverse_key_avx_aesni,
-        encrypt_p: x86::aes192_encrypt_avx_aesni,
-        decrypt_p: x86::aes192_decrypt_avx_aesni,
-      })
-    } else {
-      None
-    }
-
-    #[cfg(not(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-    None
-  }
-
-  pub fn aes256_avx_aesni() -> Option<Self>
-  {
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
-    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
-      Some(Self {
-        expand_key_p: x86::aes256_expand_key_avx_aesni,
-        inverse_key_p: x86::aes256_inverse_key_avx_aesni,
-        encrypt_p: x86::aes256_encrypt_avx_aesni,
-        decrypt_p: x86::aes256_decrypt_avx_aesni,
-      })
-    } else {
-      None
-    }
-
-    #[cfg(not(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-    None
-  }
-
   #[inline]
   pub unsafe fn expand_key(&self, key: *const u8, key_schedule: *mut u8)
   {

@@ -5,9 +5,9 @@ use core::mem::MaybeUninit;
 #[cfg(any(feature = "alloc", doc))]
 use alloc::boxed::Box;
 
-use oxicrypt_core::aes::AES128;
-use oxicrypt_core::aes::AES192;
-use oxicrypt_core::aes::AES256;
+use oxicrypt_core::aes::Control;
+use oxicrypt_core::aes::Aes;
+use oxicrypt_core::aes::Variant;
 
 macro_rules! impl_aes {
   (
@@ -15,12 +15,12 @@ macro_rules! impl_aes {
     struct $algo:ident;
     const KEY_LEN: usize = $keylen:expr;
     const KEY_SCHEDULE_LEN: usize = $keyschedlen:expr;
-    static AES = $aes:ident;
   ) => {
     #[doc = concat!($algo_str, " algorithm.")]
     #[derive(Clone, Copy)]
     pub struct $algo
     {
+      aes: &'static Aes,
       key_schedule: [u8; Self::KEY_SCHEDULE_LEN],
     }
 
@@ -72,9 +72,10 @@ macro_rules! impl_aes {
           });
         }
         let mut ctx = Self {
+          aes: Control::best_impl(Variant::$algo),
           key_schedule: [0; $keyschedlen],
         };
-        unsafe { $aes.expand_key(key.as_ptr(), ctx.key_schedule.as_mut_ptr()) };
+        unsafe { ctx.aes.expand_key(key.as_ptr(), ctx.key_schedule.as_mut_ptr()) };
         Ok(ctx)
       }
 
@@ -92,9 +93,10 @@ macro_rules! impl_aes {
       pub unsafe fn new_unchecked(key: &[u8]) -> Self
       {
         let mut ctx = Self {
+          aes: Control::best_impl(Variant::$algo),
           key_schedule: [0; $keyschedlen],
         };
-        $aes.expand_key(key.as_ptr(), ctx.key_schedule.as_mut_ptr());
+        ctx.aes.expand_key(key.as_ptr(), ctx.key_schedule.as_mut_ptr());
         ctx
       }
 
@@ -133,7 +135,13 @@ macro_rules! impl_aes {
           });
         }
         let mut ctx: Box<MaybeUninit<Self>> = Box::new_uninit();
-        unsafe { $aes.expand_key(key.as_ptr(), ctx.assume_init_mut().key_schedule.as_mut_ptr()) };
+        unsafe { ctx.assume_init_mut() }.aes = Control::best_impl(Variant::$algo);
+        unsafe {
+          ctx
+            .assume_init_ref()
+            .aes
+            .expand_key(key.as_ptr(), ctx.assume_init_mut().key_schedule.as_mut_ptr())
+        };
         Ok(unsafe { ctx.assume_init() })
       }
 
@@ -153,7 +161,11 @@ macro_rules! impl_aes {
       pub unsafe fn new_boxed_unchecked(key: &[u8]) -> Box<Self>
       {
         let mut ctx: Box<MaybeUninit<Self>> = Box::new_uninit();
-        $aes.expand_key(key.as_ptr(), ctx.assume_init_mut().key_schedule.as_mut_ptr());
+        ctx.assume_init_mut().aes = Control::best_impl(Variant::$algo);
+        ctx
+          .assume_init_ref()
+          .aes
+          .expand_key(key.as_ptr(), ctx.assume_init_mut().key_schedule.as_mut_ptr());
         ctx.assume_init()
       }
 
@@ -183,7 +195,7 @@ macro_rules! impl_aes {
             got: key.len(),
           });
         }
-        unsafe { $aes.expand_key(key.as_ptr(), self.key_schedule.as_mut_ptr()) };
+        unsafe { self.aes.expand_key(key.as_ptr(), self.key_schedule.as_mut_ptr()) };
         Ok(())
       }
 
@@ -196,20 +208,20 @@ macro_rules! impl_aes {
             got: key.len(),
           });
         }
-        unsafe { $aes.expand_key(key.as_ptr(), self.key_schedule.as_mut_ptr()) };
-        unsafe { $aes.inverse_key(self.key_schedule.as_mut_ptr()) };
+        unsafe { self.aes.expand_key(key.as_ptr(), self.key_schedule.as_mut_ptr()) };
+        unsafe { self.aes.inverse_key(self.key_schedule.as_mut_ptr()) };
         Ok(())
       }
 
       pub unsafe fn set_decrypt_key_unchecked(&mut self, key: &[u8])
       {
-        $aes.expand_key(key.as_ptr(), self.key_schedule.as_mut_ptr());
-        $aes.inverse_key(self.key_schedule.as_mut_ptr());
+        self.aes.expand_key(key.as_ptr(), self.key_schedule.as_mut_ptr());
+        self.aes.inverse_key(self.key_schedule.as_mut_ptr());
       }
 
       pub fn inverse_key(&mut self)
       {
-        unsafe { $aes.inverse_key(self.key_schedule.as_mut_ptr()) };
+        unsafe { self.aes.inverse_key(self.key_schedule.as_mut_ptr()) };
       }
 
       pub fn encrypt_single(&self, block: &mut [u8]) -> Result<(), LenError>
@@ -221,13 +233,13 @@ macro_rules! impl_aes {
             got: block.len(),
           });
         }
-        unsafe { $aes.encrypt(block.as_mut_ptr(), self.key_schedule.as_ptr()) };
+        unsafe { self.aes.encrypt(block.as_mut_ptr(), self.key_schedule.as_ptr()) };
         Ok(())
       }
 
       pub unsafe fn encrypt_single_unchecked(&self, block: &mut [u8])
       {
-        $aes.encrypt(block.as_mut_ptr(), self.key_schedule.as_ptr());
+        self.aes.encrypt(block.as_mut_ptr(), self.key_schedule.as_ptr());
       }
 
       pub fn decrypt_single(&self, block: &mut [u8]) -> Result<(), LenError>
@@ -239,13 +251,13 @@ macro_rules! impl_aes {
             got: block.len(),
           });
         }
-        unsafe { $aes.decrypt(block.as_mut_ptr(), self.key_schedule.as_ptr()) };
+        unsafe { self.aes.decrypt(block.as_mut_ptr(), self.key_schedule.as_ptr()) };
         Ok(())
       }
 
       pub unsafe fn decrypt_single_unchecked(&self, block: &mut [u8])
       {
-        $aes.decrypt(block.as_mut_ptr(), self.key_schedule.as_ptr());
+        self.aes.decrypt(block.as_mut_ptr(), self.key_schedule.as_ptr());
       }
     }
   };
@@ -256,7 +268,6 @@ impl_aes! {
   struct Aes128;
   const KEY_LEN: usize = 16;
   const KEY_SCHEDULE_LEN: usize = 176;
-  static AES = AES128;
 }
 
 impl_aes! {
@@ -264,7 +275,6 @@ impl_aes! {
   struct Aes192;
   const KEY_LEN: usize = 24;
   const KEY_SCHEDULE_LEN: usize = 208;
-  static AES = AES192;
 }
 
 impl_aes! {
@@ -272,7 +282,6 @@ impl_aes! {
   struct Aes256;
   const KEY_LEN: usize = 32;
   const KEY_SCHEDULE_LEN: usize = 240;
-  static AES = AES256;
 }
 
 #[derive(Clone, Copy, Debug)]

@@ -1,6 +1,6 @@
-use oxicrypt_core::aes::AES128;
-use oxicrypt_core::aes::AES192;
-use oxicrypt_core::aes::AES256;
+use oxicrypt_core::aes::Aes;
+use oxicrypt_core::aes::Control;
+use oxicrypt_core::aes::Variant;
 
 // Type definitions.
 
@@ -8,6 +8,7 @@ use oxicrypt_core::aes::AES256;
 #[allow(non_camel_case_types)]
 pub struct oxi_aes128_ctx_t
 {
+  aes: *const Aes,
   round_keys: [u8; 176],
 }
 
@@ -15,6 +16,7 @@ pub struct oxi_aes128_ctx_t
 #[allow(non_camel_case_types)]
 pub struct oxi_aes192_ctx_t
 {
+  aes: *const Aes,
   round_keys: [u8; 208],
 }
 
@@ -22,34 +24,34 @@ pub struct oxi_aes192_ctx_t
 #[allow(non_camel_case_types)]
 pub struct oxi_aes256_ctx_t
 {
+  aes: *const Aes,
   round_keys: [u8; 240],
 }
 
-impl Default for oxi_aes128_ctx_t
+// Init functions.
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_init(ctx: *mut oxi_aes128_ctx_t)
 {
-  #[inline(always)]
-  fn default() -> Self
-  {
-    Self { round_keys: [0; 176] }
-  }
+  let ctx: &mut oxi_aes128_ctx_t = &mut *ctx;
+  ctx.aes = Control::best_impl(Variant::Aes128);
+  ctx.round_keys = [0; 176];
 }
 
-impl Default for oxi_aes192_ctx_t
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_init(ctx: *mut oxi_aes192_ctx_t)
 {
-  #[inline(always)]
-  fn default() -> Self
-  {
-    Self { round_keys: [0; 208] }
-  }
+  let ctx: &mut oxi_aes192_ctx_t = &mut *ctx;
+  ctx.aes = Control::best_impl(Variant::Aes192);
+  ctx.round_keys = [0; 208];
 }
 
-impl Default for oxi_aes256_ctx_t
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_init(ctx: *mut oxi_aes256_ctx_t)
 {
-  #[inline(always)]
-  fn default() -> Self
-  {
-    Self { round_keys: [0; 240] }
-  }
+  let ctx: &mut oxi_aes256_ctx_t = &mut *ctx;
+  ctx.aes = Control::best_impl(Variant::Aes256);
+  ctx.round_keys = [0; 240];
 }
 
 // Set key functions.
@@ -58,45 +60,45 @@ impl Default for oxi_aes256_ctx_t
 pub unsafe extern "C" fn oxi_aes128_set_encrypt_key(ctx: *mut oxi_aes128_ctx_t, key: *const u8)
 {
   let ctx: &mut oxi_aes128_ctx_t = &mut *ctx;
-  AES128.expand_key(key, ctx.round_keys.as_mut_ptr());
+  (&*ctx.aes).expand_key(key, ctx.round_keys.as_mut_ptr());
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_set_encrypt_key(ctx: *mut oxi_aes192_ctx_t, key: *const u8)
 {
   let ctx: &mut oxi_aes192_ctx_t = &mut *ctx;
-  AES192.expand_key(key, ctx.round_keys.as_mut_ptr());
+  (&*ctx.aes).expand_key(key, ctx.round_keys.as_mut_ptr());
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_set_encrypt_key(ctx: *mut oxi_aes256_ctx_t, key: *const u8)
 {
   let ctx: &mut oxi_aes256_ctx_t = &mut *ctx;
-  AES256.expand_key(key, ctx.round_keys.as_mut_ptr());
+  (&*ctx.aes).expand_key(key, ctx.round_keys.as_mut_ptr());
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_set_decrypt_key(ctx: *mut oxi_aes128_ctx_t, key: *const u8)
 {
   let ctx: &mut oxi_aes128_ctx_t = &mut *ctx;
-  AES128.expand_key(key, ctx.round_keys.as_mut_ptr());
-  AES128.inverse_key(ctx.round_keys.as_mut_ptr());
+  (&*ctx.aes).expand_key(key, ctx.round_keys.as_mut_ptr());
+  (&*ctx.aes).inverse_key(ctx.round_keys.as_mut_ptr());
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_set_decrypt_key(ctx: *mut oxi_aes192_ctx_t, key: *const u8)
 {
   let ctx: &mut oxi_aes192_ctx_t = &mut *ctx;
-  AES192.expand_key(key, ctx.round_keys.as_mut_ptr());
-  AES192.inverse_key(ctx.round_keys.as_mut_ptr());
+  (&*ctx.aes).expand_key(key, ctx.round_keys.as_mut_ptr());
+  (&*ctx.aes).inverse_key(ctx.round_keys.as_mut_ptr());
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_set_decrypt_key(ctx: *mut oxi_aes256_ctx_t, key: *const u8)
 {
   let ctx: &mut oxi_aes256_ctx_t = &mut *ctx;
-  AES256.expand_key(key, ctx.round_keys.as_mut_ptr());
-  AES256.inverse_key(ctx.round_keys.as_mut_ptr());
+  (&*ctx.aes).expand_key(key, ctx.round_keys.as_mut_ptr());
+  (&*ctx.aes).inverse_key(ctx.round_keys.as_mut_ptr());
 }
 
 // Inverse key functions.
@@ -105,21 +107,21 @@ pub unsafe extern "C" fn oxi_aes256_set_decrypt_key(ctx: *mut oxi_aes256_ctx_t, 
 pub unsafe extern "C" fn oxi_aes128_inverse_key(ctx: *mut oxi_aes128_ctx_t)
 {
   let ctx: &mut oxi_aes128_ctx_t = &mut *ctx;
-  AES128.inverse_key(ctx.round_keys.as_mut_ptr());
+  (&*ctx.aes).inverse_key(ctx.round_keys.as_mut_ptr());
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_inverse_key(ctx: *mut oxi_aes192_ctx_t)
 {
   let ctx: &mut oxi_aes192_ctx_t = &mut *ctx;
-  AES192.inverse_key(ctx.round_keys.as_mut_ptr());
+  (&*ctx.aes).inverse_key(ctx.round_keys.as_mut_ptr());
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_inverse_key(ctx: *mut oxi_aes256_ctx_t)
 {
   let ctx: &mut oxi_aes256_ctx_t = &mut *ctx;
-  AES256.inverse_key(ctx.round_keys.as_mut_ptr());
+  (&*ctx.aes).inverse_key(ctx.round_keys.as_mut_ptr());
 }
 
 // Encrypt functions.
@@ -128,21 +130,21 @@ pub unsafe extern "C" fn oxi_aes256_inverse_key(ctx: *mut oxi_aes256_ctx_t)
 pub unsafe extern "C" fn oxi_aes128_encrypt(ctx: *mut oxi_aes128_ctx_t, block: *mut u8)
 {
   let ctx: &mut oxi_aes128_ctx_t = &mut *ctx;
-  AES128.encrypt(block, ctx.round_keys.as_ptr());
+  (&*ctx.aes).encrypt(block, ctx.round_keys.as_ptr());
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_encrypt(ctx: *mut oxi_aes192_ctx_t, block: *mut u8)
 {
   let ctx: &mut oxi_aes192_ctx_t = &mut *ctx;
-  AES192.encrypt(block, ctx.round_keys.as_ptr());
+  (&*ctx.aes).encrypt(block, ctx.round_keys.as_ptr());
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_encrypt(ctx: *mut oxi_aes256_ctx_t, block: *mut u8)
 {
   let ctx: &mut oxi_aes256_ctx_t = &mut *ctx;
-  AES256.encrypt(block, ctx.round_keys.as_ptr());
+  (&*ctx.aes).encrypt(block, ctx.round_keys.as_ptr());
 }
 
 // Decrypt functions.
@@ -151,19 +153,19 @@ pub unsafe extern "C" fn oxi_aes256_encrypt(ctx: *mut oxi_aes256_ctx_t, block: *
 pub unsafe extern "C" fn oxi_aes128_decrypt(ctx: *mut oxi_aes128_ctx_t, block: *mut u8)
 {
   let ctx: &mut oxi_aes128_ctx_t = &mut *ctx;
-  AES128.decrypt(block, ctx.round_keys.as_ptr());
+  (&*ctx.aes).decrypt(block, ctx.round_keys.as_ptr());
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_decrypt(ctx: *mut oxi_aes192_ctx_t, block: *mut u8)
 {
   let ctx: &mut oxi_aes192_ctx_t = &mut *ctx;
-  AES192.decrypt(block, ctx.round_keys.as_ptr());
+  (&*ctx.aes).decrypt(block, ctx.round_keys.as_ptr());
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_decrypt(ctx: *mut oxi_aes256_ctx_t, block: *mut u8)
 {
   let ctx: &mut oxi_aes256_ctx_t = &mut *ctx;
-  AES256.decrypt(block, ctx.round_keys.as_ptr());
+  (&*ctx.aes).decrypt(block, ctx.round_keys.as_ptr());
 }
