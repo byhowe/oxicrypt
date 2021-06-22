@@ -9,7 +9,7 @@ description = "OxiCrypt Rust library"
 repository = "https://github.com/byhowe/oxicrypt.git"
 license = "MIT"
 keywords = ["crypto"]
-categories = ["cryptography"]
+categories = ["cryptography", "no-std"]
 workspace = ".."
 
 [dependencies.oxicrypt-core]
