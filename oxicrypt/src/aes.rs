@@ -151,11 +151,9 @@ macro_rules! impl_aes {
       #[doc(cfg(any(feature = "std", feature = "alloc")))]
       pub unsafe fn new_boxed_unchecked(key: &[u8]) -> Box<Self>
       {
-        let mut ctx = Self {
-          key_schedule: [0; $keyschedlen],
-        };
-        $aes.expand_key(key.as_ptr(), ctx.key_schedule.as_mut_ptr());
-        ctx
+        let mut ctx: Box<MaybeUninit<Self>> = Box::new_uninit();
+        $aes.expand_key(key.as_ptr(), ctx.assume_init_mut().key_schedule.as_mut_ptr());
+        ctx.assume_init()
       }
 
       /// Puts the context into encryption mode. The previous key stored in the context is
