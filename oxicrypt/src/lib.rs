@@ -11,7 +11,7 @@ extern crate std;
 #[cfg(any(feature = "alloc", doc))]
 extern crate alloc;
 
-// pub mod aes;
+pub mod aes;
 pub mod sha;
 
 #[cfg(test)]
