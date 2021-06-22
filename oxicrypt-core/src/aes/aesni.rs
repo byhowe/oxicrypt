@@ -413,6 +413,8 @@ pub unsafe fn aes256_decrypt_avx_aesni(block: *mut u8, key_schedule: *const u8)
 #[cfg(test)]
 mod tests
 {
+  use std_detect::is_x86_feature_detected;
+
   use super::*;
   use crate::test_vectors::*;
 

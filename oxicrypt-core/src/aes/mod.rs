@@ -2,6 +2,7 @@
 #![allow(clippy::missing_safety_doc)]
 
 use spin::Lazy;
+use std_detect::is_x86_feature_detected;
 
 pub static AES128: Lazy<Aes> = Lazy::new(|| {
   Aes::aes128_avx_aesni()
@@ -62,7 +63,7 @@ impl Aes
   pub fn aes128_aesni() -> Option<Self>
   {
     #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
-    if std_detect::is_x86_feature_detected!("aes") {
+    if is_x86_feature_detected!("aes") {
       Some(Self {
         expand_key_p: x86::aes128_expand_key_aesni,
         inverse_key_p: x86::aes128_inverse_key_aesni,
@@ -80,7 +81,7 @@ impl Aes
   pub fn aes192_aesni() -> Option<Self>
   {
     #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
-    if std_detect::is_x86_feature_detected!("aes") {
+    if is_x86_feature_detected!("aes") {
       Some(Self {
         expand_key_p: x86::aes192_expand_key_aesni,
         inverse_key_p: x86::aes192_inverse_key_aesni,
@@ -98,7 +99,7 @@ impl Aes
   pub fn aes256_aesni() -> Option<Self>
   {
     #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
-    if std_detect::is_x86_feature_detected!("aes") {
+    if is_x86_feature_detected!("aes") {
       Some(Self {
         expand_key_p: x86::aes256_expand_key_aesni,
         inverse_key_p: x86::aes256_inverse_key_aesni,
@@ -116,7 +117,7 @@ impl Aes
   pub fn aes128_avx_aesni() -> Option<Self>
   {
     #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
-    if std_detect::is_x86_feature_detected!("aes") && std_detect::is_x86_feature_detected!("avx") {
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
       Some(Self {
         expand_key_p: x86::aes128_expand_key_avx_aesni,
         inverse_key_p: x86::aes128_inverse_key_avx_aesni,
@@ -134,7 +135,7 @@ impl Aes
   pub fn aes192_avx_aesni() -> Option<Self>
   {
     #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
-    if std_detect::is_x86_feature_detected!("aes") && std_detect::is_x86_feature_detected!("avx") {
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
       Some(Self {
         expand_key_p: x86::aes192_expand_key_avx_aesni,
         inverse_key_p: x86::aes192_inverse_key_avx_aesni,
@@ -152,7 +153,7 @@ impl Aes
   pub fn aes256_avx_aesni() -> Option<Self>
   {
     #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
-    if std_detect::is_x86_feature_detected!("aes") && std_detect::is_x86_feature_detected!("avx") {
+    if is_x86_feature_detected!("aes") && is_x86_feature_detected!("avx") {
       Some(Self {
         expand_key_p: x86::aes256_expand_key_avx_aesni,
         inverse_key_p: x86::aes256_inverse_key_avx_aesni,
