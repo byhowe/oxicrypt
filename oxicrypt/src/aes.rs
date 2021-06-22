@@ -1,5 +1,6 @@
 //! Advanced Encryption Standard (also known as Rijndael).
 
+#[cfg(feature = "alloc")]
 use core::mem::MaybeUninit;
 #[cfg(any(feature = "alloc", doc))]
 use alloc::boxed::Box;
