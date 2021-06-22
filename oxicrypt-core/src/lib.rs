@@ -1,4 +1,3 @@
-// We use the dynamic hardware feature detection capabilities of the std library when running tests.
 #![no_std]
 #![feature(doc_cfg)]
 
