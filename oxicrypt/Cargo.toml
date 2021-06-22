@@ -20,5 +20,7 @@ path = "../oxicrypt-core"
 hex = "0.4"
 
 [features]
+default = ["alloc"]
+
 std = ["alloc"]
 alloc = []
