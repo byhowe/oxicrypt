@@ -107,208 +107,43 @@ void oxi_sha512_256_oneshot(const uint8_t* data, size_t datalen, uint8_t* out, s
 #ifdef __cplusplus
 namespace oxi {
 
-class Sha1 {
-  private:
-  oxi_sha1_ctx_t ctx;
+#define impl_sha(variant)                                                                 \
+  class Sha##variant {                                                                    \
+private:                                                                                  \
+    oxi_sha##variant##_ctx_t ctx;                                                         \
+                                                                                          \
+public:                                                                                   \
+    static const size_t DIGEST_LEN = OXI_SHA##variant##_DIGEST_LEN;                       \
+    static const size_t BLOCK_LEN = OXI_SHA##variant##_BLOCK_LEN;                         \
+                                                                                          \
+    Sha##variant()                                                                        \
+    {                                                                                     \
+      oxi_sha##variant##_init(&this->ctx);                                                \
+    }                                                                                     \
+                                                                                          \
+    void update(const uint8_t* data, size_t datalen)                                      \
+    {                                                                                     \
+      oxi_sha##variant##_update(&this->ctx, data, datalen);                               \
+    }                                                                                     \
+                                                                                          \
+    void finish(uint8_t* out, size_t outlen)                                              \
+    {                                                                                     \
+      oxi_sha##variant##_finish(&this->ctx, out, outlen);                                 \
+    }                                                                                     \
+                                                                                          \
+    static void oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen) \
+    {                                                                                     \
+      oxi_sha##variant##_oneshot(data, datalen, out, outlen);                             \
+    }                                                                                     \
+  };
 
-  public:
-  static const size_t DIGEST_LEN = OXI_SHA1_DIGEST_LEN;
-  static const size_t BLOCK_LEN = OXI_SHA1_BLOCK_LEN;
-
-  Sha1()
-  {
-    oxi_sha1_init(&this->ctx);
-  }
-
-  void update(const uint8_t* data, size_t datalen)
-  {
-    oxi_sha1_update(&this->ctx, data, datalen);
-  }
-
-  void finish(uint8_t* out, size_t outlen)
-  {
-    oxi_sha1_finish(&this->ctx, out, outlen);
-  }
-
-  static void oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen)
-  {
-    oxi_sha1_oneshot(data, datalen, out, outlen);
-  }
-};
-
-class Sha224 {
-  private:
-  oxi_sha224_ctx_t ctx;
-
-  public:
-  static const size_t DIGEST_LEN = OXI_SHA224_DIGEST_LEN;
-  static const size_t BLOCK_LEN = OXI_SHA224_BLOCK_LEN;
-
-  Sha224()
-  {
-    oxi_sha224_init(&this->ctx);
-  }
-
-  void update(const uint8_t* data, size_t datalen)
-  {
-    oxi_sha224_update(&this->ctx, data, datalen);
-  }
-
-  void finish(uint8_t* out, size_t outlen)
-  {
-    oxi_sha224_finish(&this->ctx, out, outlen);
-  }
-
-  static void oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen)
-  {
-    oxi_sha224_oneshot(data, datalen, out, outlen);
-  }
-};
-
-class Sha256 {
-  private:
-  oxi_sha256_ctx_t ctx;
-
-  public:
-  static const size_t DIGEST_LEN = OXI_SHA256_DIGEST_LEN;
-  static const size_t BLOCK_LEN = OXI_SHA256_BLOCK_LEN;
-
-  Sha256()
-  {
-    oxi_sha256_init(&this->ctx);
-  }
-
-  void update(const uint8_t* data, size_t datalen)
-  {
-    oxi_sha256_update(&this->ctx, data, datalen);
-  }
-
-  void finish(uint8_t* out, size_t outlen)
-  {
-    oxi_sha256_finish(&this->ctx, out, outlen);
-  }
-
-  static void oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen)
-  {
-    oxi_sha256_oneshot(data, datalen, out, outlen);
-  }
-};
-
-class Sha384 {
-  private:
-  oxi_sha384_ctx_t ctx;
-
-  public:
-  static const size_t DIGEST_LEN = OXI_SHA384_DIGEST_LEN;
-  static const size_t BLOCK_LEN = OXI_SHA384_BLOCK_LEN;
-
-  Sha384()
-  {
-    oxi_sha384_init(&this->ctx);
-  }
-
-  void update(const uint8_t* data, size_t datalen)
-  {
-    oxi_sha384_update(&this->ctx, data, datalen);
-  }
-
-  void finish(uint8_t* out, size_t outlen)
-  {
-    oxi_sha384_finish(&this->ctx, out, outlen);
-  }
-
-  static void oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen)
-  {
-    oxi_sha384_oneshot(data, datalen, out, outlen);
-  }
-};
-
-class Sha512 {
-  private:
-  oxi_sha512_ctx_t ctx;
-
-  public:
-  static const size_t DIGEST_LEN = OXI_SHA512_DIGEST_LEN;
-  static const size_t BLOCK_LEN = OXI_SHA512_BLOCK_LEN;
-
-  Sha512()
-  {
-    oxi_sha512_init(&this->ctx);
-  }
-
-  void update(const uint8_t* data, size_t datalen)
-  {
-    oxi_sha512_update(&this->ctx, data, datalen);
-  }
-
-  void finish(uint8_t* out, size_t outlen)
-  {
-    oxi_sha512_finish(&this->ctx, out, outlen);
-  }
-
-  static void oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen)
-  {
-    oxi_sha512_oneshot(data, datalen, out, outlen);
-  }
-};
-
-class Sha512_224 {
-  private:
-  oxi_sha512_224_ctx_t ctx;
-
-  public:
-  static const size_t DIGEST_LEN = OXI_SHA512_224_DIGEST_LEN;
-  static const size_t BLOCK_LEN = OXI_SHA512_224_BLOCK_LEN;
-
-  Sha512_224()
-  {
-    oxi_sha512_224_init(&this->ctx);
-  }
-
-  void update(const uint8_t* data, size_t datalen)
-  {
-    oxi_sha512_224_update(&this->ctx, data, datalen);
-  }
-
-  void finish(uint8_t* out, size_t outlen)
-  {
-    oxi_sha512_224_finish(&this->ctx, out, outlen);
-  }
-
-  static void oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen)
-  {
-    oxi_sha512_224_oneshot(data, datalen, out, outlen);
-  }
-};
-
-class Sha512_256 {
-  private:
-  oxi_sha512_256_ctx_t ctx;
-
-  public:
-  static const size_t DIGEST_LEN = OXI_SHA512_256_DIGEST_LEN;
-  static const size_t BLOCK_LEN = OXI_SHA512_256_BLOCK_LEN;
-
-  Sha512_256()
-  {
-    oxi_sha512_256_init(&this->ctx);
-  }
-
-  void update(const uint8_t* data, size_t datalen)
-  {
-    oxi_sha512_256_update(&this->ctx, data, datalen);
-  }
-
-  void finish(uint8_t* out, size_t outlen)
-  {
-    oxi_sha512_256_finish(&this->ctx, out, outlen);
-  }
-
-  static void oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen)
-  {
-    oxi_sha512_256_oneshot(data, datalen, out, outlen);
-  }
-};
+impl_sha(1);
+impl_sha(224);
+impl_sha(256);
+impl_sha(384);
+impl_sha(512);
+impl_sha(512_224);
+impl_sha(512_256);
 
 }
 #endif
