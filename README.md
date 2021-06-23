@@ -11,4 +11,4 @@ This library is divided up into 3 crates:
 
 `oxicrypt-core` is the main crate that implements the cryptographic functions that other crates use to build a usable API. For example, `oxicrypt-core` implements the compression functions for the SHA algorithms that work on a single block, while the `oxicrypt` crate implements the user-level API that deals with things like updating the inner state and padding. `oxicrypt` is the main library that regular Rust users should use. It exposes an API that is (I hope) safe. `oxicrypt-sys` is similar to `oxicrypt`, but it exposes an API that C/C++ users should use. It is not as safe as the Rust API. In most cases users should check that the arguments they apply to functions are valid. There is also a Python API in the works, but it is not yet available.
 
-It should be noted, however, that this library is still in works and the API will not be finilized until much later.
+It should be noted, however, that this library is still in works and the API will not be finalized until much later.
