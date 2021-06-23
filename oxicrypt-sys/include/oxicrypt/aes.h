@@ -1,11 +1,11 @@
 #ifndef OXICRYPT_AES_H_
 #define OXICRYPT_AES_H_
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stdint.h>
 
 /* Type definitions. */
 
@@ -70,6 +70,138 @@ void oxi_aes192_decrypt(oxi_aes192_ctx_t* ctx, uint8_t* block);
 void oxi_aes256_decrypt(oxi_aes256_ctx_t* ctx, uint8_t* block);
 
 #ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+namespace oxi {
+
+class Aes128 {
+  private:
+  oxi_aes128_ctx_t ctx;
+
+  public:
+  Aes128()
+  {
+    oxi_aes128_init(&this->ctx);
+  }
+
+  Aes128(const uint8_t* key)
+  {
+    oxi_aes128_init(&this->ctx);
+    oxi_aes128_set_encrypt_key(&this->ctx, key);
+  }
+
+  void set_encrypt_key(const uint8_t* key)
+  {
+    oxi_aes128_set_encrypt_key(&this->ctx, key);
+  }
+
+  void set_decrypt_key(const uint8_t* key)
+  {
+    oxi_aes128_set_decrypt_key(&this->ctx, key);
+  }
+
+  void inverse_key()
+  {
+    oxi_aes128_inverse_key(&this->ctx);
+  }
+
+  void encrypt_single(uint8_t* block)
+  {
+    oxi_aes128_encrypt(&this->ctx, block);
+  }
+
+  void decrypt_single(uint8_t* block)
+  {
+    oxi_aes128_decrypt(&this->ctx, block);
+  }
+};
+
+class Aes192 {
+  private:
+  oxi_aes192_ctx_t ctx;
+
+  public:
+  Aes192()
+  {
+    oxi_aes192_init(&this->ctx);
+  }
+
+  Aes192(const uint8_t* key)
+  {
+    oxi_aes192_init(&this->ctx);
+    oxi_aes192_set_encrypt_key(&this->ctx, key);
+  }
+
+  void set_encrypt_key(const uint8_t* key)
+  {
+    oxi_aes192_set_encrypt_key(&this->ctx, key);
+  }
+
+  void set_decrypt_key(const uint8_t* key)
+  {
+    oxi_aes192_set_decrypt_key(&this->ctx, key);
+  }
+
+  void inverse_key()
+  {
+    oxi_aes192_inverse_key(&this->ctx);
+  }
+
+  void encrypt_single(uint8_t* block)
+  {
+    oxi_aes192_encrypt(&this->ctx, block);
+  }
+
+  void decrypt_single(uint8_t* block)
+  {
+    oxi_aes192_decrypt(&this->ctx, block);
+  }
+};
+
+class Aes256 {
+  private:
+  oxi_aes256_ctx_t ctx;
+
+  public:
+  Aes256()
+  {
+    oxi_aes256_init(&this->ctx);
+  }
+
+  Aes256(const uint8_t* key)
+  {
+    oxi_aes256_init(&this->ctx);
+    oxi_aes256_set_encrypt_key(&this->ctx, key);
+  }
+
+  void set_encrypt_key(const uint8_t* key)
+  {
+    oxi_aes256_set_encrypt_key(&this->ctx, key);
+  }
+
+  void set_decrypt_key(const uint8_t* key)
+  {
+    oxi_aes256_set_decrypt_key(&this->ctx, key);
+  }
+
+  void inverse_key()
+  {
+    oxi_aes256_inverse_key(&this->ctx);
+  }
+
+  void encrypt_single(uint8_t* block)
+  {
+    oxi_aes256_encrypt(&this->ctx, block);
+  }
+
+  void decrypt_single(uint8_t* block)
+  {
+    oxi_aes256_decrypt(&this->ctx, block);
+  }
+};
+
 }
 #endif
 
