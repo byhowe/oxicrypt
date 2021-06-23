@@ -122,6 +122,8 @@ public:                                                                         
                                                                                                    \
     inline Sha##variant() noexcept { oxi_sha##variant##_init(&this->ctx); }                        \
                                                                                                    \
+    inline void reset() noexcept { oxi_sha##variant##_init(&this->ctx); }                          \
+                                                                                                   \
     inline void update(const uint8_t* data, size_t datalen) noexcept                               \
     {                                                                                              \
       oxi_sha##variant##_update(&this->ctx, data, datalen);                                        \
