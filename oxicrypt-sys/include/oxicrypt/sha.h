@@ -105,6 +105,10 @@ void oxi_sha512_256_oneshot(const uint8_t* data, size_t datalen, uint8_t* out, s
 #endif
 
 #ifdef __cplusplus
+
+#include <array>
+#include <vector>
+
 namespace oxi {
 
 #define impl_sha(variant)                                                                 \
@@ -126,9 +130,31 @@ public:                                                                         
       oxi_sha##variant##_update(&this->ctx, data, datalen);                               \
     }                                                                                     \
                                                                                           \
+    void update(const std::vector<uint8_t>& data)                                         \
+    {                                                                                     \
+      oxi_sha##variant##_update(&this->ctx, data.data(), data.size());                    \
+    }                                                                                     \
+                                                                                          \
+    template <size_t N>                                                                   \
+    void update(const std::array<uint8_t, N>& data)                                       \
+    {                                                                                     \
+      oxi_sha##variant##_update(&this->ctx, data.data(), N);                              \
+    }                                                                                     \
+                                                                                          \
     void finish(uint8_t* out, size_t outlen)                                              \
     {                                                                                     \
       oxi_sha##variant##_finish(&this->ctx, out, outlen);                                 \
+    }                                                                                     \
+                                                                                          \
+    void finish(std::vector<uint8_t>& out)                                                \
+    {                                                                                     \
+      oxi_sha##variant##_finish(&this->ctx, out.data(), out.size());                      \
+    }                                                                                     \
+                                                                                          \
+    template <size_t N>                                                                   \
+    void finish(std::array<uint8_t, N>& out)                                              \
+    {                                                                                     \
+      oxi_sha##variant##_finish(&this->ctx, out.data(), N);                               \
     }                                                                                     \
                                                                                           \
     static void oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen) \
