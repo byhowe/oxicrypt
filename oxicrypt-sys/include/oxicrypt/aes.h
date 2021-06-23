@@ -77,56 +77,52 @@ void oxi_aes256_decrypt(oxi_aes256_ctx_t* ctx, uint8_t* block);
 #ifdef __cplusplus
 namespace oxi {
 
-#define impl_aes(bits)                                                       \
-  class Aes##bits {                                                          \
-private:                                                                     \
-    oxi_aes##bits##_ctx_t ctx;                                               \
-                                                                             \
-public:                                                                      \
-    static const size_t BLOCK_LEN = OXI_AES_BLOCK_LEN;                       \
-    static const size_t KEY_LEN = OXI_AES##bits##_KEY_LEN;                   \
-    static const size_t KEY_SCHEDULE_LEN = OXI_AES##bits##_KEY_SCHEDULE_LEN; \
-                                                                             \
-    Aes##bits()                                                              \
-    {                                                                        \
-      oxi_aes##bits##_init(&this->ctx);                                      \
-    }                                                                        \
-                                                                             \
-    Aes##bits(const uint8_t* key)                                            \
-    {                                                                        \
-      oxi_aes##bits##_init(&this->ctx);                                      \
-      oxi_aes##bits##_set_encrypt_key(&this->ctx, key);                      \
-    }                                                                        \
-                                                                             \
-    void set_encrypt_key(const uint8_t* key)                                 \
-    {                                                                        \
-      oxi_aes##bits##_set_encrypt_key(&this->ctx, key);                      \
-    }                                                                        \
-                                                                             \
-    void set_decrypt_key(const uint8_t* key)                                 \
-    {                                                                        \
-      oxi_aes##bits##_set_decrypt_key(&this->ctx, key);                      \
-    }                                                                        \
-                                                                             \
-    void inverse_key()                                                       \
-    {                                                                        \
-      oxi_aes##bits##_inverse_key(&this->ctx);                               \
-    }                                                                        \
-                                                                             \
-    void encrypt_single(uint8_t* block)                                      \
-    {                                                                        \
-      oxi_aes##bits##_encrypt(&this->ctx, block);                            \
-    }                                                                        \
-                                                                             \
-    void decrypt_single(uint8_t* block)                                      \
-    {                                                                        \
-      oxi_aes##bits##_decrypt(&this->ctx, block);                            \
-    }                                                                        \
+#define impl_aes(bits)                                                                             \
+  class Aes##bits {                                                                                \
+private:                                                                                           \
+    oxi_aes##bits##_ctx_t ctx;                                                                     \
+                                                                                                   \
+public:                                                                                            \
+    inline static const size_t BLOCK_LEN = OXI_AES_BLOCK_LEN;                                      \
+    inline static const size_t KEY_LEN = OXI_AES##bits##_KEY_LEN;                                  \
+    inline static const size_t KEY_SCHEDULE_LEN = OXI_AES##bits##_KEY_SCHEDULE_LEN;                \
+                                                                                                   \
+    inline Aes##bits() noexcept { oxi_aes##bits##_init(&this->ctx); }                              \
+                                                                                                   \
+    inline Aes##bits(const uint8_t* key) noexcept                                                  \
+    {                                                                                              \
+      oxi_aes##bits##_init(&this->ctx);                                                            \
+      oxi_aes##bits##_set_encrypt_key(&this->ctx, key);                                            \
+    }                                                                                              \
+                                                                                                   \
+    inline void set_encrypt_key(const uint8_t* key) noexcept                                       \
+    {                                                                                              \
+      oxi_aes##bits##_set_encrypt_key(&this->ctx, key);                                            \
+    }                                                                                              \
+                                                                                                   \
+    inline void set_decrypt_key(const uint8_t* key) noexcept                                       \
+    {                                                                                              \
+      oxi_aes##bits##_set_decrypt_key(&this->ctx, key);                                            \
+    }                                                                                              \
+                                                                                                   \
+    inline void inverse_key() noexcept { oxi_aes##bits##_inverse_key(&this->ctx); }                \
+                                                                                                   \
+    inline void encrypt_single(uint8_t* block) noexcept                                            \
+    {                                                                                              \
+      oxi_aes##bits##_encrypt(&this->ctx, block);                                                  \
+    }                                                                                              \
+                                                                                                   \
+    inline void decrypt_single(uint8_t* block) noexcept                                            \
+    {                                                                                              \
+      oxi_aes##bits##_decrypt(&this->ctx, block);                                                  \
+    }                                                                                              \
   };
 
 impl_aes(128);
 impl_aes(192);
 impl_aes(256);
+
+#undef impl_aes
 
 }
 #endif
