@@ -1,6 +1,7 @@
 #ifndef OXICRYPT_AES_H_
 #define OXICRYPT_AES_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -81,6 +82,10 @@ class Aes128 {
   oxi_aes128_ctx_t ctx;
 
   public:
+  static const size_t BLOCK_LEN = OXI_AES_BLOCK_LEN;
+  static const size_t KEY_LEN = OXI_AES128_KEY_LEN;
+  static const size_t KEY_SCHEDULE_LEN = OXI_AES128_KEY_SCHEDULE_LEN;
+
   Aes128()
   {
     oxi_aes128_init(&this->ctx);
@@ -123,6 +128,10 @@ class Aes192 {
   oxi_aes192_ctx_t ctx;
 
   public:
+  static const size_t BLOCK_LEN = OXI_AES_BLOCK_LEN;
+  static const size_t KEY_LEN = OXI_AES192_KEY_LEN;
+  static const size_t KEY_SCHEDULE_LEN = OXI_AES192_KEY_SCHEDULE_LEN;
+
   Aes192()
   {
     oxi_aes192_init(&this->ctx);
@@ -165,6 +174,10 @@ class Aes256 {
   oxi_aes256_ctx_t ctx;
 
   public:
+  static const size_t BLOCK_LEN = OXI_AES_BLOCK_LEN;
+  static const size_t KEY_LEN = OXI_AES256_KEY_LEN;
+  static const size_t KEY_SCHEDULE_LEN = OXI_AES256_KEY_SCHEDULE_LEN;
+
   Aes256()
   {
     oxi_aes256_init(&this->ctx);
