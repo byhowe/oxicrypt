@@ -118,9 +118,11 @@ public:                                                                         
     }                                                                                              \
   };
 
-impl_aes(128);
-impl_aes(192);
-impl_aes(256);
+namespace aes {
+  impl_aes(128);
+  impl_aes(192);
+  impl_aes(256);
+}
 
 #undef impl_aes
 

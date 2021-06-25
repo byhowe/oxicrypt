@@ -161,13 +161,15 @@ public:                                                                         
     }                                                                                              \
   };
 
-impl_sha(1);
-impl_sha(224);
-impl_sha(256);
-impl_sha(384);
-impl_sha(512);
-impl_sha(512_224);
-impl_sha(512_256);
+namespace sha {
+  impl_sha(1);
+  impl_sha(224);
+  impl_sha(256);
+  impl_sha(384);
+  impl_sha(512);
+  impl_sha(512_224);
+  impl_sha(512_256);
+}
 
 #undef impl_sha
 
