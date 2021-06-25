@@ -1,3 +1,5 @@
+cargo-features = ["strip"]
+
 [workspace]
 members = [
   "oxicrypt-core",
@@ -10,3 +12,6 @@ panic = "abort"
 
 [profile.release]
 panic = "abort"
+lto = true
+codegen-units = 1
+strip = "symbols"
