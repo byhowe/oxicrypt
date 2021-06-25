@@ -11,17 +11,14 @@ extern "C" {
 /* Type definitions. */
 
 typedef struct oxi_aes128_ctx_t {
-  const void* aes;
   uint8_t round_keys[176];
 } oxi_aes128_ctx_t;
 
 typedef struct oxi_aes192_ctx_t {
-  const void* aes;
   uint8_t round_keys[208];
 } oxi_aes192_ctx_t;
 
 typedef struct oxi_aes256_ctx_t {
-  const void* aes;
   uint8_t round_keys[240];
 } oxi_aes256_ctx_t;
 

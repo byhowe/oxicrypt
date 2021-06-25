@@ -4,7 +4,10 @@
 
 #![no_std]
 #![cfg_attr(feature = "alloc", feature(new_uninit))]
+#![allow(incomplete_features)]
 #![feature(doc_cfg)]
+#![feature(const_generics)]
+#![feature(const_evaluatable_checked)]
 
 #[cfg(any(feature = "std", doc))]
 extern crate std;
