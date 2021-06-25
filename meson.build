@@ -1,5 +1,6 @@
 project(
   'oxicrypt',
+  'c',
   version : '0.1',
   license : 'MIT',
 )
@@ -56,6 +57,6 @@ pkgconf.generate(
   name : 'oxicrypt',
   filebase : 'oxicrypt',
   description : 'C/C++ interface for OxiCrypt library.',
-  libraries : [ 'oxicrypt' ],
+  libraries : [ library('oxicrypt') ],
   version : '0.1',
 )
