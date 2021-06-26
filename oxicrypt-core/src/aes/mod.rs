@@ -105,6 +105,15 @@ impl core::fmt::Display for Variant
 
 impl Variant
 {
+  pub const fn rounds(variant: Self) -> usize
+  {
+    match variant {
+      | Self::Aes128 => 10,
+      | Self::Aes192 => 12,
+      | Self::Aes256 => 14,
+    }
+  }
+
   pub const fn key_len(variant: Self) -> usize
   {
     match variant {
