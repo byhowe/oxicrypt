@@ -83,11 +83,15 @@ pub const AES256_AVX_AESNI: AesTable = AesTable {
   decrypt_p: x86::aes256_decrypt_avx_aesni,
 };
 
+/// AES variants.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Variant
 {
+  /// AES-128
   Aes128,
+  /// AES-192
   Aes192,
+  /// AES-256
   Aes256,
 }
 
@@ -105,6 +109,11 @@ impl core::fmt::Display for Variant
 
 impl Variant
 {
+  /// Number of rounds.
+  ///
+  /// * AES-128 - `10`
+  /// * AES-192 - `12`
+  /// * AES-256 - `14`
   pub const fn rounds(variant: Self) -> usize
   {
     match variant {
@@ -114,6 +123,11 @@ impl Variant
     }
   }
 
+  /// Key length.
+  ///
+  /// * AES-128 - `16`
+  /// * AES-192 - `24`
+  /// * AES-256 - `32`
   pub const fn key_len(variant: Self) -> usize
   {
     match variant {
@@ -123,6 +137,11 @@ impl Variant
     }
   }
 
+  /// Key schedule length.
+  ///
+  /// * AES-128 - `176`
+  /// * AES-192 - `208`
+  /// * AES-256 - `240`
   pub const fn key_schedule_len(variant: Self) -> usize
   {
     match variant {
