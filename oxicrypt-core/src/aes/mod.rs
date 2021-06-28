@@ -1,88 +1,6 @@
 #![allow(non_upper_case_globals)]
 #![allow(clippy::missing_safety_doc)]
 
-use std_detect::is_x86_feature_detected;
-use spin::Lazy;
-
-pub static AES128: Lazy<AesTable> = Lazy::new(|| Control::best_impl(Variant::Aes128));
-pub static AES192: Lazy<AesTable> = Lazy::new(|| Control::best_impl(Variant::Aes192));
-pub static AES256: Lazy<AesTable> = Lazy::new(|| Control::best_impl(Variant::Aes256));
-
-pub const AES128_LUT: AesTable = AesTable {
-  expand_key_p: generic::aes128_expand_key_lut,
-  inverse_key_p: generic::aes128_inverse_key_lut,
-  encrypt_p: generic::aes128_encrypt_lut,
-  decrypt_p: generic::aes128_decrypt_lut,
-};
-
-pub const AES192_LUT: AesTable = AesTable {
-  expand_key_p: generic::aes192_expand_key_lut,
-  inverse_key_p: generic::aes192_inverse_key_lut,
-  encrypt_p: generic::aes192_encrypt_lut,
-  decrypt_p: generic::aes192_decrypt_lut,
-};
-
-pub const AES256_LUT: AesTable = AesTable {
-  expand_key_p: generic::aes256_expand_key_lut,
-  inverse_key_p: generic::aes256_inverse_key_lut,
-  encrypt_p: generic::aes256_encrypt_lut,
-  decrypt_p: generic::aes256_decrypt_lut,
-};
-
-#[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
-#[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-pub const AES128_AESNI: AesTable = AesTable {
-  expand_key_p: x86::aes128_expand_key_aesni,
-  inverse_key_p: x86::aes128_inverse_key_aesni,
-  encrypt_p: x86::aes128_encrypt_aesni,
-  decrypt_p: x86::aes128_decrypt_aesni,
-};
-
-#[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
-#[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-pub const AES192_AESNI: AesTable = AesTable {
-  expand_key_p: x86::aes192_expand_key_aesni,
-  inverse_key_p: x86::aes192_inverse_key_aesni,
-  encrypt_p: x86::aes192_encrypt_aesni,
-  decrypt_p: x86::aes192_decrypt_aesni,
-};
-
-#[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
-#[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-pub const AES256_AESNI: AesTable = AesTable {
-  expand_key_p: x86::aes256_expand_key_aesni,
-  inverse_key_p: x86::aes256_inverse_key_aesni,
-  encrypt_p: x86::aes256_encrypt_aesni,
-  decrypt_p: x86::aes256_decrypt_aesni,
-};
-
-#[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
-#[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-pub const AES128_AVX_AESNI: AesTable = AesTable {
-  expand_key_p: x86::aes128_expand_key_avx_aesni,
-  inverse_key_p: x86::aes128_inverse_key_avx_aesni,
-  encrypt_p: x86::aes128_encrypt_avx_aesni,
-  decrypt_p: x86::aes128_decrypt_avx_aesni,
-};
-
-#[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
-#[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-pub const AES192_AVX_AESNI: AesTable = AesTable {
-  expand_key_p: x86::aes192_expand_key_avx_aesni,
-  inverse_key_p: x86::aes192_inverse_key_avx_aesni,
-  encrypt_p: x86::aes192_encrypt_avx_aesni,
-  decrypt_p: x86::aes192_decrypt_avx_aesni,
-};
-
-#[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
-#[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-pub const AES256_AVX_AESNI: AesTable = AesTable {
-  expand_key_p: x86::aes256_expand_key_avx_aesni,
-  inverse_key_p: x86::aes256_inverse_key_avx_aesni,
-  encrypt_p: x86::aes256_encrypt_avx_aesni,
-  decrypt_p: x86::aes256_decrypt_avx_aesni,
-};
-
 /// AES variants.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Variant
@@ -152,108 +70,86 @@ impl Variant
   }
 }
 
+/// AES implementations.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Implementation
+{
+  /// Look-up table implementation.
+  Lut,
+  /// Hardware accelerated version of AES for x86.
+  #[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
+  #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
+  Aesni,
+}
+
+impl Implementation
+{
+  pub const fn best() -> Self
+  {
+    #[cfg(all(
+      any(target_arch = "x86", target_arch = "x86_64"),
+      feature = "aesni",
+      target_feature = "aes"
+    ))]
+    {
+      Self::Aesni
+    }
+    #[cfg(not(all(
+      any(target_arch = "x86", target_arch = "x86_64"),
+      feature = "aesni",
+      target_feature = "aes"
+    )))]
+    {
+      Self::Lut
+    }
+  }
+
+  pub const fn expand_key<const V: Variant>(implementation: Self) -> unsafe fn(*const u8, *mut u8)
+  {
+    match implementation {
+      | Self::Lut => generic::aes_expand_key::<V>,
+      #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
+      | Self::Aesni => aesni::aes_expand_key::<V>,
+    }
+  }
+
+  pub const fn inverse_key<const V: Variant>(implementation: Self) -> unsafe fn(*mut u8)
+  {
+    match implementation {
+      | Self::Lut => generic::aes_inverse_key::<V>,
+      #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
+      | Self::Aesni => aesni::aes_inverse_key::<V>,
+    }
+  }
+
+  pub const fn encrypt<const V: Variant>(implementation: Self) -> unsafe fn(*mut u8, *const u8)
+  {
+    match implementation {
+      | Self::Lut => generic::aes_encrypt::<V>,
+      #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
+      | Self::Aesni => aesni::aes_encrypt::<V>,
+    }
+  }
+
+  pub const fn decrypt<const V: Variant>(implementation: Self) -> unsafe fn(*mut u8, *const u8)
+  {
+    match implementation {
+      | Self::Lut => generic::aes_decrypt::<V>,
+      #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
+      | Self::Aesni => aesni::aes_decrypt::<V>,
+    }
+  }
+}
+
 pub struct Control;
 
 impl Control
 {
   #[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
   #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-  fn is_aesni() -> bool
+  pub fn is_aesni_available() -> bool
   {
-    is_x86_feature_detected!("aes")
-  }
-
-  #[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
-  #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-  fn is_avx_aesni() -> bool
-  {
-    is_x86_feature_detected!("avx") && is_x86_feature_detected!("aes")
-  }
-
-  #[inline(always)]
-  pub fn initialize(variant: Variant)
-  {
-    match variant {
-      | Variant::Aes128 => spin::Lazy::force(&AES128),
-      | Variant::Aes192 => spin::Lazy::force(&AES192),
-      | Variant::Aes256 => spin::Lazy::force(&AES256),
-    };
-  }
-
-  #[inline(always)]
-  pub fn aes_table(variant: Variant) -> &'static AesTable
-  {
-    match variant {
-      | Variant::Aes128 => unsafe { &*AES128.as_mut_ptr() },
-      | Variant::Aes192 => unsafe { &*AES192.as_mut_ptr() },
-      | Variant::Aes256 => unsafe { &*AES256.as_mut_ptr() },
-    }
-  }
-
-  pub fn best_impl(variant: Variant) -> AesTable
-  {
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"))]
-    if Self::is_avx_aesni() {
-      match variant {
-        | Variant::Aes128 => AES128_AVX_AESNI,
-        | Variant::Aes192 => AES192_AVX_AESNI,
-        | Variant::Aes256 => AES256_AVX_AESNI,
-      }
-    } else if Self::is_aesni() {
-      match variant {
-        | Variant::Aes128 => AES128_AESNI,
-        | Variant::Aes192 => AES192_AESNI,
-        | Variant::Aes256 => AES256_AESNI,
-      }
-    } else {
-      match variant {
-        | Variant::Aes128 => AES128_LUT,
-        | Variant::Aes192 => AES192_LUT,
-        | Variant::Aes256 => AES256_LUT,
-      }
-    }
-
-    #[cfg(not(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
-    match variant {
-      | Variant::Aes128 => AES128_LUT,
-      | Variant::Aes192 => AES192_LUT,
-      | Variant::Aes256 => AES256_LUT,
-    }
-  }
-}
-
-pub struct AesTable
-{
-  expand_key_p: unsafe fn(*const u8, *mut u8),
-  inverse_key_p: unsafe fn(*mut u8),
-  encrypt_p: unsafe fn(*mut u8, *const u8),
-  decrypt_p: unsafe fn(*mut u8, *const u8),
-}
-
-impl AesTable
-{
-  #[inline(always)]
-  pub unsafe fn expand_key(&self, key: *const u8, key_schedule: *mut u8)
-  {
-    (self.expand_key_p)(key, key_schedule);
-  }
-
-  #[inline(always)]
-  pub unsafe fn inverse_key(&self, key_schedule: *mut u8)
-  {
-    (self.inverse_key_p)(key_schedule);
-  }
-
-  #[inline(always)]
-  pub unsafe fn encrypt(&self, block: *mut u8, key_schedule: *const u8)
-  {
-    (self.encrypt_p)(block, key_schedule);
-  }
-
-  #[inline(always)]
-  pub unsafe fn decrypt(&self, block: *mut u8, key_schedule: *const u8)
-  {
-    (self.decrypt_p)(block, key_schedule);
+    std_detect::is_x86_feature_detected!("aes")
   }
 }
 
@@ -263,58 +159,18 @@ mod lut;
 
 pub mod generic
 {
-  // Expand key.
-  pub use super::lut::aes128_expand_key_lut;
-  pub use super::lut::aes192_expand_key_lut;
-  pub use super::lut::aes256_expand_key_lut;
-  // Inverse key.
-  pub use super::lut::aes128_inverse_key_lut;
-  pub use super::lut::aes192_inverse_key_lut;
-  pub use super::lut::aes256_inverse_key_lut;
-  // Encrypt.
-  pub use super::lut::aes128_encrypt_lut;
-  pub use super::lut::aes192_encrypt_lut;
-  pub use super::lut::aes256_encrypt_lut;
-  // Decrypt.
-  pub use super::lut::aes128_decrypt_lut;
-  pub use super::lut::aes192_decrypt_lut;
-  pub use super::lut::aes256_decrypt_lut;
+  pub use super::lut::aes_expand_key;
+  pub use super::lut::aes_inverse_key;
+  pub use super::lut::aes_encrypt;
+  pub use super::lut::aes_decrypt;
 }
 
 #[cfg(any(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni"), doc))]
 #[doc(cfg(all(any(target_arch = "x86", target_arch = "x86_64"), feature = "aesni")))]
 pub mod x86
 {
-  // Expand key.
-  pub use super::aesni::aes128_expand_key_aesni;
-  pub use super::aesni::aes192_expand_key_aesni;
-  pub use super::aesni::aes256_expand_key_aesni;
-  // Inverse key.
-  pub use super::aesni::aes128_inverse_key_aesni;
-  pub use super::aesni::aes192_inverse_key_aesni;
-  pub use super::aesni::aes256_inverse_key_aesni;
-  // Encrypt.
-  pub use super::aesni::aes128_encrypt_aesni;
-  pub use super::aesni::aes192_encrypt_aesni;
-  pub use super::aesni::aes256_encrypt_aesni;
-  // Decrypt.
-  pub use super::aesni::aes128_decrypt_aesni;
-  pub use super::aesni::aes192_decrypt_aesni;
-  pub use super::aesni::aes256_decrypt_aesni;
-  // Expand key.
-  pub use super::aesni::aes128_expand_key_avx_aesni;
-  pub use super::aesni::aes192_expand_key_avx_aesni;
-  pub use super::aesni::aes256_expand_key_avx_aesni;
-  // Inverse key.
-  pub use super::aesni::aes128_inverse_key_avx_aesni;
-  pub use super::aesni::aes192_inverse_key_avx_aesni;
-  pub use super::aesni::aes256_inverse_key_avx_aesni;
-  // Encrypt.
-  pub use super::aesni::aes128_encrypt_avx_aesni;
-  pub use super::aesni::aes192_encrypt_avx_aesni;
-  pub use super::aesni::aes256_encrypt_avx_aesni;
-  // Decrypt.
-  pub use super::aesni::aes128_decrypt_avx_aesni;
-  pub use super::aesni::aes192_decrypt_avx_aesni;
-  pub use super::aesni::aes256_decrypt_avx_aesni;
+  pub use super::aesni::aes_expand_key;
+  pub use super::aesni::aes_inverse_key;
+  pub use super::aesni::aes_encrypt;
+  pub use super::aesni::aes_decrypt;
 }

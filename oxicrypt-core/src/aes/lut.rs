@@ -1,6 +1,8 @@
 #![allow(clippy::missing_safety_doc)]
 #![allow(clippy::identity_op)]
 
+use super::Variant;
+
 #[rustfmt::skip]
 const SBOX: [u8; 256] = [
   0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -322,13 +324,12 @@ unsafe fn inverse_mix_columns(block: *mut u8)
   }
 }
 
-#[inline(always)]
-unsafe fn aes_expand_key<const N: usize>(key: *const u8, key_schedule: *mut u8)
+pub unsafe fn aes_expand_key<const V: Variant>(key: *const u8, key_schedule: *mut u8)
 {
-  let nk = N - 6;
+  let nk = Variant::rounds(V) - 6;
   core::intrinsics::copy_nonoverlapping(key, key_schedule, nk * 4);
 
-  for i in nk .. (N + 1) * 4 {
+  for i in nk .. (Variant::rounds(V) + 1) * 4 {
     let k = (i - 1) * 4;
     let mut t = [
       *key_schedule.add(k + 0),
@@ -347,7 +348,7 @@ unsafe fn aes_expand_key<const N: usize>(key: *const u8, key_schedule: *mut u8)
       t[0] ^= RCON[i / nk - 1];
     }
 
-    if N == 14 && i % nk == 4 {
+    if Variant::rounds(V) == 14 && i % nk == 4 {
       t[0] = SBOX[t[0] as usize];
       t[1] = SBOX[t[1] as usize];
       t[2] = SBOX[t[2] as usize];
@@ -361,36 +362,34 @@ unsafe fn aes_expand_key<const N: usize>(key: *const u8, key_schedule: *mut u8)
   }
 }
 
-#[inline(always)]
-unsafe fn aes_inverse_key<const N: usize>(key_schedule: *mut u8)
+pub unsafe fn aes_inverse_key<const V: Variant>(key_schedule: *mut u8)
 {
   let mut k0: [u8; 16] = *key_schedule.cast::<[u8; 16]>().add(0);
-  let mut k1: [u8; 16] = *key_schedule.cast::<[u8; 16]>().add(N);
+  let mut k1: [u8; 16] = *key_schedule.cast::<[u8; 16]>().add(Variant::rounds(V));
   *key_schedule.cast::<[u8; 16]>().add(0) = k1;
-  *key_schedule.cast::<[u8; 16]>().add(N) = k0;
+  *key_schedule.cast::<[u8; 16]>().add(Variant::rounds(V)) = k0;
 
   // Compiler is able to unroll this loop.
-  for i in 1 .. N / 2 {
+  for i in 1 .. Variant::rounds(V) / 2 {
     k0 = *key_schedule.cast::<[u8; 16]>().add(i);
-    k1 = *key_schedule.cast::<[u8; 16]>().add(N - i);
+    k1 = *key_schedule.cast::<[u8; 16]>().add(Variant::rounds(V) - i);
     inverse_mix_columns(k0.as_mut_ptr());
     inverse_mix_columns(k1.as_mut_ptr());
     *key_schedule.cast::<[u8; 16]>().add(i) = k1;
-    *key_schedule.cast::<[u8; 16]>().add(N - i) = k0;
+    *key_schedule.cast::<[u8; 16]>().add(Variant::rounds(V) - i) = k0;
   }
 
-  k0 = *key_schedule.cast::<[u8; 16]>().add(N / 2);
+  k0 = *key_schedule.cast::<[u8; 16]>().add(Variant::rounds(V) / 2);
   inverse_mix_columns(k0.as_mut_ptr());
-  *key_schedule.cast::<[u8; 16]>().add(N / 2) = k0;
+  *key_schedule.cast::<[u8; 16]>().add(Variant::rounds(V) / 2) = k0;
 }
 
-#[inline(always)]
-unsafe fn aes_encrypt<const N: usize>(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes_encrypt<const V: Variant>(block: *mut u8, key_schedule: *const u8)
 {
   add_round_key(block, key_schedule.add(0)); // whitening round (round 0)
 
   // Compiler is able to unroll this loop.
-  for i in 1 .. N {
+  for i in 1 .. Variant::rounds(V) {
     shift_rows(block);
     sub_bytes(block);
     mix_columns(block);
@@ -399,16 +398,15 @@ unsafe fn aes_encrypt<const N: usize>(block: *mut u8, key_schedule: *const u8)
 
   sub_bytes(block);
   shift_rows(block);
-  add_round_key(block, key_schedule.add(N * 16));
+  add_round_key(block, key_schedule.add(Variant::rounds(V) * 16));
 }
 
-#[inline(always)]
-unsafe fn aes_decrypt<const N: usize>(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes_decrypt<const V: Variant>(block: *mut u8, key_schedule: *const u8)
 {
   add_round_key(block, key_schedule.add(0)); // whitening round (round 0)
 
   // Compiler is able to unroll this loop.
-  for i in 1 .. N {
+  for i in 1 .. Variant::rounds(V) {
     inverse_shift_rows(block);
     inverse_sub_bytes(block);
     inverse_mix_columns(block);
@@ -417,262 +415,126 @@ unsafe fn aes_decrypt<const N: usize>(block: *mut u8, key_schedule: *const u8)
 
   inverse_sub_bytes(block);
   inverse_shift_rows(block);
-  add_round_key(block, key_schedule.add(N * 16));
-}
-
-#[inline(always)]
-pub unsafe fn aes128_expand_key_lut(key: *const u8, key_schedule: *mut u8)
-{
-  aes_expand_key::<10>(key, key_schedule);
-}
-
-#[inline(always)]
-pub unsafe fn aes192_expand_key_lut(key: *const u8, key_schedule: *mut u8)
-{
-  aes_expand_key::<12>(key, key_schedule);
-}
-
-#[inline(always)]
-pub unsafe fn aes256_expand_key_lut(key: *const u8, key_schedule: *mut u8)
-{
-  aes_expand_key::<14>(key, key_schedule);
-}
-
-#[inline(always)]
-pub unsafe fn aes128_inverse_key_lut(key_schedule: *mut u8)
-{
-  aes_inverse_key::<10>(key_schedule);
-}
-
-#[inline(always)]
-pub unsafe fn aes192_inverse_key_lut(key_schedule: *mut u8)
-{
-  aes_inverse_key::<12>(key_schedule);
-}
-
-#[inline(always)]
-pub unsafe fn aes256_inverse_key_lut(key_schedule: *mut u8)
-{
-  aes_inverse_key::<14>(key_schedule);
-}
-
-#[inline(always)]
-pub unsafe fn aes128_encrypt_lut(block: *mut u8, key_schedule: *const u8)
-{
-  aes_encrypt::<10>(block, key_schedule);
-}
-
-#[inline(always)]
-pub unsafe fn aes192_encrypt_lut(block: *mut u8, key_schedule: *const u8)
-{
-  aes_encrypt::<12>(block, key_schedule);
-}
-
-#[inline(always)]
-pub unsafe fn aes256_encrypt_lut(block: *mut u8, key_schedule: *const u8)
-{
-  aes_encrypt::<14>(block, key_schedule);
-}
-
-#[inline(always)]
-pub unsafe fn aes128_decrypt_lut(block: *mut u8, key_schedule: *const u8)
-{
-  aes_decrypt::<10>(block, key_schedule);
-}
-
-#[inline(always)]
-pub unsafe fn aes192_decrypt_lut(block: *mut u8, key_schedule: *const u8)
-{
-  aes_decrypt::<12>(block, key_schedule);
-}
-
-#[inline(always)]
-pub unsafe fn aes256_decrypt_lut(block: *mut u8, key_schedule: *const u8)
-{
-  aes_decrypt::<14>(block, key_schedule);
+  add_round_key(block, key_schedule.add(Variant::rounds(V) * 16));
 }
 
 #[cfg(test)]
 mod tests
 {
-  extern crate std;
-
   use super::*;
   use crate::test_vectors::*;
 
   #[test]
-  fn test_aes128_expand_key()
+  fn test_expand_key()
   {
-    let mut key_schedule = [0; 176];
     AES128_EXPAND_KEY.iter().for_each(|t| {
-      unsafe { aes128_expand_key_lut(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+      let mut key_schedule = [0; Variant::key_schedule_len(Variant::Aes128)];
+      unsafe { aes_expand_key::<{ Variant::Aes128 }>(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
     });
-  }
-
-  #[test]
-  fn test_aes192_expand_key()
-  {
-    let mut key_schedule = [0; 208];
     AES192_EXPAND_KEY.iter().for_each(|t| {
-      unsafe { aes192_expand_key_lut(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+      let mut key_schedule = [0; Variant::key_schedule_len(Variant::Aes192)];
+      unsafe { aes_expand_key::<{ Variant::Aes192 }>(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
     });
-  }
-
-  #[test]
-  fn test_aes256_expand_key()
-  {
-    let mut key_schedule = [0; 240];
     AES256_EXPAND_KEY.iter().for_each(|t| {
-      unsafe { aes256_expand_key_lut(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+      let mut key_schedule = [0; Variant::key_schedule_len(Variant::Aes256)];
+      unsafe { aes_expand_key::<{ Variant::Aes256 }>(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
     });
   }
 
   #[test]
-  fn test_aes128_inverse_key()
+  fn test_inverse_key()
   {
-    let mut key_schedule = [0; 176];
     AES128_INVERSE_KEY.iter().for_each(|t| {
-      key_schedule = t.0;
-      unsafe { aes128_inverse_key_lut(key_schedule.as_mut_ptr()) };
+      let mut key_schedule = t.0;
+      unsafe { aes_inverse_key::<{ Variant::Aes128 }>(key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
     });
-  }
-
-  #[test]
-  fn test_aes192_inverse_key()
-  {
-    let mut key_schedule = [0; 208];
     AES192_INVERSE_KEY.iter().for_each(|t| {
-      key_schedule = t.0;
-      unsafe { aes192_inverse_key_lut(key_schedule.as_mut_ptr()) };
+      let mut key_schedule = t.0;
+      unsafe { aes_inverse_key::<{ Variant::Aes192 }>(key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
     });
-  }
-
-  #[test]
-  fn test_aes256_inverse_key()
-  {
-    let mut key_schedule = [0; 240];
     AES256_INVERSE_KEY.iter().for_each(|t| {
-      key_schedule = t.0;
-      unsafe { aes256_inverse_key_lut(key_schedule.as_mut_ptr()) };
+      let mut key_schedule = t.0;
+      unsafe { aes_inverse_key::<{ Variant::Aes256 }>(key_schedule.as_mut_ptr()) };
       assert_eq!(t.1, key_schedule);
     });
   }
 
   #[test]
-  fn test_aes128_encrypt()
+  fn test_encrypt()
   {
-    let mut block = [0; 16];
     AES128_ENCRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes128_encrypt_lut(block.as_mut_ptr(), t.2.as_ptr()) };
+      let mut block = t.0;
+      unsafe { aes_encrypt::<{ Variant::Aes128 }>(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
     });
-  }
-
-  #[test]
-  fn test_aes192_encrypt()
-  {
-    let mut block = [0; 16];
     AES192_ENCRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes192_encrypt_lut(block.as_mut_ptr(), t.2.as_ptr()) };
+      let mut block = t.0;
+      unsafe { aes_encrypt::<{ Variant::Aes192 }>(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
     });
-  }
-
-  #[test]
-  fn test_aes256_encrypt()
-  {
-    let mut block = [0; 16];
     AES256_ENCRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes256_encrypt_lut(block.as_mut_ptr(), t.2.as_ptr()) };
+      let mut block = t.0;
+      unsafe { aes_encrypt::<{ Variant::Aes256 }>(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
     });
   }
 
   #[test]
-  fn test_aes128_decrypt()
+  fn test_decrypt()
   {
-    let mut block = [0; 16];
     AES128_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes128_decrypt_lut(block.as_mut_ptr(), t.2.as_ptr()) };
+      let mut block = t.0;
+      unsafe { aes_decrypt::<{ Variant::Aes128 }>(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
     });
-  }
-
-  #[test]
-  fn test_aes192_decrypt()
-  {
-    let mut block = [0; 16];
     AES192_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes192_decrypt_lut(block.as_mut_ptr(), t.2.as_ptr()) };
+      let mut block = t.0;
+      unsafe { aes_decrypt::<{ Variant::Aes192 }>(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
     });
-  }
-
-  #[test]
-  fn test_aes256_decrypt()
-  {
-    let mut block = [0; 16];
     AES256_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes256_decrypt_lut(block.as_mut_ptr(), t.2.as_ptr()) };
+      let mut block = t.0;
+      unsafe { aes_decrypt::<{ Variant::Aes256 }>(block.as_mut_ptr(), t.2.as_ptr()) };
       assert_eq!(t.1, block);
     });
   }
 
   #[test]
-  fn test_aes128_encrypt_decrypt()
+  fn test_encrypt_decrypt()
   {
-    let mut block = [0; 16];
-    let mut key_schedule = [0; 176];
     AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes128_expand_key_lut(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-      unsafe { aes128_encrypt_lut(block.as_mut_ptr(), key_schedule.as_ptr()) };
+      let mut block = t.0;
+      let mut key_schedule = [0; Variant::key_schedule_len(Variant::Aes128)];
+      unsafe { aes_expand_key::<{ Variant::Aes128 }>(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+      unsafe { aes_encrypt::<{ Variant::Aes128 }>(block.as_mut_ptr(), key_schedule.as_ptr()) };
       assert_eq!(t.1, block);
-      unsafe { aes128_inverse_key_lut(key_schedule.as_mut_ptr()) };
-      unsafe { aes128_decrypt_lut(block.as_mut_ptr(), key_schedule.as_ptr()) };
+      unsafe { aes_inverse_key::<{ Variant::Aes128 }>(key_schedule.as_mut_ptr()) };
+      unsafe { aes_decrypt::<{ Variant::Aes128 }>(block.as_mut_ptr(), key_schedule.as_ptr()) };
       assert_eq!(t.0, block);
     });
-  }
-
-  #[test]
-  fn test_aes192_encrypt_decrypt()
-  {
-    let mut block = [0; 16];
-    let mut key_schedule = [0; 208];
     AES192_ENCRYPT_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes192_expand_key_lut(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-      unsafe { aes192_encrypt_lut(block.as_mut_ptr(), key_schedule.as_ptr()) };
+      let mut block = t.0;
+      let mut key_schedule = [0; Variant::key_schedule_len(Variant::Aes192)];
+      unsafe { aes_expand_key::<{ Variant::Aes192 }>(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+      unsafe { aes_encrypt::<{ Variant::Aes192 }>(block.as_mut_ptr(), key_schedule.as_ptr()) };
       assert_eq!(t.1, block);
-      unsafe { aes192_inverse_key_lut(key_schedule.as_mut_ptr()) };
-      unsafe { aes192_decrypt_lut(block.as_mut_ptr(), key_schedule.as_ptr()) };
+      unsafe { aes_inverse_key::<{ Variant::Aes192 }>(key_schedule.as_mut_ptr()) };
+      unsafe { aes_decrypt::<{ Variant::Aes192 }>(block.as_mut_ptr(), key_schedule.as_ptr()) };
       assert_eq!(t.0, block);
     });
-  }
-
-  #[test]
-  fn test_aes256_encrypt_decrypt()
-  {
-    let mut block = [0; 16];
-    let mut key_schedule = [0; 240];
     AES256_ENCRYPT_DECRYPT.iter().for_each(|t| {
-      block = t.0;
-      unsafe { aes256_expand_key_lut(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-      unsafe { aes256_encrypt_lut(block.as_mut_ptr(), key_schedule.as_ptr()) };
+      let mut block = t.0;
+      let mut key_schedule = [0; Variant::key_schedule_len(Variant::Aes256)];
+      unsafe { aes_expand_key::<{ Variant::Aes256 }>(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+      unsafe { aes_encrypt::<{ Variant::Aes256 }>(block.as_mut_ptr(), key_schedule.as_ptr()) };
       assert_eq!(t.1, block);
-      unsafe { aes256_inverse_key_lut(key_schedule.as_mut_ptr()) };
-      unsafe { aes256_decrypt_lut(block.as_mut_ptr(), key_schedule.as_ptr()) };
+      unsafe { aes_inverse_key::<{ Variant::Aes256 }>(key_schedule.as_mut_ptr()) };
+      unsafe { aes_decrypt::<{ Variant::Aes256 }>(block.as_mut_ptr(), key_schedule.as_ptr()) };
       assert_eq!(t.0, block);
     });
   }
