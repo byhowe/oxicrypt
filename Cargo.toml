@@ -1,4 +1,4 @@
-cargo-features = ["strip"]
+cargo-features = ["edition2021", "strip"]
 
 [workspace]
 members = [
@@ -6,6 +6,31 @@ members = [
   "oxicrypt-sys",
   "oxicrypt",
 ]
+
+[package]
+name = "oxicrypt"
+version = "0.1.0"
+authors = ["B. Howe <37745048+byhowe@users.noreply.github.com>"]
+edition = "2021"
+description = "Cryptography library written in Rust."
+repository = "https://github.com/byhowe/oxicrypt.git"
+license = "MIT"
+keywords = ["crypto"]
+categories = ["cryptography", "no-std"]
+
+[lib]
+name = "oxicrypt"
+path = "library/lib.rs"
+
+[target.'cfg(any(target_arch = "x86", target_arch = "x86_64"))'.dependencies.std_detect]
+version = "0.1"
+git = "https://github.com/rust-lang/stdarch.git"
+default-features = false
+
+[features]
+default = []
+
+std = []
 
 [profile.dev]
 panic = "abort"
