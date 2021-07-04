@@ -1,67 +1,10 @@
 use core::mem::MaybeUninit;
 
-use crate::crypto::aes::Aes;
-use crate::crypto::aes::Implementation;
+#[doc(inline)]
+pub use crate::crypto::aes::Implementation;
 #[doc(inline)]
 pub use crate::crypto::aes::Variant;
-
-/// Pointers to unsafe AES functions.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Engine<const V: Variant>
-{
-  expand_key: unsafe fn(*const u8, *mut u8),
-  inverse_key: unsafe fn(*mut u8),
-  encrypt1: unsafe fn(*mut u8, *const u8),
-  decrypt1: unsafe fn(*mut u8, *const u8),
-}
-
-impl<const V: Variant> Engine<V>
-{
-  /// Returns the appropriate engine for a given implementation.
-  ///
-  /// # Safety
-  ///
-  /// Note that this function does not perform any kind of check for wheter a given
-  /// implementation is available during runtime. If you try to use an engine with an
-  /// implementation that is not available during runtime, it might result in an illegal
-  /// instruction signal.
-  pub const unsafe fn new(implementation: Implementation) -> Self
-  {
-    match implementation {
-      | Implementation::Lut => Engine {
-        expand_key: Aes::<V, { Implementation::Lut }>::expand_key,
-        inverse_key: Aes::<V, { Implementation::Lut }>::inverse_key,
-        encrypt1: Aes::<V, { Implementation::Lut }>::encrypt1,
-        decrypt1: Aes::<V, { Implementation::Lut }>::decrypt1,
-      },
-      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-      | Implementation::Aesni => Engine {
-        expand_key: Aes::<V, { Implementation::Aesni }>::expand_key,
-        inverse_key: Aes::<V, { Implementation::Aesni }>::inverse_key,
-        encrypt1: Aes::<V, { Implementation::Aesni }>::encrypt1,
-        decrypt1: Aes::<V, { Implementation::Aesni }>::decrypt1,
-      },
-    }
-  }
-
-  /// Returns the fastest engine that is available during runtime.
-  pub fn fastest() -> Self
-  {
-    unsafe {
-      #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-      {
-        Self::new(Implementation::Lut)
-      }
-
-      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-      if Implementation::is_available(Implementation::Aesni) {
-        Self::new(Implementation::Aesni)
-      } else {
-        Self::new(Implementation::Lut)
-      }
-    }
-  }
-}
+use crate::crypto::aes::Engine;
 
 /// Expanded key to use with AES.
 ///
@@ -88,10 +31,10 @@ where
   /// ```
   /// # use oxicrypt::aes::*;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
-  /// let engine = Engine::<{ Variant::Aes128 }>::fastest();
+  /// let implementation = Implementation::fastest_rt();
   /// let mut keysched = KeySchedule::<{ Variant::Aes128 }>::uninit();
   /// unsafe { keysched.assume_init_mut() }
-  ///   .set_encrypt_key(&engine, &key)
+  ///   .set_encrypt_key(implementation, &key)
   ///   .unwrap();
   /// let keysched = unsafe { keysched.assume_init() };
   /// ```
@@ -104,7 +47,7 @@ where
   ///
   /// Returns an [`Err`](`Result::Err`) when length of `key` is not equal to
   /// [`Variant::key_len(V)`](`Variant::key_len`).
-  pub fn with_encrypt_key<K: AsRef<[u8]>>(engine: &Engine<V>, key: K) -> Result<Self, LenError>
+  pub fn with_encrypt_key<K: AsRef<[u8]>>(implementation: Implementation, key: K) -> Result<Self, LenError>
   {
     let key = key.as_ref();
     if key.len() != Variant::key_len(V) {
@@ -115,7 +58,11 @@ where
       });
     }
     let mut key_schedule: MaybeUninit<Self> = MaybeUninit::uninit();
-    unsafe { key_schedule.assume_init_mut().set_encrypt_key_unchecked(engine, key) };
+    unsafe {
+      key_schedule
+        .assume_init_mut()
+        .set_encrypt_key_unchecked(implementation, key)
+    };
     Ok(unsafe { key_schedule.assume_init() })
   }
 
@@ -123,7 +70,7 @@ where
   ///
   /// Returns an [`Err`](`Result::Err`) when length of `key` is not equal to
   /// [`Variant::key_len(V)`](`Variant::key_len`).
-  pub fn with_decrypt_key<K: AsRef<[u8]>>(engine: &Engine<V>, key: K) -> Result<Self, LenError>
+  pub fn with_decrypt_key<K: AsRef<[u8]>>(implementation: Implementation, key: K) -> Result<Self, LenError>
   {
     let key = key.as_ref();
     if key.len() != Variant::key_len(V) {
@@ -134,7 +81,11 @@ where
       });
     }
     let mut key_schedule: MaybeUninit<Self> = MaybeUninit::uninit();
-    unsafe { key_schedule.assume_init_mut().set_decrypt_key_unchecked(engine, key) };
+    unsafe {
+      key_schedule
+        .assume_init_mut()
+        .set_decrypt_key_unchecked(implementation, key)
+    };
     Ok(unsafe { key_schedule.assume_init() })
   }
 
@@ -143,11 +94,16 @@ where
   /// # Safety
   ///
   /// * Length of `key` must be equal to [`Variant::key_len(V)`](`Variant::key_len`).
-  pub unsafe fn with_encrypt_key_unchecked<K: AsRef<[u8]>>(engine: &Engine<V>, key: K) -> Result<Self, LenError>
+  pub unsafe fn with_encrypt_key_unchecked<K: AsRef<[u8]>>(
+    implementation: Implementation,
+    key: K,
+  ) -> Result<Self, LenError>
   {
     let key = key.as_ref();
     let mut key_schedule: MaybeUninit<Self> = MaybeUninit::uninit();
-    key_schedule.assume_init_mut().set_encrypt_key_unchecked(engine, key);
+    key_schedule
+      .assume_init_mut()
+      .set_encrypt_key_unchecked(implementation, key);
     Ok(key_schedule.assume_init())
   }
 
@@ -156,18 +112,23 @@ where
   /// # Safety
   ///
   /// * Length of `key` must be equal to [`Variant::key_len(V)`](`Variant::key_len`).
-  pub unsafe fn with_decrypt_key_unchecked<K: AsRef<[u8]>>(engine: &Engine<V>, key: K) -> Result<Self, LenError>
+  pub unsafe fn with_decrypt_key_unchecked<K: AsRef<[u8]>>(
+    implementation: Implementation,
+    key: K,
+  ) -> Result<Self, LenError>
   {
     let key = key.as_ref();
     let mut key_schedule: MaybeUninit<Self> = MaybeUninit::uninit();
-    key_schedule.assume_init_mut().set_decrypt_key_unchecked(engine, key);
+    key_schedule
+      .assume_init_mut()
+      .set_decrypt_key_unchecked(implementation, key);
     Ok(key_schedule.assume_init())
   }
 
   /// Sets encryption key.
   ///
   /// Note that the previous value stored in the key schedule is discarded.
-  pub fn set_encrypt_key<K: AsRef<[u8]>>(&mut self, engine: &Engine<V>, key: K) -> Result<(), LenError>
+  pub fn set_encrypt_key<K: AsRef<[u8]>>(&mut self, implementation: Implementation, key: K) -> Result<(), LenError>
   {
     let key = key.as_ref();
     if key.len() != Variant::key_len(V) {
@@ -177,14 +138,14 @@ where
         got: key.len(),
       });
     }
-    unsafe { self.set_encrypt_key_unchecked(engine, key) };
+    unsafe { self.set_encrypt_key_unchecked(implementation, key) };
     Ok(())
   }
 
   /// Sets decryption key.
   ///
   /// Note that the previous value stored in the key schedule is discarded.
-  pub fn set_decrypt_key<K: AsRef<[u8]>>(&mut self, engine: &Engine<V>, key: K) -> Result<(), LenError>
+  pub fn set_decrypt_key<K: AsRef<[u8]>>(&mut self, implementation: Implementation, key: K) -> Result<(), LenError>
   {
     let key = key.as_ref();
     if key.len() != Variant::key_len(V) {
@@ -194,7 +155,7 @@ where
         got: key.len(),
       });
     }
-    unsafe { self.set_decrypt_key_unchecked(engine, key) };
+    unsafe { self.set_decrypt_key_unchecked(implementation, key) };
     Ok(())
   }
 
@@ -205,9 +166,9 @@ where
   /// # Safety
   ///
   /// * Length of `key` must be equal to [`Variant::key_len(V)`](`Variant::key_len`).
-  pub unsafe fn set_encrypt_key_unchecked<K: AsRef<[u8]>>(&mut self, engine: &Engine<V>, key: K)
+  pub unsafe fn set_encrypt_key_unchecked<K: AsRef<[u8]>>(&mut self, implementation: Implementation, key: K)
   {
-    (engine.expand_key)(key.as_ref().as_ptr(), self.k.as_mut_ptr());
+    Engine::<V>::as_ref(implementation).expand_key(key.as_ref().as_ptr(), self.k.as_mut_ptr());
   }
 
   /// Sets decryption key.
@@ -217,10 +178,10 @@ where
   /// # Safety
   ///
   /// * Length of `key` must be equal to [`Variant::key_len(V)`](`Variant::key_len`).
-  pub unsafe fn set_decrypt_key_unchecked<K: AsRef<[u8]>>(&mut self, engine: &Engine<V>, key: K)
+  pub unsafe fn set_decrypt_key_unchecked<K: AsRef<[u8]>>(&mut self, implementation: Implementation, key: K)
   {
-    self.set_encrypt_key_unchecked(engine, key);
-    self.inverse_key(engine);
+    self.set_encrypt_key_unchecked(implementation, key);
+    self.inverse_key(implementation);
   }
 
   /// Converts an encryption key into a decryption key.
@@ -234,10 +195,10 @@ where
   /// ```
   /// # use oxicrypt::aes::*;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
-  /// let engine = Engine::<{ Variant::Aes128 }>::fastest();
-  /// let keysched_r = KeySchedule::<{ Variant::Aes128 }>::with_decrypt_key(&engine, &key).unwrap();
-  /// let mut keysched_l = KeySchedule::<{ Variant::Aes128 }>::with_encrypt_key(&engine, &key).unwrap();
-  /// keysched_l.inverse_key(&engine);
+  /// let implementation = Implementation::fastest_rt();
+  /// let keysched_r = KeySchedule::<{ Variant::Aes128 }>::with_decrypt_key(implementation, &key).unwrap();
+  /// let mut keysched_l = KeySchedule::<{ Variant::Aes128 }>::with_encrypt_key(implementation, &key).unwrap();
+  /// keysched_l.inverse_key(implementation);
   /// assert_eq!(keysched_l, keysched_r);
   /// ```
   ///
@@ -245,15 +206,15 @@ where
   /// ```should_panic
   /// # use oxicrypt::aes::*;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
-  /// let engine = Engine::<{ Variant::Aes128 }>::fastest();
-  /// let keysched_r = KeySchedule::<{ Variant::Aes128 }>::with_encrypt_key(&engine, &key).unwrap();
-  /// let mut keysched_l = KeySchedule::<{ Variant::Aes128 }>::with_decrypt_key(&engine, &key).unwrap();
-  /// keysched_l.inverse_key(&engine);
+  /// let implementation = Implementation::fastest_rt();
+  /// let keysched_r = KeySchedule::<{ Variant::Aes128 }>::with_encrypt_key(implementation, &key).unwrap();
+  /// let mut keysched_l = KeySchedule::<{ Variant::Aes128 }>::with_decrypt_key(implementation, &key).unwrap();
+  /// keysched_l.inverse_key(implementation);
   /// assert_eq!(keysched_l, keysched_r);
   /// ```
-  pub fn inverse_key(&mut self, engine: &Engine<V>)
+  pub fn inverse_key(&mut self, implementation: Implementation)
   {
-    unsafe { (engine.inverse_key)(self.k.as_mut_ptr()) };
+    unsafe { Engine::<V>::as_ref(implementation).inverse_key(self.k.as_mut_ptr()) };
   }
 
   /// Returns the byte slice.
@@ -289,7 +250,7 @@ where
 ///
 /// Returns an [`Err`](`Result::Err`) when length of `block` is not `16`.
 pub fn encrypt1<const V: Variant>(
-  engine: &Engine<V>,
+  implementation: Implementation,
   block: &mut [u8],
   key_schedule: &KeySchedule<V>,
 ) -> Result<(), LenError>
@@ -303,7 +264,7 @@ where
       got: block.len(),
     });
   }
-  unsafe { (engine.encrypt1)(block.as_mut_ptr(), key_schedule.as_ptr()) };
+  unsafe { Engine::<V>::as_ref(implementation).encrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
   Ok(())
 }
 
@@ -311,7 +272,7 @@ where
 ///
 /// Returns an [`Err`](`Result::Err`) when length of `block` is not `16`.
 pub fn decrypt1<const V: Variant>(
-  engine: &Engine<V>,
+  implementation: Implementation,
   block: &mut [u8],
   key_schedule: &KeySchedule<V>,
 ) -> Result<(), LenError>
@@ -325,7 +286,7 @@ where
       got: block.len(),
     });
   }
-  unsafe { (engine.decrypt1)(block.as_mut_ptr(), key_schedule.as_ptr()) };
+  unsafe { Engine::<V>::as_ref(implementation).decrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
   Ok(())
 }
 
@@ -334,11 +295,14 @@ where
 /// # Safety
 ///
 /// * Length of `key` must be `16`.
-pub unsafe fn encrypt1_unchecked<const V: Variant>(engine: &Engine<V>, block: &mut [u8], key_schedule: &KeySchedule<V>)
-where
+pub unsafe fn encrypt1_unchecked<const V: Variant>(
+  implementation: Implementation,
+  block: &mut [u8],
+  key_schedule: &KeySchedule<V>,
+) where
   [u8; Variant::key_schedule_len(V)]: Sized,
 {
-  (engine.encrypt1)(block.as_mut_ptr(), key_schedule.as_ptr());
+  Engine::<V>::as_ref(implementation).encrypt1(block.as_mut_ptr(), key_schedule.as_ptr());
 }
 
 /// Decrypts a single 16 byte block in-place.
@@ -346,11 +310,14 @@ where
 /// # Safety
 ///
 /// * Length of `key` must be `16`.
-pub unsafe fn decrypt1_unchecked<const V: Variant>(engine: &Engine<V>, block: &mut [u8], key_schedule: &KeySchedule<V>)
-where
+pub unsafe fn decrypt1_unchecked<const V: Variant>(
+  implementation: Implementation,
+  block: &mut [u8],
+  key_schedule: &KeySchedule<V>,
+) where
   [u8; Variant::key_schedule_len(V)]: Sized,
 {
-  (engine.decrypt1)(block.as_mut_ptr(), key_schedule.as_ptr());
+  Engine::<V>::as_ref(implementation).decrypt1(block.as_mut_ptr(), key_schedule.as_ptr());
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -359,6 +326,24 @@ pub struct LenError
   field: &'static str,
   expected: usize,
   got: usize,
+}
+
+impl LenError
+{
+  pub const fn field(&self) -> &str
+  {
+    self.field
+  }
+
+  pub const fn expected(&self) -> usize
+  {
+    self.expected
+  }
+
+  pub const fn got(&self) -> usize
+  {
+    self.got
+  }
 }
 
 impl core::fmt::Display for LenError

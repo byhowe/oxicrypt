@@ -26,12 +26,25 @@ impl Implementation
   /// available on all platforms. If compiled using `RUSTFLAGS='-C target-feature=+aes'` or certain
   /// feature is known to be available during compile-time, then this function will return the
   /// fastest implementation based on that.
-  pub const fn fastest_implementation() -> Self
+  pub const fn fastest() -> Self
   {
     #[cfg(all(any(target_arch = "x86", target_arch = "x86"), target_feature = "aes"))]
     return Self::Aesni;
 
     Self::Lut
+  }
+
+  /// Fastest implementation based on runtime information.
+  pub fn fastest_rt() -> Self
+  {
+    #[cfg(all(any(target_arch = "x86", target_arch = "x86"), target_feature = "aes"))]
+    return Self::Aesni;
+
+    if Self::is_available(Self::Aesni) {
+      Self::Aesni
+    } else {
+      Self::Lut
+    }
   }
 
   /// Performs a runtime check for wether or not a certain implementation is available.
@@ -42,6 +55,88 @@ impl Implementation
       #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
       | Implementation::Aesni => std_detect::is_x86_feature_detected!("aes"),
     }
+  }
+}
+
+/// Pointers to unsafe AES functions.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Engine<const V: Variant>
+{
+  expand_key: unsafe fn(*const u8, *mut u8),
+  inverse_key: unsafe fn(*mut u8),
+  encrypt1: unsafe fn(*mut u8, *const u8),
+  decrypt1: unsafe fn(*mut u8, *const u8),
+}
+
+impl<const V: Variant> Engine<V>
+{
+  #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+  const AESNI: Self = unsafe { Self::new(Implementation::Aesni) };
+  const LUT: Self = unsafe { Self::new(Implementation::Lut) };
+
+  /// Returns the appropriate engine for a given implementation.
+  ///
+  /// # Safety
+  ///
+  /// Note that this function does not perform any kind of check for wheter a given
+  /// implementation is available during runtime. If you try to use an engine with an
+  /// implementation that is not available during runtime, it might result in an illegal
+  /// instruction signal.
+  pub const unsafe fn new(implementation: Implementation) -> Self
+  {
+    match implementation {
+      | Implementation::Lut => Engine {
+        expand_key: Aes::<V, { Implementation::Lut }>::expand_key,
+        inverse_key: Aes::<V, { Implementation::Lut }>::inverse_key,
+        encrypt1: Aes::<V, { Implementation::Lut }>::encrypt1,
+        decrypt1: Aes::<V, { Implementation::Lut }>::decrypt1,
+      },
+      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+      | Implementation::Aesni => Engine {
+        expand_key: Aes::<V, { Implementation::Aesni }>::expand_key,
+        inverse_key: Aes::<V, { Implementation::Aesni }>::inverse_key,
+        encrypt1: Aes::<V, { Implementation::Aesni }>::encrypt1,
+        decrypt1: Aes::<V, { Implementation::Aesni }>::decrypt1,
+      },
+    }
+  }
+
+  /// Returns a reference to the appropriate engine for a given implementation.
+  ///
+  /// # Safety
+  ///
+  /// Same as [`Engine::new`].
+  pub const unsafe fn as_ref(implementation: Implementation) -> &'static Self
+  {
+    match implementation {
+      | Implementation::Lut => &Self::LUT,
+      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+      | Implementation::Aesni => &Self::AESNI,
+    }
+  }
+
+  #[allow(clippy::missing_safety_doc)]
+  pub unsafe fn expand_key(&self, key: *const u8, key_schedule: *mut u8)
+  {
+    (self.expand_key)(key, key_schedule);
+  }
+
+  #[allow(clippy::missing_safety_doc)]
+  pub unsafe fn inverse_key(&self, key_schedule: *mut u8)
+  {
+    (self.inverse_key)(key_schedule);
+  }
+
+  #[allow(clippy::missing_safety_doc)]
+  pub unsafe fn encrypt1(&self, block: *mut u8, key_schedule: *const u8)
+  {
+    (self.encrypt1)(block, key_schedule);
+  }
+
+  #[allow(clippy::missing_safety_doc)]
+  pub unsafe fn decrypt1(&self, block: *mut u8, key_schedule: *const u8)
+  {
+    (self.decrypt1)(block, key_schedule);
   }
 }
 
@@ -119,12 +214,10 @@ impl core::fmt::Display for Variant
 /// # Examples
 ///
 /// ```
-/// # use oxicrypt::crypto::aes::Aes;
-/// # use oxicrypt::crypto::aes::Implementation;
-/// # use oxicrypt::crypto::aes::Variant;
+/// # use oxicrypt::crypto::aes::*;
 /// // AES-128 type that uses the fastest implementation that is known to be available during
 /// // compilation.
-/// type Aes128 = Aes<{ Variant::Aes128 }, { Implementation::fastest_implementation() }>;
+/// type Aes128 = Aes<{ Variant::Aes128 }, { Implementation::fastest() }>;
 /// let key: Vec<u8> = (0u8 .. Aes128::key_len() as u8).collect();
 /// let mut key_schedule = vec![0; Aes128::key_schedule_len()];
 /// unsafe { Aes128::expand_key(key.as_ptr(), key_schedule.as_mut_ptr()) };
