@@ -1,12 +1,5 @@
 cargo-features = ["edition2021", "strip"]
 
-[workspace]
-members = [
-  "oxicrypt-core",
-  "oxicrypt-sys",
-  "oxicrypt",
-]
-
 [package]
 name = "oxicrypt"
 version = "0.1.0"
