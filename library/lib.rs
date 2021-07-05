@@ -6,7 +6,12 @@
 #![feature(const_fn_fn_ptr_basics)]
 #![feature(const_mut_refs)]
 #![feature(const_ptr_offset)]
+#![feature(const_fn_transmute)]
+#![feature(const_maybe_uninit_assume_init)]
+#![feature(new_uninit)]
 
+#[cfg(any(feature = "alloc", doc))]
+extern crate alloc;
 #[cfg(any(feature = "std", doc))]
 extern crate std;
 
@@ -20,6 +25,7 @@ fn panic_handler(_info: &core::panic::PanicInfo<'_>) -> !
 pub mod crypto;
 
 pub mod aes;
+pub mod sha;
 
 #[cfg(test)]
 pub(crate) mod test_vectors;

@@ -28,8 +28,9 @@ git = "https://github.com/rust-lang/stdarch.git"
 default-features = false
 
 [features]
-default = []
+default = ["alloc"]
 
+alloc = []
 std = []
 
 [profile.dev]
