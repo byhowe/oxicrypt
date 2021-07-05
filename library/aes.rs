@@ -1,3 +1,5 @@
+//! High level AES API.
+
 use core::mem::MaybeUninit;
 
 #[doc(inline)]
