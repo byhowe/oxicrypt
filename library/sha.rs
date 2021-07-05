@@ -1,6 +1,7 @@
 //! High level SHA API.
 
 use core::mem::MaybeUninit;
+use core::mem::size_of;
 use core::cmp::min;
 use core::intrinsics::copy_nonoverlapping;
 #[cfg(feature = "alloc")]
@@ -113,6 +114,22 @@ where
     self.len = self.len.to_be();
     self.block[(Variant::block_len(V) - 8) .. Variant::block_len(V)].copy_from_slice(&self.len.to_ne_bytes());
     unsafe { Engine::<V>::as_ref(implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
+
+    #[cfg(target_endian = "little")]
+    match V {
+      | Variant::Sha1 | Variant::Sha224 | Variant::Sha256 => {
+        for i in 0 .. Variant::state_len(V) / size_of::<u32>() {
+          let p = unsafe { self.h.as_mut_ptr().cast::<u32>().add(i) };
+          unsafe { *p = u32::to_be(*p) };
+        }
+      }
+      | Variant::Sha384 | Variant::Sha512 | Variant::Sha512_224 | Variant::Sha512_256 => {
+        for i in 0 .. Variant::state_len(V) / size_of::<u64>() {
+          let p = unsafe { self.h.as_mut_ptr().cast::<u64>().add(i) };
+          unsafe { *p = u64::to_be(*p) };
+        }
+      }
+    }
 
     unsafe {
       copy_nonoverlapping(
