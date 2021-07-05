@@ -161,3 +161,70 @@ where
     ctx.finish_into(implementation, output);
   }
 }
+
+#[cfg(test)]
+mod tests
+{
+  use super::*;
+  use crate::test_vectors::cavp::*;
+
+  fn test<const V: Variant>(tests: &[(&str, &str, usize)])
+  where
+    [u8; Variant::state_len(V)]: Sized,
+    [u8; Variant::block_len(V)]: Sized,
+    [u8; Variant::digest_len(V)]: Sized,
+  {
+    let i = Implementation::fastest_rt();
+    let mut ctx = Sha::<V>::new();
+    for (md, msg, _) in tests {
+      let mdb = hex::decode(md).unwrap();
+      let msgb = hex::decode(msg).unwrap();
+      ctx.update(i, &msgb);
+      let digest = ctx.finish(i);
+      ctx.reset();
+      assert_eq!(mdb, digest);
+    }
+  }
+
+  #[test]
+  fn sha1()
+  {
+    test::<{ Variant::Sha1 }>(SHA1);
+  }
+
+  #[test]
+  fn sha224()
+  {
+    test::<{ Variant::Sha224 }>(SHA224);
+  }
+
+  #[test]
+  fn sha256()
+  {
+    test::<{ Variant::Sha256 }>(SHA256);
+  }
+
+  #[test]
+  fn sha384()
+  {
+    test::<{ Variant::Sha384 }>(SHA384);
+  }
+
+  #[test]
+  fn sha512()
+  {
+    test::<{ Variant::Sha512 }>(SHA512);
+  }
+
+  #[test]
+  fn sha512_224()
+  {
+    test::<{ Variant::Sha512_224 }>(SHA512_224);
+  }
+
+  #[test]
+  fn sha512_256()
+  {
+    test::<{ Variant::Sha512_256 }>(SHA512_256);
+  }
+}

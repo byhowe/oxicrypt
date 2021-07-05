@@ -20,6 +20,9 @@ version = "0.1"
 git = "https://github.com/rust-lang/stdarch.git"
 default-features = false
 
+[dev-dependencies]
+hex = "0.4"
+
 [features]
 default = ["alloc"]
 
