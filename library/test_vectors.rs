@@ -24,3 +24,14 @@ pub const AES192_ENCRYPT_DECRYPT: &[([u8; 16], [u8; 16], [u8; 24])] =
   &include!(env!("OXI_TEST_aes192-encrypt-decrypt.txt"));
 pub const AES256_ENCRYPT_DECRYPT: &[([u8; 16], [u8; 16], [u8; 32])] =
   &include!(env!("OXI_TEST_aes256-encrypt-decrypt.txt"));
+
+pub mod cavp
+{
+  pub const SHA1: &[(&str, &str, usize)] = &include!(env!("OXI_CAVP_sha1_test_vectors.txt"));
+  pub const SHA224: &[(&str, &str, usize)] = &include!(env!("OXI_CAVP_sha224_test_vectors.txt"));
+  pub const SHA256: &[(&str, &str, usize)] = &include!(env!("OXI_CAVP_sha256_test_vectors.txt"));
+  pub const SHA384: &[(&str, &str, usize)] = &include!(env!("OXI_CAVP_sha384_test_vectors.txt"));
+  pub const SHA512: &[(&str, &str, usize)] = &include!(env!("OXI_CAVP_sha512_test_vectors.txt"));
+  pub const SHA512_224: &[(&str, &str, usize)] = &include!(env!("OXI_CAVP_sha512_224_test_vectors.txt"));
+  pub const SHA512_256: &[(&str, &str, usize)] = &include!(env!("OXI_CAVP_sha512_256_test_vectors.txt"));
+}
