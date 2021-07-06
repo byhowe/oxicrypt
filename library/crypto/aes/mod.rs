@@ -9,13 +9,13 @@ pub enum Implementation
   /// Look-up table based implementation.
   ///
   /// This implementation is always available on all platforms.
-  Lut,
+  Lut = 0,
   /// Hardware accelerated implementation.
   ///
   /// This implementation is only available on x86 based chips that have the AES feature.
   #[cfg(any(any(target_arch = "x86", target_arch = "x86_64"), doc))]
   #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-  Aesni,
+  Aesni = 1,
 }
 
 impl Implementation

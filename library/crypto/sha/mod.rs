@@ -11,7 +11,7 @@ pub enum Implementation
   /// Generic implementation.
   ///
   /// This implementation is always available on all platforms.
-  Generic,
+  Generic = 0,
 }
 
 impl Implementation
