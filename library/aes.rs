@@ -15,14 +15,14 @@ use crate::crypto::aes::Engine;
 /// decrypting data. This type does not keep track of wheter it was created for encryption or
 /// decryption, so you must be careful when using it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct KeySchedule<const V: Variant>
+pub struct Key<const V: Variant>
 where
   [u8; Variant::key_schedule_len(V)]: Sized,
 {
   k: [u8; Variant::key_schedule_len(V)],
 }
 
-impl<const V: Variant> KeySchedule<V>
+impl<const V: Variant> Key<V>
 where
   [u8; Variant::key_schedule_len(V)]: Sized,
 {
@@ -34,7 +34,7 @@ where
   /// # use oxicrypt::aes::*;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
   /// let implementation = Implementation::fastest_rt();
-  /// let mut keysched = KeySchedule::<{ Variant::Aes128 }>::uninit();
+  /// let mut keysched = Key::<{ Variant::Aes128 }>::uninit();
   /// unsafe { keysched.assume_init_mut() }
   ///   .set_encrypt_key(implementation, &key)
   ///   .unwrap();
@@ -198,8 +198,8 @@ where
   /// # use oxicrypt::aes::*;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
   /// let implementation = Implementation::fastest_rt();
-  /// let keysched_r = KeySchedule::<{ Variant::Aes128 }>::with_decrypt_key(implementation, &key).unwrap();
-  /// let mut keysched_l = KeySchedule::<{ Variant::Aes128 }>::with_encrypt_key(implementation, &key).unwrap();
+  /// let keysched_r = Key::<{ Variant::Aes128 }>::with_decrypt_key(implementation, &key).unwrap();
+  /// let mut keysched_l = Key::<{ Variant::Aes128 }>::with_encrypt_key(implementation, &key).unwrap();
   /// keysched_l.inverse_key(implementation);
   /// assert_eq!(keysched_l, keysched_r);
   /// ```
@@ -209,8 +209,8 @@ where
   /// # use oxicrypt::aes::*;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
   /// let implementation = Implementation::fastest_rt();
-  /// let keysched_r = KeySchedule::<{ Variant::Aes128 }>::with_encrypt_key(implementation, &key).unwrap();
-  /// let mut keysched_l = KeySchedule::<{ Variant::Aes128 }>::with_decrypt_key(implementation, &key).unwrap();
+  /// let keysched_r = Key::<{ Variant::Aes128 }>::with_encrypt_key(implementation, &key).unwrap();
+  /// let mut keysched_l = Key::<{ Variant::Aes128 }>::with_decrypt_key(implementation, &key).unwrap();
   /// keysched_l.inverse_key(implementation);
   /// assert_eq!(keysched_l, keysched_r);
   /// ```
@@ -238,7 +238,7 @@ where
   }
 }
 
-impl<const V: Variant> AsRef<[u8]> for KeySchedule<V>
+impl<const V: Variant> AsRef<[u8]> for Key<V>
 where
   [u8; Variant::key_schedule_len(V)]: Sized,
 {
@@ -254,7 +254,7 @@ where
 pub fn encrypt1<const V: Variant>(
   implementation: Implementation,
   block: &mut [u8],
-  key_schedule: &KeySchedule<V>,
+  key_schedule: &Key<V>,
 ) -> Result<(), LenError>
 where
   [u8; Variant::key_schedule_len(V)]: Sized,
@@ -276,7 +276,7 @@ where
 pub fn decrypt1<const V: Variant>(
   implementation: Implementation,
   block: &mut [u8],
-  key_schedule: &KeySchedule<V>,
+  key_schedule: &Key<V>,
 ) -> Result<(), LenError>
 where
   [u8; Variant::key_schedule_len(V)]: Sized,
@@ -300,7 +300,7 @@ where
 pub unsafe fn encrypt1_unchecked<const V: Variant>(
   implementation: Implementation,
   block: &mut [u8],
-  key_schedule: &KeySchedule<V>,
+  key_schedule: &Key<V>,
 ) where
   [u8; Variant::key_schedule_len(V)]: Sized,
 {
@@ -315,7 +315,7 @@ pub unsafe fn encrypt1_unchecked<const V: Variant>(
 pub unsafe fn decrypt1_unchecked<const V: Variant>(
   implementation: Implementation,
   block: &mut [u8],
-  key_schedule: &KeySchedule<V>,
+  key_schedule: &Key<V>,
 ) where
   [u8; Variant::key_schedule_len(V)]: Sized,
 {
