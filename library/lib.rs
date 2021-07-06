@@ -27,5 +27,8 @@ pub mod crypto;
 pub mod aes;
 pub mod sha;
 
+#[cfg(c)]
+pub mod c;
+
 #[cfg(test)]
 pub(crate) mod test_vectors;
