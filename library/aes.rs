@@ -15,6 +15,7 @@ use crate::crypto::aes::Engine;
 /// decrypting data. This type does not keep track of wheter it was created for encryption or
 /// decryption, so you must be careful when using it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(c, repr(C))]
 pub struct Key<const V: Variant>
 where
   [u8; Variant::key_schedule_len(V)]: Sized,
