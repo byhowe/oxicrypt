@@ -4,7 +4,7 @@ mod lut;
 
 /// AES implementations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(C)]
+#[cfg_attr(c, repr(C))]
 pub enum Implementation
 {
   /// Look-up table based implementation.
