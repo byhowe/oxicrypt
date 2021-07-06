@@ -147,6 +147,8 @@ where
     ctx.finish(implementation)
   }
 
+  #[cfg(any(feature = "alloc", doc))]
+  #[doc(cfg(any(feature = "alloc", feature = "std")))]
   pub fn oneshot_boxed<D: AsRef<[u8]>>(implementation: Implementation, data: D) -> Box<[u8]>
   {
     let mut ctx = Self::new();
