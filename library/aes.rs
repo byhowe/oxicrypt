@@ -170,7 +170,7 @@ where
   /// * Length of `key` must be equal to [`Variant::key_len(V)`](`Variant::key_len`).
   pub unsafe fn set_encrypt_key_unchecked<K: AsRef<[u8]>>(&mut self, implementation: Implementation, key: K)
   {
-    Engine::<V>::as_ref(implementation).expand_key(key.as_ref().as_ptr(), self.k.as_mut_ptr());
+    Engine::as_ref::<V>(implementation).expand_key(key.as_ref().as_ptr(), self.k.as_mut_ptr());
   }
 
   /// Sets decryption key.
@@ -216,7 +216,7 @@ where
   /// ```
   pub fn inverse_key(&mut self, implementation: Implementation)
   {
-    unsafe { Engine::<V>::as_ref(implementation).inverse_key(self.k.as_mut_ptr()) };
+    unsafe { Engine::as_ref::<V>(implementation).inverse_key(self.k.as_mut_ptr()) };
   }
 
   /// Returns the byte slice.
@@ -266,7 +266,7 @@ where
       got: block.len(),
     });
   }
-  unsafe { Engine::<V>::as_ref(implementation).encrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
+  unsafe { Engine::as_ref::<V>(implementation).encrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
   Ok(())
 }
 
@@ -288,7 +288,7 @@ where
       got: block.len(),
     });
   }
-  unsafe { Engine::<V>::as_ref(implementation).decrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
+  unsafe { Engine::as_ref::<V>(implementation).decrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
   Ok(())
 }
 
@@ -304,7 +304,7 @@ pub unsafe fn encrypt1_unchecked<const V: Variant>(
 ) where
   [u8; Variant::key_schedule_len(V)]: Sized,
 {
-  Engine::<V>::as_ref(implementation).encrypt1(block.as_mut_ptr(), key_schedule.as_ptr());
+  Engine::as_ref::<V>(implementation).encrypt1(block.as_mut_ptr(), key_schedule.as_ptr());
 }
 
 /// Decrypts a single 16 byte block in-place.
@@ -319,7 +319,7 @@ pub unsafe fn decrypt1_unchecked<const V: Variant>(
 ) where
   [u8; Variant::key_schedule_len(V)]: Sized,
 {
-  Engine::<V>::as_ref(implementation).decrypt1(block.as_mut_ptr(), key_schedule.as_ptr());
+  Engine::as_ref::<V>(implementation).decrypt1(block.as_mut_ptr(), key_schedule.as_ptr());
 }
 
 #[derive(Clone, Copy, Debug)]

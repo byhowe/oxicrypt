@@ -4,6 +4,7 @@ mod lut;
 
 /// AES implementations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(C)]
 pub enum Implementation
 {
   /// Look-up table based implementation.
@@ -60,7 +61,7 @@ impl Implementation
 
 /// Pointers to unsafe AES functions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Engine<const V: Variant>
+pub struct Engine
 {
   expand_key: unsafe fn(*const u8, *mut u8),
   inverse_key: unsafe fn(*mut u8),
@@ -68,11 +69,17 @@ pub struct Engine<const V: Variant>
   decrypt1: unsafe fn(*mut u8, *const u8),
 }
 
-impl<const V: Variant> Engine<V>
+impl Engine
 {
   #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-  const AESNI: Self = unsafe { Self::new(Implementation::Aesni) };
-  const LUT: Self = unsafe { Self::new(Implementation::Lut) };
+  const E128_AESNI: Self = unsafe { Self::new::<{ Variant::Aes128 }>(Implementation::Aesni) };
+  const E128_LUT: Self = unsafe { Self::new::<{ Variant::Aes128 }>(Implementation::Lut) };
+  #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+  const E192_AESNI: Self = unsafe { Self::new::<{ Variant::Aes192 }>(Implementation::Aesni) };
+  const E192_LUT: Self = unsafe { Self::new::<{ Variant::Aes192 }>(Implementation::Lut) };
+  #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+  const E256_AESNI: Self = unsafe { Self::new::<{ Variant::Aes256 }>(Implementation::Aesni) };
+  const E256_LUT: Self = unsafe { Self::new::<{ Variant::Aes256 }>(Implementation::Lut) };
 
   /// Returns the appropriate engine for a given implementation.
   ///
@@ -82,7 +89,7 @@ impl<const V: Variant> Engine<V>
   /// implementation is available during runtime. If you try to use an engine with an
   /// implementation that is not available during runtime, it might result in an illegal
   /// instruction signal.
-  pub const unsafe fn new(implementation: Implementation) -> Self
+  pub const unsafe fn new<const V: Variant>(implementation: Implementation) -> Self
   {
     match implementation {
       | Implementation::Lut => Engine {
@@ -106,12 +113,20 @@ impl<const V: Variant> Engine<V>
   /// # Safety
   ///
   /// Same as [`Engine::new`].
-  pub const unsafe fn as_ref(implementation: Implementation) -> &'static Self
+  pub const unsafe fn as_ref<const V: Variant>(implementation: Implementation) -> &'static Self
   {
     match implementation {
-      | Implementation::Lut => &Self::LUT,
+      | Implementation::Lut => match V {
+        | Variant::Aes128 => &Self::E128_LUT,
+        | Variant::Aes192 => &Self::E192_LUT,
+        | Variant::Aes256 => &Self::E256_LUT,
+      },
       #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-      | Implementation::Aesni => &Self::AESNI,
+      | Implementation::Aesni => match V {
+        | Variant::Aes128 => &Self::E128_AESNI,
+        | Variant::Aes192 => &Self::E192_AESNI,
+        | Variant::Aes256 => &Self::E256_AESNI,
+      },
     }
   }
 
