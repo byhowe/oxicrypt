@@ -9,5 +9,4 @@ fn panic_handler(_panic: &core::panic::PanicInfo<'_>) -> !
   loop {}
 }
 
-pub mod aes;
 pub mod sha;
