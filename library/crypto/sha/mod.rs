@@ -6,6 +6,7 @@ use core::mem;
 
 /// SHA implementations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(c, repr(C))]
 pub enum Implementation
 {
   /// Generic implementation.
@@ -43,14 +44,20 @@ impl Implementation
 
 /// Pointers to unsafe SHA compression functions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Engine<const V: Variant>
+pub struct Engine
 {
   compress: unsafe fn(*mut u8, *const u8),
 }
 
-impl<const V: Variant> Engine<V>
+impl Engine
 {
-  const GENERIC: Self = unsafe { Self::new(Implementation::Generic) };
+  const E1_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha1 }>(Implementation::Generic) };
+  const E224_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha224 }>(Implementation::Generic) };
+  const E256_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha256 }>(Implementation::Generic) };
+  const E384_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha384 }>(Implementation::Generic) };
+  const E512_224_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha512_224 }>(Implementation::Generic) };
+  const E512_256_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha512_256 }>(Implementation::Generic) };
+  const E512_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha512 }>(Implementation::Generic) };
 
   /// Returns the appropriate engine for a given implementation.
   ///
@@ -60,7 +67,7 @@ impl<const V: Variant> Engine<V>
   /// implementation is available during runtime. If you try to use an engine with an
   /// implementation that is not available during runtime, it might result in an illegal
   /// instruction signal.
-  pub const unsafe fn new(implementation: Implementation) -> Self
+  pub const unsafe fn new<const V: Variant>(implementation: Implementation) -> Self
   {
     match implementation {
       | Implementation::Generic => Engine {
@@ -74,10 +81,18 @@ impl<const V: Variant> Engine<V>
   /// # Safety
   ///
   /// Same as [`Engine::new`].
-  pub const unsafe fn as_ref(implementation: Implementation) -> &'static Self
+  pub const unsafe fn as_ref<const V: Variant>(implementation: Implementation) -> &'static Self
   {
     match implementation {
-      | Implementation::Generic => &Self::GENERIC,
+      | Implementation::Generic => match V {
+        | Variant::Sha1 => &Self::E1_GENERIC,
+        | Variant::Sha224 => &Self::E224_GENERIC,
+        | Variant::Sha256 => &Self::E256_GENERIC,
+        | Variant::Sha384 => &Self::E384_GENERIC,
+        | Variant::Sha512 => &Self::E512_GENERIC,
+        | Variant::Sha512_224 => &Self::E512_224_GENERIC,
+        | Variant::Sha512_256 => &Self::E512_256_GENERIC,
+      },
     }
   }
 

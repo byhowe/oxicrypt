@@ -74,7 +74,7 @@ where
         data = &data[emptyspace ..];
       }
       if self.blocklen == Variant::block_len(V) {
-        unsafe { Engine::<V>::as_ref(implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
+        unsafe { Engine::as_ref::<V>(implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
         self.blocklen = 0;
         self.len += Variant::block_len(V) as u64;
       }
@@ -105,7 +105,7 @@ where
 
     if self.blocklen > (Variant::block_len(V) - Variant::pad_len(V)) {
       self.block[self.blocklen ..].fill(0);
-      unsafe { Engine::<V>::as_ref(implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
+      unsafe { Engine::as_ref::<V>(implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
       self.blocklen = 0;
     }
 
@@ -113,7 +113,7 @@ where
     self.len *= 8;
     self.len = self.len.to_be();
     self.block[(Variant::block_len(V) - 8) .. Variant::block_len(V)].copy_from_slice(&self.len.to_ne_bytes());
-    unsafe { Engine::<V>::as_ref(implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
+    unsafe { Engine::as_ref::<V>(implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
 
     #[cfg(target_endian = "little")]
     match V {
