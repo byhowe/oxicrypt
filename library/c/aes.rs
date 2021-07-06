@@ -1,9 +1,13 @@
+#![allow(clippy::missing_safety_doc)]
+
 use core::slice;
 
 use crate::crypto::aes::Aes;
 use crate::crypto::aes::Variant;
 use crate::crypto::aes::Implementation;
 use crate::aes::Key;
+use crate::aes::encrypt1_unchecked;
+use crate::aes::decrypt1_unchecked;
 
 // Raw AES functions.
 
@@ -437,4 +441,72 @@ pub unsafe extern "C" fn oxi_aes256_inverse_key(ctx: *mut oxi_aes256_key_t, impl
 {
   let ctx = &mut *ctx;
   ctx.inverse_key(implementation);
+}
+
+// Encrypt and decrypt functions.
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_encrypt1(
+  implementation: oxi_aes_implementation_t,
+  block: *mut u8,
+  key_schedule: *const oxi_aes128_key_t,
+)
+{
+  let key_schedule = &*key_schedule;
+  encrypt1_unchecked::<{ Variant::Aes128 }>(implementation, slice::from_raw_parts_mut(block, 16), &*key_schedule);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_decrypt1(
+  implementation: oxi_aes_implementation_t,
+  block: *mut u8,
+  key_schedule: *const oxi_aes128_key_t,
+)
+{
+  let key_schedule = &*key_schedule;
+  decrypt1_unchecked::<{ Variant::Aes128 }>(implementation, slice::from_raw_parts_mut(block, 16), &*key_schedule);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_encrypt1(
+  implementation: oxi_aes_implementation_t,
+  block: *mut u8,
+  key_schedule: *const oxi_aes192_key_t,
+)
+{
+  let key_schedule = &*key_schedule;
+  encrypt1_unchecked::<{ Variant::Aes192 }>(implementation, slice::from_raw_parts_mut(block, 16), &*key_schedule);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_decrypt1(
+  implementation: oxi_aes_implementation_t,
+  block: *mut u8,
+  key_schedule: *const oxi_aes192_key_t,
+)
+{
+  let key_schedule = &*key_schedule;
+  decrypt1_unchecked::<{ Variant::Aes192 }>(implementation, slice::from_raw_parts_mut(block, 16), &*key_schedule);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_encrypt1(
+  implementation: oxi_aes_implementation_t,
+  block: *mut u8,
+  key_schedule: *const oxi_aes256_key_t,
+)
+{
+  let key_schedule = &*key_schedule;
+  encrypt1_unchecked::<{ Variant::Aes256 }>(implementation, slice::from_raw_parts_mut(block, 16), &*key_schedule);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_decrypt1(
+  implementation: oxi_aes_implementation_t,
+  block: *mut u8,
+  key_schedule: *const oxi_aes256_key_t,
+)
+{
+  let key_schedule = &*key_schedule;
+  decrypt1_unchecked::<{ Variant::Aes256 }>(implementation, slice::from_raw_parts_mut(block, 16), &*key_schedule);
 }
