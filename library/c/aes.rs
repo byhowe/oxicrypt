@@ -1,6 +1,9 @@
+use core::slice;
+
 use crate::crypto::aes::Aes;
 use crate::crypto::aes::Variant;
 use crate::crypto::aes::Implementation;
+use crate::aes::Key;
 
 // Raw AES functions.
 
@@ -318,4 +321,120 @@ pub unsafe extern "C" fn oxi_aes256_engine_new(implementation: oxi_aes_implement
 pub unsafe extern "C" fn oxi_aes256_engine_as_ref(implementation: oxi_aes_implementation_t) -> *const oxi_aes_engine_t
 {
   oxi_aes_engine_t::as_ref::<{ Variant::Aes256 }>(implementation)
+}
+
+// Key schedules.
+
+#[allow(non_camel_case_types)]
+pub type oxi_aes128_key_t = Key<{ Variant::Aes128 }>;
+
+#[allow(non_camel_case_types)]
+pub type oxi_aes192_key_t = Key<{ Variant::Aes192 }>;
+
+#[allow(non_camel_case_types)]
+pub type oxi_aes256_key_t = Key<{ Variant::Aes256 }>;
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_set_encrypt_key(
+  ctx: *mut oxi_aes128_key_t,
+  implementation: oxi_aes_implementation_t,
+  key: *const u8,
+)
+{
+  let ctx = &mut *ctx;
+  ctx.set_encrypt_key_unchecked(
+    implementation,
+    slice::from_raw_parts(key, Variant::key_len(Variant::Aes128)),
+  );
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_set_decrypt_key(
+  ctx: *mut oxi_aes128_key_t,
+  implementation: oxi_aes_implementation_t,
+  key: *const u8,
+)
+{
+  let ctx = &mut *ctx;
+  ctx.set_decrypt_key_unchecked(
+    implementation,
+    slice::from_raw_parts(key, Variant::key_len(Variant::Aes128)),
+  );
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_inverse_key(ctx: *mut oxi_aes128_key_t, implementation: oxi_aes_implementation_t)
+{
+  let ctx = &mut *ctx;
+  ctx.inverse_key(implementation);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_set_encrypt_key(
+  ctx: *mut oxi_aes192_key_t,
+  implementation: oxi_aes_implementation_t,
+  key: *const u8,
+)
+{
+  let ctx = &mut *ctx;
+  ctx.set_encrypt_key_unchecked(
+    implementation,
+    slice::from_raw_parts(key, Variant::key_len(Variant::Aes192)),
+  );
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_set_decrypt_key(
+  ctx: *mut oxi_aes192_key_t,
+  implementation: oxi_aes_implementation_t,
+  key: *const u8,
+)
+{
+  let ctx = &mut *ctx;
+  ctx.set_decrypt_key_unchecked(
+    implementation,
+    slice::from_raw_parts(key, Variant::key_len(Variant::Aes192)),
+  );
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_inverse_key(ctx: *mut oxi_aes192_key_t, implementation: oxi_aes_implementation_t)
+{
+  let ctx = &mut *ctx;
+  ctx.inverse_key(implementation);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_set_encrypt_key(
+  ctx: *mut oxi_aes256_key_t,
+  implementation: oxi_aes_implementation_t,
+  key: *const u8,
+)
+{
+  let ctx = &mut *ctx;
+  ctx.set_encrypt_key_unchecked(
+    implementation,
+    slice::from_raw_parts(key, Variant::key_len(Variant::Aes256)),
+  );
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_set_decrypt_key(
+  ctx: *mut oxi_aes256_key_t,
+  implementation: oxi_aes_implementation_t,
+  key: *const u8,
+)
+{
+  let ctx = &mut *ctx;
+  ctx.set_decrypt_key_unchecked(
+    implementation,
+    slice::from_raw_parts(key, Variant::key_len(Variant::Aes256)),
+  );
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_inverse_key(ctx: *mut oxi_aes256_key_t, implementation: oxi_aes_implementation_t)
+{
+  let ctx = &mut *ctx;
+  ctx.inverse_key(implementation);
 }
