@@ -29,19 +29,24 @@ impl Implementation
   /// fastest implementation based on that.
   pub const fn fastest() -> Self
   {
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86"), target_feature = "aes"))]
-    return Self::Aesni;
-
-    Self::Lut
+    if cfg!(all(
+      any(target_arch = "x86", target_arch = "x86_64"),
+      target_feature = "aes"
+    )) {
+      Self::Aesni
+    } else {
+      Self::Lut
+    }
   }
 
   /// Fastest implementation based on runtime information.
   pub fn fastest_rt() -> Self
   {
-    #[cfg(all(any(target_arch = "x86", target_arch = "x86"), target_feature = "aes"))]
-    return Self::Aesni;
-
-    if Self::is_available(Self::Aesni) {
+    if cfg!(all(
+      any(target_arch = "x86", target_arch = "x86_64"),
+      target_feature = "aes"
+    )) || Self::is_available(Self::Aesni)
+    {
       Self::Aesni
     } else {
       Self::Lut
