@@ -27,7 +27,7 @@ hex = "0.4"
 default = ["alloc"]
 
 alloc = []
-std = []
+std = ["alloc"]
 
 [profile.dev]
 panic = "abort"
