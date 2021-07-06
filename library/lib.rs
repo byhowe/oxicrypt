@@ -8,15 +8,15 @@
 #![feature(const_ptr_offset)]
 #![feature(const_fn_transmute)]
 #![feature(const_maybe_uninit_assume_init)]
-#![feature(new_uninit)]
+#![cfg_attr(feature = "alloc", feature(new_uninit))]
 
 #[cfg(any(feature = "alloc", doc))]
 extern crate alloc;
 #[cfg(any(feature = "std", doc))]
 extern crate std;
 
-#[cfg_attr(c, panic_handler)]
 #[cfg(c)]
+#[panic_handler]
 fn panic_handler(_info: &core::panic::PanicInfo<'_>) -> !
 {
   loop {}
