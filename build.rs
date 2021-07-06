@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::env;
 use std::fs;
 
-fn main()
+fn export_test_vector_paths()
 {
   let manifest_path: PathBuf = env::var("CARGO_MANIFEST_DIR").unwrap().parse().unwrap();
   let test_vectors = manifest_path.join("test-vectors");
@@ -26,4 +26,9 @@ fn main()
       entry.path().display()
     );
   }
+}
+
+fn main()
+{
+  export_test_vector_paths();
 }
