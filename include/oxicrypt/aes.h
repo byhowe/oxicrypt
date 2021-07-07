@@ -1,6 +1,10 @@
 #ifndef OXICRYPT_AES_H_
 #define OXICRYPT_AES_H_
 
+#if defined(__x86_64__) || defined(__i386__)
+#define OXI_HAVE_X86
+#endif
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -42,7 +46,7 @@ void oxi_aes256_inverse_key_lut(uint8_t* key_schedule);
 void oxi_aes256_encrypt1_lut(uint8_t* block, const uint8_t* key_schedule);
 void oxi_aes256_decrypt1_lut(uint8_t* block, const uint8_t* key_schedule);
 
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef OXI_HAVE_X86
 void oxi_aes128_expand_key_aesni(const uint8_t* key, uint8_t* key_schedule);
 void oxi_aes128_inverse_key_aesni(uint8_t* key_schedule);
 void oxi_aes128_encrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
@@ -64,7 +68,7 @@ void oxi_aes256_decrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
 typedef enum oxi_aes_implementation_t {
   OXI_AES_IMPL_LUT = 0,
 
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef OXI_HAVE_X86
   OXI_AES_IMPL_AESNI = 1,
 #endif
 } oxi_aes_implementation_t;
