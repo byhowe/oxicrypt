@@ -1,18 +1,18 @@
 //! High level SHA API.
 
-use core::mem::MaybeUninit;
-use core::mem::size_of;
-use core::cmp::min;
-use core::intrinsics::copy_nonoverlapping;
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
+use core::cmp::min;
+use core::intrinsics::copy_nonoverlapping;
+use core::mem::size_of;
+use core::mem::MaybeUninit;
 
+use crate::crypto::sha::initial_state;
+use crate::crypto::sha::Engine;
 #[doc(inline)]
 pub use crate::crypto::sha::Implementation;
 #[doc(inline)]
 pub use crate::crypto::sha::Variant;
-use crate::crypto::sha::Engine;
-use crate::crypto::sha::initial_state;
 
 /// SHA context.
 #[derive(Debug, Clone, Copy)]

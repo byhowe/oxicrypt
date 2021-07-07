@@ -1,6 +1,6 @@
-use std::path::PathBuf;
 use std::env;
 use std::fs;
+use std::path::PathBuf;
 
 fn export_test_vector_paths()
 {

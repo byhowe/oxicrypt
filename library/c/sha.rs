@@ -2,9 +2,9 @@
 
 use core::slice;
 
+use crate::crypto::sha::Implementation;
 use crate::crypto::sha::Sha;
 use crate::crypto::sha::Variant;
-use crate::crypto::sha::Implementation;
 use crate::sha::Sha as ShaCtx;
 
 // Raw SHA functions.

@@ -2,12 +2,12 @@
 
 use core::slice;
 
-use crate::crypto::aes::Aes;
-use crate::crypto::aes::Variant;
-use crate::crypto::aes::Implementation;
-use crate::aes::Key;
-use crate::aes::encrypt1_unchecked;
 use crate::aes::decrypt1_unchecked;
+use crate::aes::encrypt1_unchecked;
+use crate::aes::Key;
+use crate::crypto::aes::Aes;
+use crate::crypto::aes::Implementation;
+use crate::crypto::aes::Variant;
 
 // Raw AES functions.
 

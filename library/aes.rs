@@ -2,11 +2,11 @@
 
 use core::mem::MaybeUninit;
 
+use crate::crypto::aes::Engine;
 #[doc(inline)]
 pub use crate::crypto::aes::Implementation;
 #[doc(inline)]
 pub use crate::crypto::aes::Variant;
-use crate::crypto::aes::Engine;
 
 /// Expanded key to use with AES.
 ///
