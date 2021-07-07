@@ -28,6 +28,21 @@ where
   blocklen: usize,
 }
 
+/// SHA-1 context.
+pub type Sha1 = Sha<{ Variant::Sha1 }>;
+/// SHA-224 context.
+pub type Sha224 = Sha<{ Variant::Sha224 }>;
+/// SHA-256 context.
+pub type Sha256 = Sha<{ Variant::Sha256 }>;
+/// SHA-384 context.
+pub type Sha384 = Sha<{ Variant::Sha384 }>;
+/// SHA-512 context.
+pub type Sha512 = Sha<{ Variant::Sha512 }>;
+/// SHA-512_224 context.
+pub type Sha512_224 = Sha<{ Variant::Sha512_224 }>;
+/// SHA-512_256 context.
+pub type Sha512_256 = Sha<{ Variant::Sha512_256 }>;
+
 impl<const V: Variant> Default for Sha<V>
 where
   [u8; Variant::state_len(V)]: Sized,

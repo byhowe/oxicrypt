@@ -23,6 +23,13 @@ where
   k: [u8; Variant::key_schedule_len(V)],
 }
 
+/// AES-128 key schedule.
+pub type Key128 = Key<{ Variant::Aes128 }>;
+/// AES-192 key schedule.
+pub type Key192 = Key<{ Variant::Aes192 }>;
+/// AES-256 key schedule.
+pub type Key256 = Key<{ Variant::Aes256 }>;
+
 impl<const V: Variant> Key<V>
 where
   [u8; Variant::key_schedule_len(V)]: Sized,
