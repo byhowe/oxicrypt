@@ -4,11 +4,25 @@ A cryptography library that is mainly implemented in Rust. I aim to implement bi
 
 ## Structure of this library
 
-This library is divided up into 3 crates:
-* `oxicrypt-core`
-* `oxicrypt-sys`
-* `oxicrypt`
+This library contains one crate: `oxicrypt`. `oxicrypt` is the core of this library. It implements and exposes primitive cryptography functions. It also exposes a higher level API for Rust applications. This library also supports FFI through exposing a C API that many other languages can understand as well. The C API is built using `meson`, which will enable the `c` cfg flag during compilation to activate parts of the library that implements the C interface. There is also a Python API in the works, but it is not yet available.
 
-`oxicrypt-core` is the main crate that implements the cryptographic functions that other crates use to build a usable API. For example, `oxicrypt-core` implements the compression functions for the SHA algorithms that work on a single block, while the `oxicrypt` crate implements the user-level API that deals with things like updating the inner state and padding. `oxicrypt` is the main library that regular Rust users should use. It exposes an API that is (I hope) safe. `oxicrypt-sys` is similar to `oxicrypt`, but it exposes an API that C/C++ users should use. It is not as safe as the Rust API. In most cases users should check that the arguments they apply to functions are valid. There is also a Python API in the works, but it is not yet available.
+## Instsallation
 
-It should be noted, however, that this library is still in works and the API will not be finalized until much later.
+### Rust
+
+Put the following in your Cargo.toml.
+```
+oxicrypt = { version = "0.1", git = "https://github.com/byhowe/oxicrypt.git" }
+```
+
+### C/C++
+
+Run the following commands to install the headers, a static library and a shared library.
+```
+$ meson --prefix /usr --buildtype release --default-library both target
+$ meson install -C target
+```
+
+### Python
+
+WIP
