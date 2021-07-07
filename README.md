@@ -26,3 +26,7 @@ $ meson install -C target
 ### Python
 
 WIP
+
+## Issues
+
+This crate uses a lot of nightly features, thus is prone to breakages. As of writing this (2021-07-07), the crate will not compile using the latest nightly compiler (`nightly-2021-07-06`). `nightly-2021-07-01` is known to work. To install it simply run `rustup toolchain install nightly-2021-07-01` and use `cargo +nightly-2021-07-01` instead of `cargo`.
