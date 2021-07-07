@@ -16,6 +16,7 @@ use crate::crypto::sha::initial_state;
 
 /// SHA context.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(c, repr(C))]
 pub struct Sha<const V: Variant>
 where
   [u8; Variant::state_len(V)]: Sized,
