@@ -38,9 +38,9 @@ pub type Sha256 = Sha<{ Variant::Sha256 }>;
 pub type Sha384 = Sha<{ Variant::Sha384 }>;
 /// SHA-512 context.
 pub type Sha512 = Sha<{ Variant::Sha512 }>;
-/// SHA-512_224 context.
+/// SHA-512/224 context.
 pub type Sha512_224 = Sha<{ Variant::Sha512_224 }>;
-/// SHA-512_256 context.
+/// SHA-512/256 context.
 pub type Sha512_256 = Sha<{ Variant::Sha512_256 }>;
 
 impl<const V: Variant> Default for Sha<V>
