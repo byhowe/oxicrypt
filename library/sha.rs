@@ -43,7 +43,7 @@ pub type Sha512_224 = Sha<{ Variant::Sha512_224 }>;
 /// SHA-512/256 context.
 pub type Sha512_256 = Sha<{ Variant::Sha512_256 }>;
 
-impl<const V: Variant> Default for Sha<V>
+impl<const V: Variant> const Default for Sha<V>
 where
   [u8; Variant::state_len(V)]: Sized,
   [u8; Variant::block_len(V)]: Sized,
