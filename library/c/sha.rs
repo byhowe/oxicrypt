@@ -67,9 +67,9 @@ pub struct oxi_sha_engine_t
 
 impl oxi_sha_engine_t
 {
-  const E1_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha1 }>(Implementation::Generic) };
-  const E256_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha256 }>(Implementation::Generic) };
-  const E512_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha512 }>(Implementation::Generic) };
+  const E1_GENERIC: Self = unsafe { Self::new(Variant::Sha1, Implementation::Generic) };
+  const E256_GENERIC: Self = unsafe { Self::new(Variant::Sha256, Implementation::Generic) };
+  const E512_GENERIC: Self = unsafe { Self::new(Variant::Sha512, Implementation::Generic) };
 
   const unsafe fn new(variant: Variant, implementation: Implementation) -> Self
   {
