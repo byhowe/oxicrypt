@@ -21,6 +21,10 @@ version = "0.1"
 git = "https://github.com/rust-lang/stdarch.git"
 default-features = false
 
+[[example]]
+name = "hmac"
+path = "examples/hmac.rs"
+
 [dev-dependencies]
 hex = "0.4"
 

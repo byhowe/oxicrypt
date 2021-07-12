@@ -24,6 +24,7 @@ fn panic_handler(_info: &core::panic::PanicInfo<'_>) -> !
 pub mod crypto;
 
 pub mod aes;
+pub mod hmac;
 pub mod sha;
 
 #[cfg(c)]
