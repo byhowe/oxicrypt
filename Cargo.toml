@@ -14,7 +14,6 @@ categories = ["cryptography", "no-std"]
 [lib]
 name = "oxicrypt"
 path = "library/lib.rs"
-crate-type = ["cdylib", "staticlib"]
 
 [target.'cfg(any(target_arch = "x86", target_arch = "x86_64"))'.dependencies.std_detect]
 version = "0.1"
