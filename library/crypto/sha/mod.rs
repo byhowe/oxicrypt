@@ -22,44 +22,6 @@ pub mod generic
 
 use core::mem;
 
-/// SHA implementations.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(c, repr(C))]
-pub enum Implementation
-{
-  /// Generic implementation.
-  ///
-  /// This implementation is always available on all platforms.
-  Generic = 0,
-}
-
-impl Implementation
-{
-  /// Fastest implementation based on compile-time information.
-  ///
-  /// Currently returns [`Generic`](`Self::Generic`).
-  pub const fn fastest() -> Self
-  {
-    Self::Generic
-  }
-
-  /// Fastest implementation based on runtime information.
-  ///
-  /// Currently returns [`Generic`](`Self::Generic`).
-  pub fn fastest_rt() -> Self
-  {
-    Self::Generic
-  }
-
-  /// Performs a runtime check for wether or not a certain implementation is available.
-  pub fn is_available(self) -> bool
-  {
-    match self {
-      | Implementation::Generic => true,
-    }
-  }
-}
-
 /// Pointers to unsafe SHA compression functions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Engine
@@ -118,6 +80,44 @@ impl Engine
   pub unsafe fn compress(&self, state: *mut u8, block: *const u8)
   {
     (self.compress)(state, block);
+  }
+}
+
+/// SHA implementations.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(c, repr(C))]
+pub enum Implementation
+{
+  /// Generic implementation.
+  ///
+  /// This implementation is always available on all platforms.
+  Generic = 0,
+}
+
+impl Implementation
+{
+  /// Fastest implementation based on compile-time information.
+  ///
+  /// Currently returns [`Generic`](`Self::Generic`).
+  pub const fn fastest() -> Self
+  {
+    Self::Generic
+  }
+
+  /// Fastest implementation based on runtime information.
+  ///
+  /// Currently returns [`Generic`](`Self::Generic`).
+  pub fn fastest_rt() -> Self
+  {
+    Self::Generic
+  }
+
+  /// Performs a runtime check for wether or not a certain implementation is available.
+  pub fn is_available(self) -> bool
+  {
+    match self {
+      | Implementation::Generic => true,
+    }
   }
 }
 
