@@ -35,12 +35,8 @@ extern "C" {
 /* Raw SHA functions. */
 
 void oxi_sha1_compress_generic(uint8_t* state, const uint8_t* block);
-void oxi_sha224_compress_generic(uint8_t* state, const uint8_t* block);
 void oxi_sha256_compress_generic(uint8_t* state, const uint8_t* block);
-void oxi_sha384_compress_generic(uint8_t* state, const uint8_t* block);
 void oxi_sha512_compress_generic(uint8_t* state, const uint8_t* block);
-void oxi_sha512_224_compress_generic(uint8_t* state, const uint8_t* block);
-void oxi_sha512_256_compress_generic(uint8_t* state, const uint8_t* block);
 
 /* Implementations. */
 
@@ -88,26 +84,12 @@ typedef struct oxi_sha1_t {
   size_t blocklen;
 } oxi_sha1_t;
 
-typedef struct oxi_sha224_t {
-  uint8_t h[32];
-  uint8_t block[64];
-  uint64_t len;
-  size_t blocklen;
-} oxi_sha224_t;
-
 typedef struct oxi_sha256_t {
   uint8_t h[32];
   uint8_t block[64];
   uint64_t len;
   size_t blocklen;
 } oxi_sha256_t;
-
-typedef struct oxi_sha384_t {
-  uint8_t h[64];
-  uint8_t block[128];
-  uint64_t len;
-  size_t blocklen;
-} oxi_sha384_t;
 
 typedef struct oxi_sha512_t {
   uint8_t h[64];
@@ -116,19 +98,13 @@ typedef struct oxi_sha512_t {
   size_t blocklen;
 } oxi_sha512_t;
 
-typedef struct oxi_sha512_224_t {
-  uint8_t h[64];
-  uint8_t block[128];
-  uint64_t len;
-  size_t blocklen;
-} oxi_sha512_224_t;
+typedef oxi_sha256_t oxi_sha224_t;
 
-typedef struct oxi_sha512_256_t {
-  uint8_t h[64];
-  uint8_t block[128];
-  uint64_t len;
-  size_t blocklen;
-} oxi_sha512_256_t;
+typedef oxi_sha512_t oxi_sha384_t;
+
+typedef oxi_sha512_t oxi_sha512_224_t;
+
+typedef oxi_sha512_t oxi_sha512_256_t;
 
 void oxi_sha1_reset(oxi_sha1_t* ctx);
 void oxi_sha224_reset(oxi_sha224_t* ctx);

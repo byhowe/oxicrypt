@@ -2,10 +2,10 @@
 
 use core::slice;
 
-use crate::aes::decrypt1_unchecked;
-use crate::aes::encrypt1_unchecked;
-use crate::aes::Key;
-use crate::crypto::aes::Aes;
+use crate::aes::Key128;
+use crate::aes::Key192;
+use crate::aes::Key256;
+use crate::crypto::aes;
 use crate::crypto::aes::Implementation;
 use crate::crypto::aes::Variant;
 
@@ -14,73 +14,73 @@ use crate::crypto::aes::Variant;
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_expand_key_lut(key: *const u8, key_schedule: *mut u8)
 {
-  Aes::<{ Variant::Aes128 }, { Implementation::Lut }>::expand_key(key, key_schedule);
+  aes::lut::aes128_expand_key(key, key_schedule);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_inverse_key_lut(key_schedule: *mut u8)
 {
-  Aes::<{ Variant::Aes128 }, { Implementation::Lut }>::inverse_key(key_schedule);
+  aes::lut::aes128_inverse_key(key_schedule);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_encrypt1_lut(block: *mut u8, key_schedule: *const u8)
 {
-  Aes::<{ Variant::Aes128 }, { Implementation::Lut }>::encrypt1(block, key_schedule);
+  aes::lut::aes128_encrypt1(block, key_schedule);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_decrypt1_lut(block: *mut u8, key_schedule: *const u8)
 {
-  Aes::<{ Variant::Aes128 }, { Implementation::Lut }>::decrypt1(block, key_schedule);
+  aes::lut::aes128_decrypt1(block, key_schedule);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_expand_key_lut(key: *const u8, key_schedule: *mut u8)
 {
-  Aes::<{ Variant::Aes192 }, { Implementation::Lut }>::expand_key(key, key_schedule);
+  aes::lut::aes192_expand_key(key, key_schedule);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_inverse_key_lut(key_schedule: *mut u8)
 {
-  Aes::<{ Variant::Aes192 }, { Implementation::Lut }>::inverse_key(key_schedule);
+  aes::lut::aes192_inverse_key(key_schedule);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_encrypt1_lut(block: *mut u8, key_schedule: *const u8)
 {
-  Aes::<{ Variant::Aes192 }, { Implementation::Lut }>::encrypt1(block, key_schedule);
+  aes::lut::aes192_encrypt1(block, key_schedule);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_decrypt1_lut(block: *mut u8, key_schedule: *const u8)
 {
-  Aes::<{ Variant::Aes192 }, { Implementation::Lut }>::decrypt1(block, key_schedule);
+  aes::lut::aes192_decrypt1(block, key_schedule);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_expand_key_lut(key: *const u8, key_schedule: *mut u8)
 {
-  Aes::<{ Variant::Aes256 }, { Implementation::Lut }>::expand_key(key, key_schedule);
+  aes::lut::aes256_expand_key(key, key_schedule);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_inverse_key_lut(key_schedule: *mut u8)
 {
-  Aes::<{ Variant::Aes256 }, { Implementation::Lut }>::inverse_key(key_schedule);
+  aes::lut::aes256_inverse_key(key_schedule);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_encrypt1_lut(block: *mut u8, key_schedule: *const u8)
 {
-  Aes::<{ Variant::Aes256 }, { Implementation::Lut }>::encrypt1(block, key_schedule);
+  aes::lut::aes256_encrypt1(block, key_schedule);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_decrypt1_lut(block: *mut u8, key_schedule: *const u8)
 {
-  Aes::<{ Variant::Aes256 }, { Implementation::Lut }>::decrypt1(block, key_schedule);
+  aes::lut::aes256_decrypt1(block, key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -88,7 +88,7 @@ pub unsafe extern "C" fn oxi_aes256_decrypt1_lut(block: *mut u8, key_schedule: *
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_expand_key_aesni(key: *const u8, key_schedule: *mut u8)
 {
-  Aes::<{ Variant::Aes128 }, { Implementation::Aesni }>::expand_key(key, key_schedule);
+  aes::aesni::aes128_expand_key(key, key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -96,7 +96,7 @@ pub unsafe extern "C" fn oxi_aes128_expand_key_aesni(key: *const u8, key_schedul
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_inverse_key_aesni(key_schedule: *mut u8)
 {
-  Aes::<{ Variant::Aes128 }, { Implementation::Aesni }>::inverse_key(key_schedule);
+  aes::aesni::aes128_inverse_key(key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -104,7 +104,7 @@ pub unsafe extern "C" fn oxi_aes128_inverse_key_aesni(key_schedule: *mut u8)
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_encrypt1_aesni(block: *mut u8, key_schedule: *const u8)
 {
-  Aes::<{ Variant::Aes128 }, { Implementation::Aesni }>::encrypt1(block, key_schedule);
+  aes::aesni::aes128_encrypt1(block, key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -112,7 +112,7 @@ pub unsafe extern "C" fn oxi_aes128_encrypt1_aesni(block: *mut u8, key_schedule:
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_decrypt1_aesni(block: *mut u8, key_schedule: *const u8)
 {
-  Aes::<{ Variant::Aes128 }, { Implementation::Aesni }>::decrypt1(block, key_schedule);
+  aes::aesni::aes128_decrypt1(block, key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -120,7 +120,7 @@ pub unsafe extern "C" fn oxi_aes128_decrypt1_aesni(block: *mut u8, key_schedule:
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_expand_key_aesni(key: *const u8, key_schedule: *mut u8)
 {
-  Aes::<{ Variant::Aes192 }, { Implementation::Aesni }>::expand_key(key, key_schedule);
+  aes::aesni::aes192_expand_key(key, key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -128,7 +128,7 @@ pub unsafe extern "C" fn oxi_aes192_expand_key_aesni(key: *const u8, key_schedul
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_inverse_key_aesni(key_schedule: *mut u8)
 {
-  Aes::<{ Variant::Aes192 }, { Implementation::Aesni }>::inverse_key(key_schedule);
+  aes::aesni::aes192_inverse_key(key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -136,7 +136,7 @@ pub unsafe extern "C" fn oxi_aes192_inverse_key_aesni(key_schedule: *mut u8)
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_encrypt1_aesni(block: *mut u8, key_schedule: *const u8)
 {
-  Aes::<{ Variant::Aes192 }, { Implementation::Aesni }>::encrypt1(block, key_schedule);
+  aes::aesni::aes192_encrypt1(block, key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -144,7 +144,7 @@ pub unsafe extern "C" fn oxi_aes192_encrypt1_aesni(block: *mut u8, key_schedule:
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_decrypt1_aesni(block: *mut u8, key_schedule: *const u8)
 {
-  Aes::<{ Variant::Aes192 }, { Implementation::Aesni }>::decrypt1(block, key_schedule);
+  aes::aesni::aes192_decrypt1(block, key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -152,7 +152,7 @@ pub unsafe extern "C" fn oxi_aes192_decrypt1_aesni(block: *mut u8, key_schedule:
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_expand_key_aesni(key: *const u8, key_schedule: *mut u8)
 {
-  Aes::<{ Variant::Aes256 }, { Implementation::Aesni }>::expand_key(key, key_schedule);
+  aes::aesni::aes256_expand_key(key, key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -160,7 +160,7 @@ pub unsafe extern "C" fn oxi_aes256_expand_key_aesni(key: *const u8, key_schedul
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_inverse_key_aesni(key_schedule: *mut u8)
 {
-  Aes::<{ Variant::Aes256 }, { Implementation::Aesni }>::inverse_key(key_schedule);
+  aes::aesni::aes256_inverse_key(key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -168,7 +168,7 @@ pub unsafe extern "C" fn oxi_aes256_inverse_key_aesni(key_schedule: *mut u8)
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_encrypt1_aesni(block: *mut u8, key_schedule: *const u8)
 {
-  Aes::<{ Variant::Aes256 }, { Implementation::Aesni }>::encrypt1(block, key_schedule);
+  aes::aesni::aes256_encrypt1(block, key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -176,7 +176,7 @@ pub unsafe extern "C" fn oxi_aes256_encrypt1_aesni(block: *mut u8, key_schedule:
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_decrypt1_aesni(block: *mut u8, key_schedule: *const u8)
 {
-  Aes::<{ Variant::Aes256 }, { Implementation::Aesni }>::decrypt1(block, key_schedule);
+  aes::aesni::aes256_decrypt1(block, key_schedule);
 }
 
 // Implementations.
@@ -217,19 +217,19 @@ pub struct oxi_aes_engine_t
 impl oxi_aes_engine_t
 {
   #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-  const E128_AESNI: Self = unsafe { Self::new::<{ Variant::Aes128 }>(Implementation::Aesni) };
-  const E128_LUT: Self = unsafe { Self::new::<{ Variant::Aes128 }>(Implementation::Lut) };
+  const E128_AESNI: Self = unsafe { Self::new(Variant::Aes128, Implementation::Aesni) };
+  const E128_LUT: Self = unsafe { Self::new(Variant::Aes128, Implementation::Lut) };
   #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-  const E192_AESNI: Self = unsafe { Self::new::<{ Variant::Aes192 }>(Implementation::Aesni) };
-  const E192_LUT: Self = unsafe { Self::new::<{ Variant::Aes192 }>(Implementation::Lut) };
+  const E192_AESNI: Self = unsafe { Self::new(Variant::Aes192, Implementation::Aesni) };
+  const E192_LUT: Self = unsafe { Self::new(Variant::Aes192, Implementation::Lut) };
   #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-  const E256_AESNI: Self = unsafe { Self::new::<{ Variant::Aes256 }>(Implementation::Aesni) };
-  const E256_LUT: Self = unsafe { Self::new::<{ Variant::Aes256 }>(Implementation::Lut) };
+  const E256_AESNI: Self = unsafe { Self::new(Variant::Aes256, Implementation::Aesni) };
+  const E256_LUT: Self = unsafe { Self::new(Variant::Aes256, Implementation::Lut) };
 
-  const unsafe fn new<const V: Variant>(implementation: Implementation) -> Self
+  const unsafe fn new(variant: Variant, implementation: Implementation) -> Self
   {
     match implementation {
-      | Implementation::Lut => match V {
+      | Implementation::Lut => match variant {
         | Variant::Aes128 => Self {
           expand_key: oxi_aes128_expand_key_lut,
           inverse_key: oxi_aes128_inverse_key_lut,
@@ -250,7 +250,7 @@ impl oxi_aes_engine_t
         },
       },
       #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-      | Implementation::Aesni => match V {
+      | Implementation::Aesni => match variant {
         | Variant::Aes128 => Self {
           expand_key: oxi_aes128_expand_key_aesni,
           inverse_key: oxi_aes128_inverse_key_aesni,
@@ -273,16 +273,16 @@ impl oxi_aes_engine_t
     }
   }
 
-  const unsafe fn as_ref<const V: Variant>(implementation: Implementation) -> &'static Self
+  const unsafe fn as_ref(variant: Variant, implementation: Implementation) -> &'static Self
   {
     match implementation {
-      | Implementation::Lut => match V {
+      | Implementation::Lut => match variant {
         | Variant::Aes128 => &Self::E128_LUT,
         | Variant::Aes192 => &Self::E192_LUT,
         | Variant::Aes256 => &Self::E256_LUT,
       },
       #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-      | Implementation::Aesni => match V {
+      | Implementation::Aesni => match variant {
         | Variant::Aes128 => &Self::E128_AESNI,
         | Variant::Aes192 => &Self::E192_AESNI,
         | Variant::Aes256 => &Self::E256_AESNI,
@@ -294,49 +294,49 @@ impl oxi_aes_engine_t
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_engine_new(implementation: oxi_aes_implementation_t) -> oxi_aes_engine_t
 {
-  oxi_aes_engine_t::new::<{ Variant::Aes128 }>(implementation)
+  oxi_aes_engine_t::new(Variant::Aes128, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_engine_as_ref(implementation: oxi_aes_implementation_t) -> *const oxi_aes_engine_t
 {
-  oxi_aes_engine_t::as_ref::<{ Variant::Aes128 }>(implementation)
+  oxi_aes_engine_t::as_ref(Variant::Aes128, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_engine_new(implementation: oxi_aes_implementation_t) -> oxi_aes_engine_t
 {
-  oxi_aes_engine_t::new::<{ Variant::Aes192 }>(implementation)
+  oxi_aes_engine_t::new(Variant::Aes192, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_engine_as_ref(implementation: oxi_aes_implementation_t) -> *const oxi_aes_engine_t
 {
-  oxi_aes_engine_t::as_ref::<{ Variant::Aes192 }>(implementation)
+  oxi_aes_engine_t::as_ref(Variant::Aes192, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_engine_new(implementation: oxi_aes_implementation_t) -> oxi_aes_engine_t
 {
-  oxi_aes_engine_t::new::<{ Variant::Aes256 }>(implementation)
+  oxi_aes_engine_t::new(Variant::Aes256, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_engine_as_ref(implementation: oxi_aes_implementation_t) -> *const oxi_aes_engine_t
 {
-  oxi_aes_engine_t::as_ref::<{ Variant::Aes256 }>(implementation)
+  oxi_aes_engine_t::as_ref(Variant::Aes256, implementation)
 }
 
 // Key schedules.
 
 #[allow(non_camel_case_types)]
-pub type oxi_aes128_key_t = Key<{ Variant::Aes128 }>;
+pub type oxi_aes128_key_t = Key128;
 
 #[allow(non_camel_case_types)]
-pub type oxi_aes192_key_t = Key<{ Variant::Aes192 }>;
+pub type oxi_aes192_key_t = Key192;
 
 #[allow(non_camel_case_types)]
-pub type oxi_aes256_key_t = Key<{ Variant::Aes256 }>;
+pub type oxi_aes256_key_t = Key256;
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_set_encrypt_key(
@@ -371,6 +371,28 @@ pub unsafe extern "C" fn oxi_aes128_inverse_key(ctx: *mut oxi_aes128_key_t, impl
 {
   let ctx = &mut *ctx;
   ctx.inverse_key(implementation);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_encrypt1(
+  ctx: *const oxi_aes128_key_t,
+  implementation: oxi_aes_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt1_unchecked(implementation, slice::from_raw_parts_mut(block, 16));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_decrypt1(
+  ctx: *const oxi_aes128_key_t,
+  implementation: oxi_aes_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt1_unchecked(implementation, slice::from_raw_parts_mut(block, 16));
 }
 
 #[no_mangle]
@@ -409,6 +431,28 @@ pub unsafe extern "C" fn oxi_aes192_inverse_key(ctx: *mut oxi_aes192_key_t, impl
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_encrypt1(
+  ctx: *const oxi_aes192_key_t,
+  implementation: oxi_aes_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt1_unchecked(implementation, slice::from_raw_parts_mut(block, 16));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_decrypt1(
+  ctx: *const oxi_aes192_key_t,
+  implementation: oxi_aes_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt1_unchecked(implementation, slice::from_raw_parts_mut(block, 16));
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_set_encrypt_key(
   ctx: *mut oxi_aes256_key_t,
   implementation: oxi_aes_implementation_t,
@@ -443,70 +487,24 @@ pub unsafe extern "C" fn oxi_aes256_inverse_key(ctx: *mut oxi_aes256_key_t, impl
   ctx.inverse_key(implementation);
 }
 
-// Encrypt and decrypt functions.
-
-#[no_mangle]
-pub unsafe extern "C" fn oxi_aes128_encrypt1(
-  implementation: oxi_aes_implementation_t,
-  block: *mut u8,
-  key_schedule: *const oxi_aes128_key_t,
-)
-{
-  let key_schedule = &*key_schedule;
-  encrypt1_unchecked::<{ Variant::Aes128 }>(implementation, slice::from_raw_parts_mut(block, 16), &*key_schedule);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn oxi_aes128_decrypt1(
-  implementation: oxi_aes_implementation_t,
-  block: *mut u8,
-  key_schedule: *const oxi_aes128_key_t,
-)
-{
-  let key_schedule = &*key_schedule;
-  decrypt1_unchecked::<{ Variant::Aes128 }>(implementation, slice::from_raw_parts_mut(block, 16), &*key_schedule);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn oxi_aes192_encrypt1(
-  implementation: oxi_aes_implementation_t,
-  block: *mut u8,
-  key_schedule: *const oxi_aes192_key_t,
-)
-{
-  let key_schedule = &*key_schedule;
-  encrypt1_unchecked::<{ Variant::Aes192 }>(implementation, slice::from_raw_parts_mut(block, 16), &*key_schedule);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn oxi_aes192_decrypt1(
-  implementation: oxi_aes_implementation_t,
-  block: *mut u8,
-  key_schedule: *const oxi_aes192_key_t,
-)
-{
-  let key_schedule = &*key_schedule;
-  decrypt1_unchecked::<{ Variant::Aes192 }>(implementation, slice::from_raw_parts_mut(block, 16), &*key_schedule);
-}
-
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_encrypt1(
+  ctx: *const oxi_aes256_key_t,
   implementation: oxi_aes_implementation_t,
   block: *mut u8,
-  key_schedule: *const oxi_aes256_key_t,
 )
 {
-  let key_schedule = &*key_schedule;
-  encrypt1_unchecked::<{ Variant::Aes256 }>(implementation, slice::from_raw_parts_mut(block, 16), &*key_schedule);
+  let ctx = &*ctx;
+  ctx.encrypt1_unchecked(implementation, slice::from_raw_parts_mut(block, 16));
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_decrypt1(
+  ctx: *const oxi_aes256_key_t,
   implementation: oxi_aes_implementation_t,
   block: *mut u8,
-  key_schedule: *const oxi_aes256_key_t,
 )
 {
-  let key_schedule = &*key_schedule;
-  decrypt1_unchecked::<{ Variant::Aes256 }>(implementation, slice::from_raw_parts_mut(block, 16), &*key_schedule);
+  let ctx = &*ctx;
+  ctx.decrypt1_unchecked(implementation, slice::from_raw_parts_mut(block, 16));
 }

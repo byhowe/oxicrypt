@@ -2,53 +2,35 @@
 
 use core::slice;
 
+use crate::crypto::sha;
 use crate::crypto::sha::Implementation;
-use crate::crypto::sha::Sha;
 use crate::crypto::sha::Variant;
-use crate::sha::Sha as ShaCtx;
+use crate::sha::Sha1;
+use crate::sha::Sha224;
+use crate::sha::Sha256;
+use crate::sha::Sha384;
+use crate::sha::Sha512;
+use crate::sha::Sha512_224;
+use crate::sha::Sha512_256;
 
 // Raw SHA functions.
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha1_compress_generic(state: *mut u8, block: *const u8)
 {
-  Sha::<{ Variant::Sha1 }, { Implementation::Generic }>::compress(state, block);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn oxi_sha224_compress_generic(state: *mut u8, block: *const u8)
-{
-  Sha::<{ Variant::Sha224 }, { Implementation::Generic }>::compress(state, block);
+  sha::generic::sha1_compress(state, block);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha256_compress_generic(state: *mut u8, block: *const u8)
 {
-  Sha::<{ Variant::Sha256 }, { Implementation::Generic }>::compress(state, block);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn oxi_sha384_compress_generic(state: *mut u8, block: *const u8)
-{
-  Sha::<{ Variant::Sha384 }, { Implementation::Generic }>::compress(state, block);
+  sha::generic::sha256_compress(state, block);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha512_compress_generic(state: *mut u8, block: *const u8)
 {
-  Sha::<{ Variant::Sha512 }, { Implementation::Generic }>::compress(state, block);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn oxi_sha512_224_compress_generic(state: *mut u8, block: *const u8)
-{
-  Sha::<{ Variant::Sha512_224 }, { Implementation::Generic }>::compress(state, block);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn oxi_sha512_256_compress_generic(state: *mut u8, block: *const u8)
-{
-  Sha::<{ Variant::Sha512_256 }, { Implementation::Generic }>::compress(state, block);
+  sha::generic::sha512_compress(state, block);
 }
 
 // Implementations.
@@ -86,53 +68,33 @@ pub struct oxi_sha_engine_t
 impl oxi_sha_engine_t
 {
   const E1_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha1 }>(Implementation::Generic) };
-  const E224_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha224 }>(Implementation::Generic) };
   const E256_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha256 }>(Implementation::Generic) };
-  const E384_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha384 }>(Implementation::Generic) };
-  const E512_224_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha512_224 }>(Implementation::Generic) };
-  const E512_256_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha512_256 }>(Implementation::Generic) };
   const E512_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha512 }>(Implementation::Generic) };
 
-  const unsafe fn new<const V: Variant>(implementation: Implementation) -> Self
+  const unsafe fn new(variant: Variant, implementation: Implementation) -> Self
   {
     match implementation {
-      | Implementation::Generic => match V {
+      | Implementation::Generic => match variant {
         | Variant::Sha1 => Self {
           compress: oxi_sha1_compress_generic,
         },
-        | Variant::Sha224 => Self {
-          compress: oxi_sha224_compress_generic,
-        },
-        | Variant::Sha256 => Self {
+        | Variant::Sha224 | Variant::Sha256 => Self {
           compress: oxi_sha256_compress_generic,
         },
-        | Variant::Sha384 => Self {
-          compress: oxi_sha384_compress_generic,
-        },
-        | Variant::Sha512 => Self {
+        | Variant::Sha384 | Variant::Sha512 | Variant::Sha512_224 | Variant::Sha512_256 => Self {
           compress: oxi_sha512_compress_generic,
-        },
-        | Variant::Sha512_224 => Self {
-          compress: oxi_sha512_224_compress_generic,
-        },
-        | Variant::Sha512_256 => Self {
-          compress: oxi_sha512_256_compress_generic,
         },
       },
     }
   }
 
-  const unsafe fn as_ref<const V: Variant>(implementation: Implementation) -> &'static Self
+  const unsafe fn as_ref(variant: Variant, implementation: Implementation) -> &'static Self
   {
     match implementation {
-      | Implementation::Generic => match V {
+      | Implementation::Generic => match variant {
         | Variant::Sha1 => &Self::E1_GENERIC,
-        | Variant::Sha224 => &Self::E224_GENERIC,
-        | Variant::Sha256 => &Self::E256_GENERIC,
-        | Variant::Sha384 => &Self::E384_GENERIC,
-        | Variant::Sha512 => &Self::E512_GENERIC,
-        | Variant::Sha512_224 => &Self::E512_224_GENERIC,
-        | Variant::Sha512_256 => &Self::E512_256_GENERIC,
+        | Variant::Sha224 | Variant::Sha256 => &Self::E256_GENERIC,
+        | Variant::Sha384 | Variant::Sha512 | Variant::Sha512_224 | Variant::Sha512_256 => &Self::E512_GENERIC,
       },
     }
   }
@@ -141,67 +103,67 @@ impl oxi_sha_engine_t
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha1_engine_new(implementation: oxi_sha_implementation_t) -> oxi_sha_engine_t
 {
-  oxi_sha_engine_t::new::<{ Variant::Sha1 }>(implementation)
+  oxi_sha_engine_t::new(Variant::Sha1, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha1_engine_as_ref(implementation: oxi_sha_implementation_t) -> *const oxi_sha_engine_t
 {
-  oxi_sha_engine_t::as_ref::<{ Variant::Sha1 }>(implementation)
+  oxi_sha_engine_t::as_ref(Variant::Sha1, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha224_engine_new(implementation: oxi_sha_implementation_t) -> oxi_sha_engine_t
 {
-  oxi_sha_engine_t::new::<{ Variant::Sha224 }>(implementation)
+  oxi_sha_engine_t::new(Variant::Sha224, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha224_engine_as_ref(implementation: oxi_sha_implementation_t) -> *const oxi_sha_engine_t
 {
-  oxi_sha_engine_t::as_ref::<{ Variant::Sha224 }>(implementation)
+  oxi_sha_engine_t::as_ref(Variant::Sha224, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha256_engine_new(implementation: oxi_sha_implementation_t) -> oxi_sha_engine_t
 {
-  oxi_sha_engine_t::new::<{ Variant::Sha256 }>(implementation)
+  oxi_sha_engine_t::new(Variant::Sha256, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha256_engine_as_ref(implementation: oxi_sha_implementation_t) -> *const oxi_sha_engine_t
 {
-  oxi_sha_engine_t::as_ref::<{ Variant::Sha256 }>(implementation)
+  oxi_sha_engine_t::as_ref(Variant::Sha256, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha384_engine_new(implementation: oxi_sha_implementation_t) -> oxi_sha_engine_t
 {
-  oxi_sha_engine_t::new::<{ Variant::Sha384 }>(implementation)
+  oxi_sha_engine_t::new(Variant::Sha384, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha384_engine_as_ref(implementation: oxi_sha_implementation_t) -> *const oxi_sha_engine_t
 {
-  oxi_sha_engine_t::as_ref::<{ Variant::Sha384 }>(implementation)
+  oxi_sha_engine_t::as_ref(Variant::Sha384, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha512_engine_new(implementation: oxi_sha_implementation_t) -> oxi_sha_engine_t
 {
-  oxi_sha_engine_t::new::<{ Variant::Sha512 }>(implementation)
+  oxi_sha_engine_t::new(Variant::Sha512, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha512_engine_as_ref(implementation: oxi_sha_implementation_t) -> *const oxi_sha_engine_t
 {
-  oxi_sha_engine_t::as_ref::<{ Variant::Sha512 }>(implementation)
+  oxi_sha_engine_t::as_ref(Variant::Sha512, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha512_224_engine_new(implementation: oxi_sha_implementation_t) -> oxi_sha_engine_t
 {
-  oxi_sha_engine_t::new::<{ Variant::Sha512_224 }>(implementation)
+  oxi_sha_engine_t::new(Variant::Sha512_224, implementation)
 }
 
 #[no_mangle]
@@ -209,13 +171,13 @@ pub unsafe extern "C" fn oxi_sha512_224_engine_as_ref(
   implementation: oxi_sha_implementation_t,
 ) -> *const oxi_sha_engine_t
 {
-  oxi_sha_engine_t::as_ref::<{ Variant::Sha512_224 }>(implementation)
+  oxi_sha_engine_t::as_ref(Variant::Sha512_224, implementation)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha512_256_engine_new(implementation: oxi_sha_implementation_t) -> oxi_sha_engine_t
 {
-  oxi_sha_engine_t::new::<{ Variant::Sha512_256 }>(implementation)
+  oxi_sha_engine_t::new(Variant::Sha512_256, implementation)
 }
 
 #[no_mangle]
@@ -223,31 +185,31 @@ pub unsafe extern "C" fn oxi_sha512_256_engine_as_ref(
   implementation: oxi_sha_implementation_t,
 ) -> *const oxi_sha_engine_t
 {
-  oxi_sha_engine_t::as_ref::<{ Variant::Sha512_256 }>(implementation)
+  oxi_sha_engine_t::as_ref(Variant::Sha512_256, implementation)
 }
 
 // SHA contexts.
 
 #[allow(non_camel_case_types)]
-pub type oxi_sha1_t = ShaCtx<{ Variant::Sha1 }>;
+pub type oxi_sha1_t = Sha1;
 
 #[allow(non_camel_case_types)]
-pub type oxi_sha224_t = ShaCtx<{ Variant::Sha224 }>;
+pub type oxi_sha224_t = Sha224;
 
 #[allow(non_camel_case_types)]
-pub type oxi_sha256_t = ShaCtx<{ Variant::Sha256 }>;
+pub type oxi_sha256_t = Sha256;
 
 #[allow(non_camel_case_types)]
-pub type oxi_sha384_t = ShaCtx<{ Variant::Sha384 }>;
+pub type oxi_sha384_t = Sha384;
 
 #[allow(non_camel_case_types)]
-pub type oxi_sha512_t = ShaCtx<{ Variant::Sha512 }>;
+pub type oxi_sha512_t = Sha512;
 
 #[allow(non_camel_case_types)]
-pub type oxi_sha512_224_t = ShaCtx<{ Variant::Sha512_224 }>;
+pub type oxi_sha512_224_t = Sha512_224;
 
 #[allow(non_camel_case_types)]
-pub type oxi_sha512_256_t = ShaCtx<{ Variant::Sha512_256 }>;
+pub type oxi_sha512_256_t = Sha512_256;
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha1_reset(ctx: *mut oxi_sha1_t)
@@ -475,7 +437,7 @@ pub unsafe extern "C" fn oxi_sha1_oneshot(
   outlen: usize,
 )
 {
-  ShaCtx::<{ Variant::Sha1 }>::oneshot_into(
+  Sha1::oneshot_into(
     implementation,
     slice::from_raw_parts(data, datalen),
     slice::from_raw_parts_mut(out, outlen),
@@ -491,7 +453,7 @@ pub unsafe extern "C" fn oxi_sha224_oneshot(
   outlen: usize,
 )
 {
-  ShaCtx::<{ Variant::Sha224 }>::oneshot_into(
+  Sha224::oneshot_into(
     implementation,
     slice::from_raw_parts(data, datalen),
     slice::from_raw_parts_mut(out, outlen),
@@ -507,7 +469,7 @@ pub unsafe extern "C" fn oxi_sha256_oneshot(
   outlen: usize,
 )
 {
-  ShaCtx::<{ Variant::Sha256 }>::oneshot_into(
+  Sha256::oneshot_into(
     implementation,
     slice::from_raw_parts(data, datalen),
     slice::from_raw_parts_mut(out, outlen),
@@ -523,7 +485,7 @@ pub unsafe extern "C" fn oxi_sha384_oneshot(
   outlen: usize,
 )
 {
-  ShaCtx::<{ Variant::Sha384 }>::oneshot_into(
+  Sha384::oneshot_into(
     implementation,
     slice::from_raw_parts(data, datalen),
     slice::from_raw_parts_mut(out, outlen),
@@ -539,7 +501,7 @@ pub unsafe extern "C" fn oxi_sha512_oneshot(
   outlen: usize,
 )
 {
-  ShaCtx::<{ Variant::Sha512 }>::oneshot_into(
+  Sha512::oneshot_into(
     implementation,
     slice::from_raw_parts(data, datalen),
     slice::from_raw_parts_mut(out, outlen),
@@ -555,7 +517,7 @@ pub unsafe extern "C" fn oxi_sha512_224_oneshot(
   outlen: usize,
 )
 {
-  ShaCtx::<{ Variant::Sha512_224 }>::oneshot_into(
+  Sha512_224::oneshot_into(
     implementation,
     slice::from_raw_parts(data, datalen),
     slice::from_raw_parts_mut(out, outlen),
@@ -571,7 +533,7 @@ pub unsafe extern "C" fn oxi_sha512_256_oneshot(
   outlen: usize,
 )
 {
-  ShaCtx::<{ Variant::Sha512_256 }>::oneshot_into(
+  Sha512_256::oneshot_into(
     implementation,
     slice::from_raw_parts(data, datalen),
     slice::from_raw_parts_mut(out, outlen),
