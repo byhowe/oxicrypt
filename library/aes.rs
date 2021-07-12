@@ -10,30 +10,39 @@ pub use crate::crypto::aes::Variant;
 
 /// Expanded key to use with AES.
 ///
+/// # Safety
+///
+/// It is undefined behavior to specify `N` value other than `176`, `208` or `240`.
+///
+/// # Note
+///
 /// AES uses different key schedules when encrypting or decrypting. If you created a key schedule
 /// using either one of `set_encrypt_key` functions, you cannot use the same key schedule for
 /// decrypting data. This type does not keep track of wheter it was created for encryption or
 /// decryption, so you must be careful when using it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[cfg_attr(c, repr(C))]
-pub struct Key<const V: Variant>
-where
-  [u8; Variant::key_schedule_len(V)]: Sized,
+pub struct Key<const N: usize>
 {
-  k: [u8; Variant::key_schedule_len(V)],
+  k: [u8; N],
 }
 
 /// AES-128 key schedule.
-pub type Key128 = Key<{ Variant::Aes128 }>;
+pub type Key128 = Key<176>;
 /// AES-192 key schedule.
-pub type Key192 = Key<{ Variant::Aes192 }>;
+pub type Key192 = Key<208>;
 /// AES-256 key schedule.
-pub type Key256 = Key<{ Variant::Aes256 }>;
+pub type Key256 = Key<240>;
 
-impl<const V: Variant> Key<V>
-where
-  [u8; Variant::key_schedule_len(V)]: Sized,
+impl<const N: usize> Key<N>
 {
+  const V: Variant = match N {
+    | 176 => Variant::Aes128,
+    | 208 => Variant::Aes192,
+    | 240 => Variant::Aes256,
+    | _ => unsafe { core::hint::unreachable_unchecked() },
+  };
+
   /// Uninitialized key schedule.
   ///
   /// # Examples
@@ -42,7 +51,7 @@ where
   /// # use oxicrypt::aes::*;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
   /// let implementation = Implementation::fastest_rt();
-  /// let mut keysched = Key::<{ Variant::Aes128 }>::uninit();
+  /// let mut keysched = Key128::uninit();
   /// unsafe { keysched.assume_init_mut() }
   ///   .set_encrypt_key(implementation, &key)
   ///   .unwrap();
@@ -60,10 +69,10 @@ where
   pub fn with_encrypt_key<K: AsRef<[u8]>>(implementation: Implementation, key: K) -> Result<Self, LenError>
   {
     let key = key.as_ref();
-    if key.len() != Variant::key_len(V) {
+    if key.len() != Variant::key_len(Self::V) {
       return Err(LenError {
         field: "key",
-        expected: Variant::key_len(V),
+        expected: Variant::key_len(Self::V),
         got: key.len(),
       });
     }
@@ -83,10 +92,10 @@ where
   pub fn with_decrypt_key<K: AsRef<[u8]>>(implementation: Implementation, key: K) -> Result<Self, LenError>
   {
     let key = key.as_ref();
-    if key.len() != Variant::key_len(V) {
+    if key.len() != Variant::key_len(Self::V) {
       return Err(LenError {
         field: "key",
-        expected: Variant::key_len(V),
+        expected: Variant::key_len(Self::V),
         got: key.len(),
       });
     }
@@ -141,10 +150,10 @@ where
   pub fn set_encrypt_key<K: AsRef<[u8]>>(&mut self, implementation: Implementation, key: K) -> Result<(), LenError>
   {
     let key = key.as_ref();
-    if key.len() != Variant::key_len(V) {
+    if key.len() != Variant::key_len(Self::V) {
       return Err(LenError {
         field: "key",
-        expected: Variant::key_len(V),
+        expected: Variant::key_len(Self::V),
         got: key.len(),
       });
     }
@@ -158,10 +167,10 @@ where
   pub fn set_decrypt_key<K: AsRef<[u8]>>(&mut self, implementation: Implementation, key: K) -> Result<(), LenError>
   {
     let key = key.as_ref();
-    if key.len() != Variant::key_len(V) {
+    if key.len() != Variant::key_len(Self::V) {
       return Err(LenError {
         field: "key",
-        expected: Variant::key_len(V),
+        expected: Variant::key_len(Self::V),
         got: key.len(),
       });
     }
@@ -178,7 +187,7 @@ where
   /// * Length of `key` must be equal to [`Variant::key_len(V)`](`Variant::key_len`).
   pub unsafe fn set_encrypt_key_unchecked<K: AsRef<[u8]>>(&mut self, implementation: Implementation, key: K)
   {
-    Engine::as_ref::<V>(implementation).expand_key(key.as_ref().as_ptr(), self.k.as_mut_ptr());
+    Engine::as_ref(Self::V, implementation).expand_key(key.as_ref().as_ptr(), self.k.as_mut_ptr());
   }
 
   /// Sets decryption key.
@@ -206,8 +215,8 @@ where
   /// # use oxicrypt::aes::*;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
   /// let implementation = Implementation::fastest_rt();
-  /// let keysched_r = Key::<{ Variant::Aes128 }>::with_decrypt_key(implementation, &key).unwrap();
-  /// let mut keysched_l = Key::<{ Variant::Aes128 }>::with_encrypt_key(implementation, &key).unwrap();
+  /// let keysched_r = Key128::with_decrypt_key(implementation, &key).unwrap();
+  /// let mut keysched_l = Key128::with_encrypt_key(implementation, &key).unwrap();
   /// keysched_l.inverse_key(implementation);
   /// assert_eq!(keysched_l, keysched_r);
   /// ```
@@ -217,14 +226,66 @@ where
   /// # use oxicrypt::aes::*;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
   /// let implementation = Implementation::fastest_rt();
-  /// let keysched_r = Key::<{ Variant::Aes128 }>::with_encrypt_key(implementation, &key).unwrap();
-  /// let mut keysched_l = Key::<{ Variant::Aes128 }>::with_decrypt_key(implementation, &key).unwrap();
+  /// let keysched_r = Key128::with_encrypt_key(implementation, &key).unwrap();
+  /// let mut keysched_l = Key128::with_decrypt_key(implementation, &key).unwrap();
   /// keysched_l.inverse_key(implementation);
   /// assert_eq!(keysched_l, keysched_r);
   /// ```
   pub fn inverse_key(&mut self, implementation: Implementation)
   {
-    unsafe { Engine::as_ref::<V>(implementation).inverse_key(self.k.as_mut_ptr()) };
+    unsafe { Engine::as_ref(Self::V, implementation).inverse_key(self.k.as_mut_ptr()) };
+  }
+
+  /// Encrypts a single 16 byte block in-place.
+  ///
+  /// Returns an [`Err`](`Result::Err`) when length of `block` is not `16`.
+  pub fn encrypt1(&self, implementation: Implementation, block: &mut [u8]) -> Result<(), LenError>
+  {
+    if block.len() != 16 {
+      return Err(LenError {
+        field: "block",
+        expected: 16,
+        got: block.len(),
+      });
+    }
+    unsafe { Engine::as_ref(Self::V, implementation).encrypt1(block.as_mut_ptr(), self.as_ptr()) };
+    Ok(())
+  }
+
+  /// Decrypts a single 16 byte block in-place.
+  ///
+  /// Returns an [`Err`](`Result::Err`) when length of `block` is not `16`.
+  pub fn decrypt1(&self, implementation: Implementation, block: &mut [u8]) -> Result<(), LenError>
+  {
+    if block.len() != 16 {
+      return Err(LenError {
+        field: "block",
+        expected: 16,
+        got: block.len(),
+      });
+    }
+    unsafe { Engine::as_ref(Self::V, implementation).decrypt1(block.as_mut_ptr(), self.as_ptr()) };
+    Ok(())
+  }
+
+  /// Encrypts a single 16 byte block in-place.
+  ///
+  /// # Safety
+  ///
+  /// * Length of `key` must be `16`.
+  pub unsafe fn encrypt1_unchecked(&self, implementation: Implementation, block: &mut [u8])
+  {
+    Engine::as_ref(Self::V, implementation).encrypt1(block.as_mut_ptr(), self.as_ptr());
+  }
+
+  /// Decrypts a single 16 byte block in-place.
+  ///
+  /// # Safety
+  ///
+  /// * Length of `key` must be `16`.
+  pub unsafe fn decrypt1_unchecked(&self, implementation: Implementation, block: &mut [u8])
+  {
+    Engine::as_ref(Self::V, implementation).decrypt1(block.as_mut_ptr(), self.as_ptr());
   }
 
   /// Returns the byte slice.
@@ -246,88 +307,12 @@ where
   }
 }
 
-impl<const V: Variant> AsRef<[u8]> for Key<V>
-where
-  [u8; Variant::key_schedule_len(V)]: Sized,
+impl<const N: usize> AsRef<[u8]> for Key<N>
 {
   fn as_ref(&self) -> &[u8]
   {
     self.as_bytes()
   }
-}
-
-/// Encrypts a single 16 byte block in-place.
-///
-/// Returns an [`Err`](`Result::Err`) when length of `block` is not `16`.
-pub fn encrypt1<const V: Variant>(
-  implementation: Implementation,
-  block: &mut [u8],
-  key_schedule: &Key<V>,
-) -> Result<(), LenError>
-where
-  [u8; Variant::key_schedule_len(V)]: Sized,
-{
-  if block.len() != 16 {
-    return Err(LenError {
-      field: "block",
-      expected: 16,
-      got: block.len(),
-    });
-  }
-  unsafe { Engine::as_ref::<V>(implementation).encrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
-  Ok(())
-}
-
-/// Decrypts a single 16 byte block in-place.
-///
-/// Returns an [`Err`](`Result::Err`) when length of `block` is not `16`.
-pub fn decrypt1<const V: Variant>(
-  implementation: Implementation,
-  block: &mut [u8],
-  key_schedule: &Key<V>,
-) -> Result<(), LenError>
-where
-  [u8; Variant::key_schedule_len(V)]: Sized,
-{
-  if block.len() != 16 {
-    return Err(LenError {
-      field: "block",
-      expected: 16,
-      got: block.len(),
-    });
-  }
-  unsafe { Engine::as_ref::<V>(implementation).decrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
-  Ok(())
-}
-
-/// Encrypts a single 16 byte block in-place.
-///
-/// # Safety
-///
-/// * Length of `key` must be `16`.
-pub unsafe fn encrypt1_unchecked<const V: Variant>(
-  implementation: Implementation,
-  block: &mut [u8],
-  key_schedule: &Key<V>,
-) where
-  [u8; Variant::key_schedule_len(V)]: Sized,
-{
-  Engine::as_ref::<V>(implementation).encrypt1(block.as_mut_ptr(), key_schedule.as_ptr());
-}
-
-/// Decrypts a single 16 byte block in-place.
-///
-/// # Safety
-///
-/// * Length of `key` must be `16`.
-pub unsafe fn decrypt1_unchecked<const V: Variant>(
-  implementation: Implementation,
-  block: &mut [u8],
-  key_schedule: &Key<V>,
-) where
-  [u8; Variant::key_schedule_len(V)]: Sized,
-{
-  Engine::as_ref::<V>(implementation).decrypt1(block.as_mut_ptr(), key_schedule.as_ptr());
 }
 
 #[derive(Clone, Copy, Debug)]

@@ -2,6 +2,24 @@ mod sha1_compress_generic;
 mod sha256_compress_generic;
 mod sha512_compress_generic;
 
+pub mod generic
+{
+  pub unsafe fn sha1_compress(state: *mut u8, block: *const u8)
+  {
+    super::sha1_compress_generic::sha1_compress_generic(state.cast(), block);
+  }
+
+  pub unsafe fn sha256_compress(state: *mut u8, block: *const u8)
+  {
+    super::sha256_compress_generic::sha256_compress_generic(state.cast(), block);
+  }
+
+  pub unsafe fn sha512_compress(state: *mut u8, block: *const u8)
+  {
+    super::sha512_compress_generic::sha512_compress_generic(state.cast(), block);
+  }
+}
+
 use core::mem;
 
 /// SHA implementations.
@@ -51,13 +69,9 @@ pub struct Engine
 
 impl Engine
 {
-  const E1_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha1 }>(Implementation::Generic) };
-  const E224_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha224 }>(Implementation::Generic) };
-  const E256_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha256 }>(Implementation::Generic) };
-  const E384_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha384 }>(Implementation::Generic) };
-  const E512_224_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha512_224 }>(Implementation::Generic) };
-  const E512_256_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha512_256 }>(Implementation::Generic) };
-  const E512_GENERIC: Self = unsafe { Self::new::<{ Variant::Sha512 }>(Implementation::Generic) };
+  const E1_GENERIC: Self = unsafe { Self::new(Variant::Sha1, Implementation::Generic) };
+  const E256_GENERIC: Self = unsafe { Self::new(Variant::Sha256, Implementation::Generic) };
+  const E512_GENERIC: Self = unsafe { Self::new(Variant::Sha512, Implementation::Generic) };
 
   /// Returns the appropriate engine for a given implementation.
   ///
@@ -67,11 +81,19 @@ impl Engine
   /// implementation is available during runtime. If you try to use an engine with an
   /// implementation that is not available during runtime, it might result in an illegal
   /// instruction signal.
-  pub const unsafe fn new<const V: Variant>(implementation: Implementation) -> Self
+  pub const unsafe fn new(variant: Variant, implementation: Implementation) -> Self
   {
     match implementation {
-      | Implementation::Generic => Engine {
-        compress: Sha::<V, { Implementation::Generic }>::compress,
+      | Implementation::Generic => match variant {
+        | Variant::Sha1 => Self {
+          compress: generic::sha1_compress,
+        },
+        | Variant::Sha224 | Variant::Sha256 => Self {
+          compress: generic::sha256_compress,
+        },
+        | Variant::Sha384 | Variant::Sha512 | Variant::Sha512_224 | Variant::Sha512_256 => Engine {
+          compress: generic::sha512_compress,
+        },
       },
     }
   }
@@ -81,17 +103,13 @@ impl Engine
   /// # Safety
   ///
   /// Same as [`Engine::new`].
-  pub const unsafe fn as_ref<const V: Variant>(implementation: Implementation) -> &'static Self
+  pub const unsafe fn as_ref(variant: Variant, implementation: Implementation) -> &'static Self
   {
     match implementation {
-      | Implementation::Generic => match V {
+      | Implementation::Generic => match variant {
         | Variant::Sha1 => &Self::E1_GENERIC,
-        | Variant::Sha224 => &Self::E224_GENERIC,
-        | Variant::Sha256 => &Self::E256_GENERIC,
-        | Variant::Sha384 => &Self::E384_GENERIC,
-        | Variant::Sha512 => &Self::E512_GENERIC,
-        | Variant::Sha512_224 => &Self::E512_224_GENERIC,
-        | Variant::Sha512_256 => &Self::E512_256_GENERIC,
+        | Variant::Sha224 | Variant::Sha256 => &Self::E256_GENERIC,
+        | Variant::Sha384 | Variant::Sha512 | Variant::Sha512_224 | Variant::Sha512_256 => &Self::E512_GENERIC,
       },
     }
   }
@@ -198,73 +216,30 @@ impl core::fmt::Display for Variant
   }
 }
 
-/// Core SHA structure that provides all the necessary functions to implement a higher level API.
-pub struct Sha<const V: Variant, const I: Implementation>;
-
-impl<const V: Variant, const I: Implementation> Sha<V, I>
-{
-  /// Same as [`Variant::state_len(V)`](`Variant::state_len`).
-  pub const fn state_len() -> usize
-  {
-    Variant::state_len(V)
-  }
-
-  /// Same as [`Variant::digest_len(V)`](`Variant::digest_len`).
-  pub const fn digest_len() -> usize
-  {
-    Variant::digest_len(V)
-  }
-
-  /// Same as [`Variant::block_len(V)`](`Variant::block_len`).
-  pub const fn block_len() -> usize
-  {
-    Variant::block_len(V)
-  }
-
-  /// Compresses the block into state.
-  ///
-  /// # Safety
-  ///
-  /// * `state` must be at least `Variant::state_len(V)` bytes.
-  /// * `block` must be at least `Variant::block_len(V)` bytes.
-  pub unsafe fn compress(state: *mut u8, block: *const u8)
-  {
-    match I {
-      | Implementation::Generic => match V {
-        | Variant::Sha1 => sha1_compress_generic::sha1_compress_generic(state as *mut u32, block),
-        | Variant::Sha224 | Variant::Sha256 => {
-          sha256_compress_generic::sha256_compress_generic(state as *mut u32, block)
-        }
-        | Variant::Sha384 | Variant::Sha512 | Variant::Sha512_224 | Variant::Sha512_256 => {
-          sha512_compress_generic::sha512_compress_generic(state as *mut u64, block)
-        }
-      },
-    }
-  }
-}
-
 /// Initial state.
 ///
-/// * SHA-1 - [`H1`]
-/// * SHA-224 - [`H224`]
-/// * SHA-256 - [`H256`]
-/// * SHA-384 - [`H384`]
-/// * SHA-512 - [`H512`]
-/// * SHA-512_224 - [`H512_224`]
-/// * SHA-512_256 - [`H512_256`]
-pub const fn initial_state<const V: Variant>() -> [u8; Variant::state_len(V)]
-where
-  [u8; Variant::state_len(V)]: Sized,
+/// # Safety
+///
+/// It is undefined behavior to specify `(S, variant)` pairs other than:
+///
+/// * SHA-1 - `(20, Variant::Sha1)`
+/// * SHA-224 - `(32, Variant::Sha224)`
+/// * SHA-256 - `(32, Variant::Sha256)`
+/// * SHA-384 - `(64, Variant::Sha384)`
+/// * SHA-512 - `(64, Variant::Sha512)`
+/// * SHA-512/224 - `(64, Variant::Sha512_224)`
+/// * SHA-512/256 - `(64, Variant::Sha512_256)`
+pub const unsafe fn initial_state<const S: usize>(variant: Variant) -> [u8; S]
 {
   use core::mem::transmute;
-  match V {
-    | Variant::Sha1 => unsafe { *transmute::<&[u32; 5], &[u8; Variant::state_len(V)]>(&H1) },
-    | Variant::Sha224 => unsafe { *transmute::<&[u32; 8], &[u8; Variant::state_len(V)]>(&H224) },
-    | Variant::Sha256 => unsafe { *transmute::<&[u32; 8], &[u8; Variant::state_len(V)]>(&H256) },
-    | Variant::Sha384 => unsafe { *transmute::<&[u64; 8], &[u8; Variant::state_len(V)]>(&H384) },
-    | Variant::Sha512 => unsafe { *transmute::<&[u64; 8], &[u8; Variant::state_len(V)]>(&H512) },
-    | Variant::Sha512_224 => unsafe { *transmute::<&[u64; 8], &[u8; Variant::state_len(V)]>(&H512_224) },
-    | Variant::Sha512_256 => unsafe { *transmute::<&[u64; 8], &[u8; Variant::state_len(V)]>(&H512_256) },
+  match variant {
+    | Variant::Sha1 => *transmute::<&[u32; 5], &[u8; S]>(&H1),
+    | Variant::Sha224 => *transmute::<&[u32; 8], &[u8; S]>(&H224),
+    | Variant::Sha256 => *transmute::<&[u32; 8], &[u8; S]>(&H256),
+    | Variant::Sha384 => *transmute::<&[u64; 8], &[u8; S]>(&H384),
+    | Variant::Sha512 => *transmute::<&[u64; 8], &[u8; S]>(&H512),
+    | Variant::Sha512_224 => *transmute::<&[u64; 8], &[u8; S]>(&H512_224),
+    | Variant::Sha512_256 => *transmute::<&[u64; 8], &[u8; S]>(&H512_256),
   }
 }
 

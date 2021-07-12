@@ -6,8 +6,6 @@ use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
 
-use super::Variant;
-
 #[inline(always)]
 unsafe fn expand_round<const IMM8: i32>(mut k: __m128i, mut kr: __m128i) -> __m128i
 {
@@ -18,8 +16,8 @@ unsafe fn expand_round<const IMM8: i32>(mut k: __m128i, mut kr: __m128i) -> __m1
   _mm_xor_si128(k, kr)
 }
 
-#[inline(always)]
-unsafe fn aes128_expand_key(key: *const u8, key_schedule: *mut u8)
+#[target_feature(enable = "aes")]
+pub unsafe fn aes128_expand_key(key: *const u8, key_schedule: *mut u8)
 {
   let mut k: __m128i = _mm_loadu_si128(key as *const __m128i);
   _mm_storeu_si128(key_schedule as *mut __m128i, k);
@@ -46,8 +44,8 @@ unsafe fn aes128_expand_key(key: *const u8, key_schedule: *mut u8)
   _mm_storeu_si128((key_schedule as *mut __m128i).add(10), k);
 }
 
-#[inline(always)]
-unsafe fn aes192_expand_key(key: *const u8, key_schedule: *mut u8)
+#[target_feature(enable = "aes")]
+pub unsafe fn aes192_expand_key(key: *const u8, key_schedule: *mut u8)
 {
   #[inline(always)]
   unsafe fn expand_round_half(mut k1: __m128i, k0: __m128i) -> __m128i
@@ -101,8 +99,8 @@ unsafe fn aes192_expand_key(key: *const u8, key_schedule: *mut u8)
   _mm_storeu_si128(key_schedule.add(192) as *mut __m128i, k0);
 }
 
-#[inline(always)]
-unsafe fn aes256_expand_key(key: *const u8, key_schedule: *mut u8)
+#[target_feature(enable = "aes")]
+pub unsafe fn aes256_expand_key(key: *const u8, key_schedule: *mut u8)
 {
   let mut k0: __m128i = _mm_loadu_si128((key as *const __m128i).add(0));
   let mut k1: __m128i = _mm_loadu_si128((key as *const __m128i).add(1));
@@ -143,42 +141,46 @@ unsafe fn aes256_expand_key(key: *const u8, key_schedule: *mut u8)
   _mm_storeu_si128((key_schedule as *mut __m128i).add(14), k0);
 }
 
-#[target_feature(enable = "aes")]
-pub unsafe fn aes_expand_key<const V: Variant>(key: *const u8, key_schedule: *mut u8)
-{
-  match V {
-    | Variant::Aes128 => aes128_expand_key(key, key_schedule),
-    | Variant::Aes192 => aes192_expand_key(key, key_schedule),
-    | Variant::Aes256 => aes256_expand_key(key, key_schedule),
-  }
-}
-
-#[target_feature(enable = "aes")]
-pub unsafe fn aes_inverse_key<const V: Variant>(key_schedule: *mut u8)
+#[inline(always)]
+unsafe fn aes_inverse_key<const N: usize>(key_schedule: *mut u8)
 {
   let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
-  let mut k1: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(Variant::rounds(V)));
+  let mut k1: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(N));
   _mm_storeu_si128((key_schedule as *mut __m128i).add(0), k1);
-  _mm_storeu_si128((key_schedule as *mut __m128i).add(Variant::rounds(V)), k0);
+  _mm_storeu_si128((key_schedule as *mut __m128i).add(N), k0);
 
   // Compiler is able to unroll this loop.
-  for i in 1 .. Variant::rounds(V) / 2 {
+  for i in 1 .. N / 2 {
     k0 = _mm_aesimc_si128(_mm_loadu_si128((key_schedule as *const __m128i).add(i)));
-    k1 = _mm_aesimc_si128(_mm_loadu_si128(
-      (key_schedule as *const __m128i).add(Variant::rounds(V) - i),
-    ));
+    k1 = _mm_aesimc_si128(_mm_loadu_si128((key_schedule as *const __m128i).add(N - i)));
     _mm_storeu_si128((key_schedule as *mut __m128i).add(i), k1);
-    _mm_storeu_si128((key_schedule as *mut __m128i).add(Variant::rounds(V) - i), k0);
+    _mm_storeu_si128((key_schedule as *mut __m128i).add(N - i), k0);
   }
 
-  k0 = _mm_aesimc_si128(_mm_loadu_si128(
-    (key_schedule as *const __m128i).add(Variant::rounds(V) / 2),
-  ));
-  _mm_storeu_si128((key_schedule as *mut __m128i).add(Variant::rounds(V) / 2), k0);
+  k0 = _mm_aesimc_si128(_mm_loadu_si128((key_schedule as *const __m128i).add(N / 2)));
+  _mm_storeu_si128((key_schedule as *mut __m128i).add(N / 2), k0);
 }
 
 #[target_feature(enable = "aes")]
-pub unsafe fn aes_encrypt1<const V: Variant>(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_inverse_key(key_schedule: *mut u8)
+{
+  aes_inverse_key::<10>(key_schedule);
+}
+
+#[target_feature(enable = "aes")]
+pub unsafe fn aes192_inverse_key(key_schedule: *mut u8)
+{
+  aes_inverse_key::<12>(key_schedule);
+}
+
+#[target_feature(enable = "aes")]
+pub unsafe fn aes256_inverse_key(key_schedule: *mut u8)
+{
+  aes_inverse_key::<14>(key_schedule);
+}
+
+#[inline(always)]
+unsafe fn aes_encrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
   let mut b0: __m128i = _mm_loadu_si128(block as *const __m128i);
   let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
@@ -186,19 +188,37 @@ pub unsafe fn aes_encrypt1<const V: Variant>(block: *mut u8, key_schedule: *cons
   b0 = _mm_xor_si128(b0, k0); // whitening round (round 0)
 
   // Compiler is able to unroll this loop.
-  for i in 1 .. Variant::rounds(V) {
+  for i in 1 .. N {
     k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(i));
     b0 = _mm_aesenc_si128(b0, k0);
   }
 
-  k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(Variant::rounds(V)));
+  k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(N));
   b0 = _mm_aesenclast_si128(b0, k0);
 
   _mm_storeu_si128(block as *mut __m128i, b0);
 }
 
 #[target_feature(enable = "aes")]
-pub unsafe fn aes_decrypt1<const V: Variant>(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_encrypt1(block: *mut u8, key_schedule: *const u8)
+{
+  aes_encrypt1::<10>(block, key_schedule);
+}
+
+#[target_feature(enable = "aes")]
+pub unsafe fn aes192_encrypt1(block: *mut u8, key_schedule: *const u8)
+{
+  aes_encrypt1::<12>(block, key_schedule);
+}
+
+#[target_feature(enable = "aes")]
+pub unsafe fn aes256_encrypt1(block: *mut u8, key_schedule: *const u8)
+{
+  aes_encrypt1::<14>(block, key_schedule);
+}
+
+#[inline(always)]
+unsafe fn aes_decrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
   let mut b0: __m128i = _mm_loadu_si128(block as *const __m128i);
   let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
@@ -206,15 +226,33 @@ pub unsafe fn aes_decrypt1<const V: Variant>(block: *mut u8, key_schedule: *cons
   b0 = _mm_xor_si128(b0, k0); // whitening round (round 0)
 
   // Compiler is able to unroll this loop.
-  for i in 1 .. Variant::rounds(V) {
+  for i in 1 .. N {
     k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(i));
     b0 = _mm_aesdec_si128(b0, k0);
   }
 
-  k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(Variant::rounds(V)));
+  k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(N));
   b0 = _mm_aesdeclast_si128(b0, k0);
 
   _mm_storeu_si128(block as *mut __m128i, b0);
+}
+
+#[target_feature(enable = "aes")]
+pub unsafe fn aes128_decrypt1(block: *mut u8, key_schedule: *const u8)
+{
+  aes_decrypt1::<10>(block, key_schedule);
+}
+
+#[target_feature(enable = "aes")]
+pub unsafe fn aes192_decrypt1(block: *mut u8, key_schedule: *const u8)
+{
+  aes_decrypt1::<12>(block, key_schedule);
+}
+
+#[target_feature(enable = "aes")]
+pub unsafe fn aes256_decrypt1(block: *mut u8, key_schedule: *const u8)
+{
+  aes_decrypt1::<14>(block, key_schedule);
 }
 
 #[cfg(test)]
@@ -223,6 +261,7 @@ mod tests
   use std_detect::is_x86_feature_detected;
 
   use super::*;
+  use crate::aes::Variant;
   use crate::test_vectors::*;
 
   #[test]
@@ -231,17 +270,17 @@ mod tests
     if is_x86_feature_detected!("aes") {
       AES128_EXPAND_KEY.iter().for_each(|t| {
         let mut key_schedule = [0; Variant::key_schedule_len(Variant::Aes128)];
-        unsafe { aes_expand_key::<{ Variant::Aes128 }>(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes128_expand_key(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
       AES192_EXPAND_KEY.iter().for_each(|t| {
         let mut key_schedule = [0; Variant::key_schedule_len(Variant::Aes192)];
-        unsafe { aes_expand_key::<{ Variant::Aes192 }>(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes192_expand_key(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
       AES256_EXPAND_KEY.iter().for_each(|t| {
         let mut key_schedule = [0; Variant::key_schedule_len(Variant::Aes256)];
-        unsafe { aes_expand_key::<{ Variant::Aes256 }>(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes256_expand_key(t.0.as_ptr(), key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
@@ -253,17 +292,17 @@ mod tests
     if is_x86_feature_detected!("aes") {
       AES128_INVERSE_KEY.iter().for_each(|t| {
         let mut key_schedule = t.0;
-        unsafe { aes_inverse_key::<{ Variant::Aes128 }>(key_schedule.as_mut_ptr()) };
+        unsafe { aes128_inverse_key(key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
       AES192_INVERSE_KEY.iter().for_each(|t| {
         let mut key_schedule = t.0;
-        unsafe { aes_inverse_key::<{ Variant::Aes192 }>(key_schedule.as_mut_ptr()) };
+        unsafe { aes192_inverse_key(key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
       AES256_INVERSE_KEY.iter().for_each(|t| {
         let mut key_schedule = t.0;
-        unsafe { aes_inverse_key::<{ Variant::Aes256 }>(key_schedule.as_mut_ptr()) };
+        unsafe { aes256_inverse_key(key_schedule.as_mut_ptr()) };
         assert_eq!(t.1, key_schedule);
       });
     }
@@ -275,17 +314,17 @@ mod tests
     if is_x86_feature_detected!("aes") {
       AES128_ENCRYPT.iter().for_each(|t| {
         let mut block = t.0;
-        unsafe { aes_encrypt1::<{ Variant::Aes128 }>(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes128_encrypt1(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
       AES192_ENCRYPT.iter().for_each(|t| {
         let mut block = t.0;
-        unsafe { aes_encrypt1::<{ Variant::Aes192 }>(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes192_encrypt1(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
       AES256_ENCRYPT.iter().for_each(|t| {
         let mut block = t.0;
-        unsafe { aes_encrypt1::<{ Variant::Aes256 }>(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes256_encrypt1(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -297,17 +336,17 @@ mod tests
     if is_x86_feature_detected!("aes") {
       AES128_DECRYPT.iter().for_each(|t| {
         let mut block = t.0;
-        unsafe { aes_decrypt1::<{ Variant::Aes128 }>(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes128_decrypt1(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
       AES192_DECRYPT.iter().for_each(|t| {
         let mut block = t.0;
-        unsafe { aes_decrypt1::<{ Variant::Aes192 }>(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes192_decrypt1(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
       AES256_DECRYPT.iter().for_each(|t| {
         let mut block = t.0;
-        unsafe { aes_decrypt1::<{ Variant::Aes256 }>(block.as_mut_ptr(), t.2.as_ptr()) };
+        unsafe { aes256_decrypt1(block.as_mut_ptr(), t.2.as_ptr()) };
         assert_eq!(t.1, block);
       });
     }
@@ -320,31 +359,31 @@ mod tests
       AES128_ENCRYPT_DECRYPT.iter().for_each(|t| {
         let mut block = t.0;
         let mut key_schedule = [0; Variant::key_schedule_len(Variant::Aes128)];
-        unsafe { aes_expand_key::<{ Variant::Aes128 }>(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-        unsafe { aes_encrypt1::<{ Variant::Aes128 }>(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes128_expand_key(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes128_encrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.1, block);
-        unsafe { aes_inverse_key::<{ Variant::Aes128 }>(key_schedule.as_mut_ptr()) };
-        unsafe { aes_decrypt1::<{ Variant::Aes128 }>(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes128_inverse_key(key_schedule.as_mut_ptr()) };
+        unsafe { aes128_decrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.0, block);
       });
       AES192_ENCRYPT_DECRYPT.iter().for_each(|t| {
         let mut block = t.0;
         let mut key_schedule = [0; Variant::key_schedule_len(Variant::Aes192)];
-        unsafe { aes_expand_key::<{ Variant::Aes192 }>(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-        unsafe { aes_encrypt1::<{ Variant::Aes192 }>(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes192_expand_key(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes192_encrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.1, block);
-        unsafe { aes_inverse_key::<{ Variant::Aes192 }>(key_schedule.as_mut_ptr()) };
-        unsafe { aes_decrypt1::<{ Variant::Aes192 }>(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes192_inverse_key(key_schedule.as_mut_ptr()) };
+        unsafe { aes192_decrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.0, block);
       });
       AES256_ENCRYPT_DECRYPT.iter().for_each(|t| {
         let mut block = t.0;
         let mut key_schedule = [0; Variant::key_schedule_len(Variant::Aes256)];
-        unsafe { aes_expand_key::<{ Variant::Aes256 }>(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
-        unsafe { aes_encrypt1::<{ Variant::Aes256 }>(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes256_expand_key(t.2.as_ptr(), key_schedule.as_mut_ptr()) };
+        unsafe { aes256_encrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.1, block);
-        unsafe { aes_inverse_key::<{ Variant::Aes256 }>(key_schedule.as_mut_ptr()) };
-        unsafe { aes_decrypt1::<{ Variant::Aes256 }>(block.as_mut_ptr(), key_schedule.as_ptr()) };
+        unsafe { aes256_inverse_key(key_schedule.as_mut_ptr()) };
+        unsafe { aes256_decrypt1(block.as_mut_ptr(), key_schedule.as_ptr()) };
         assert_eq!(t.0, block);
       });
     }
