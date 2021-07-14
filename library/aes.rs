@@ -36,6 +36,14 @@ pub type Key256 = Key<240>;
 
 impl<const N: usize> Key<N>
 {
+  /// AES block size in bytes.
+  pub const BLOCK_LEN: usize = 16;
+  /// Key size in bytes.
+  pub const KEY_LEN: usize = Variant::key_len(Self::V);
+  /// Inner key schedule size in bytes.
+  pub const KEY_SCHEDULE_LEN: usize = N;
+  /// Number of rounds.
+  pub const ROUNDS: usize = Variant::rounds(Self::V);
   const V: Variant = match N {
     | 176 => Variant::Aes128,
     | 208 => Variant::Aes192,

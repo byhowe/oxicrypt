@@ -51,6 +51,12 @@ impl<const O: usize, const S: usize, const B: usize> Default for Sha<O, S, B>
 
 impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
 {
+  /// Inner block size in bytes.
+  pub const BLOCK_LEN: usize = B;
+  /// Digest size in bytes.
+  pub const DIGEST_LEN: usize = O;
+  /// Inner state size in bytes.
+  pub const STATE_LEN: usize = S;
   const V: Variant = match (O, S, B) {
     | (20, 20, 64) => Variant::Sha1,
     | (28, 32, 64) => Variant::Sha224,
