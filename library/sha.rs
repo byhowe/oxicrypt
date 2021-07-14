@@ -1,6 +1,6 @@
 //! High level SHA API.
 
-#[cfg(feature = "alloc")]
+#[cfg(any(feature = "alloc", doc))]
 use alloc::boxed::Box;
 use core::cmp::min;
 use core::intrinsics::copy_nonoverlapping;

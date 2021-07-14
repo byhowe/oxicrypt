@@ -1,6 +1,6 @@
 //! HMAC.
 
-#[cfg(feature = "alloc")]
+#[cfg(any(feature = "alloc", doc))]
 use alloc::boxed::Box;
 use core::mem::MaybeUninit;
 
