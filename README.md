@@ -4,7 +4,10 @@ A cryptography library that is mainly implemented in Rust. I aim to implement bi
 
 ## Structure of this library
 
-This library contains one crate: `oxicrypt`. `oxicrypt` is the core of this library. It implements and exposes primitive cryptography functions. It also exposes a higher level API for Rust applications. This library also supports FFI through exposing a C API that many other languages can understand as well. The C API is built using `meson`, which will enable the `c` cfg flag during compilation to activate parts of the library that implements the C interface. There is also a Python API in the works, but it is not yet available.
+This library contains the following crates:
+
+* `oxicrypt` is the core of this library. It implements and exposes primitive cryptography functions. It also exposes a higher level API for Rust applications.
+* `oxicrypt_c` is the C/C++ API. The C API is built using `meson`, which enables the `c` feature during compilation to activate parts of the library that implements the C interface.
 
 ## Instsallation
 
@@ -26,7 +29,3 @@ $ meson install -C target
 ### Python
 
 WIP
-
-## Issues
-
-This crate uses a lot of nightly features, thus is prone to breakages. As of writing this (2021-07-07), the crate will not compile using the latest nightly compiler (`nightly-2021-07-06`). `nightly-2021-07-01` is known to work. To install it simply run `rustup toolchain install nightly-2021-07-01` and use `cargo +nightly-2021-07-01` instead of `cargo`.
