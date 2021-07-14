@@ -5,7 +5,7 @@ project(
   license : 'MIT',
 )
 
-cargo_args = ['rustc', '--package=oxicrypt']
+cargo_args = ['rustc', '--package=oxicrypt_c']
 
 if get_option('debug')
   message('Debug mode is enabled')
@@ -16,7 +16,7 @@ else
   cargo_args += ['--release']
 endif
 
-cargo_args += ['--no-default-features', '--', '--cfg', 'c']
+cargo_args += ['--']
 
 if get_option('target-cpu') != ''
   cargo_args += ['-C', 'target-cpu=' + get_option('target-cpu')]
