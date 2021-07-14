@@ -1,0 +1,24 @@
+cargo-features = ["edition2021", "strip"]
+
+[package]
+name = "oxicrypt_c"
+version = "0.1.0"
+authors = ["B. Howe <37745048+byhowe@users.noreply.github.com>"]
+edition = "2021"
+description = "OxiCrypt C/C++ API."
+repository = "https://github.com/byhowe/oxicrypt.git"
+license = "MIT"
+keywords = ["crypto"]
+categories = ["cryptography", "no-std"]
+workspace = ".."
+
+[lib]
+name = "oxicrypt"
+path = "src/lib.rs"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies.oxicrypt]
+version = "0.1.0"
+path = ".."
+default-features = false
+features = ["c"]

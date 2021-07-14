@@ -2,12 +2,12 @@
 
 use core::slice;
 
-use crate::aes::Key128;
-use crate::aes::Key192;
-use crate::aes::Key256;
-use crate::crypto::aes;
-use crate::crypto::aes::Implementation;
-use crate::crypto::aes::Variant;
+use oxicrypt::aes::Key128;
+use oxicrypt::aes::Key192;
+use oxicrypt::aes::Key256;
+use oxicrypt::crypto::aes;
+use oxicrypt::crypto::aes::Implementation;
+use oxicrypt::crypto::aes::Variant;
 
 // Raw AES functions.
 

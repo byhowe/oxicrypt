@@ -14,21 +14,11 @@ extern crate alloc;
 #[cfg(any(feature = "std", doc))]
 extern crate std;
 
-#[cfg(feature = "c")]
-#[panic_handler]
-fn panic_handler(_info: &core::panic::PanicInfo<'_>) -> !
-{
-  loop {}
-}
-
 pub mod crypto;
 
 pub mod aes;
 pub mod hmac;
 pub mod sha;
-
-#[cfg(feature = "c")]
-pub mod c;
 
 #[cfg(test)]
 pub(crate) mod test_vectors;
