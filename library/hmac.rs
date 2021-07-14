@@ -32,6 +32,7 @@ pub trait Digest
 /// * HMAC-SHA-512/224 - `(Sha512_224, 28, 128)`
 /// * HMAC-SHA-512/256 - `(Sha512_256, 32, 128)`
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "c", repr(C))]
 pub struct Hmac<H, const O: usize, const B: usize>
 where
   H: Digest,
