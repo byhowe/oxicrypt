@@ -17,7 +17,7 @@ use crate::hmac;
 
 /// SHA context.
 #[derive(Debug, Clone, Copy)]
-#[cfg_attr(c, repr(C))]
+#[cfg_attr(feature = "c", repr(C))]
 pub struct Sha<const O: usize, const S: usize, const B: usize>
 {
   h: [u8; S],

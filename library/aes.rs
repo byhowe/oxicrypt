@@ -21,7 +21,7 @@ pub use crate::crypto::aes::Variant;
 /// decrypting data. This type does not keep track of wheter it was created for encryption or
 /// decryption, so you must be careful when using it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-#[cfg_attr(c, repr(C))]
+#[cfg_attr(feature = "c", repr(C))]
 pub struct Key<const N: usize>
 {
   k: [u8; N],

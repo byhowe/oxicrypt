@@ -85,7 +85,7 @@ impl Engine
 
 /// SHA implementations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(c, repr(C))]
+#[cfg_attr(feature = "c", repr(C))]
 pub enum Implementation
 {
   /// Generic implementation.

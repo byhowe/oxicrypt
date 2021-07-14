@@ -14,7 +14,7 @@ extern crate alloc;
 #[cfg(any(feature = "std", doc))]
 extern crate std;
 
-#[cfg(c)]
+#[cfg(feature = "c")]
 #[panic_handler]
 fn panic_handler(_info: &core::panic::PanicInfo<'_>) -> !
 {
@@ -27,7 +27,7 @@ pub mod aes;
 pub mod hmac;
 pub mod sha;
 
-#[cfg(c)]
+#[cfg(feature = "c")]
 pub mod c;
 
 #[cfg(test)]
