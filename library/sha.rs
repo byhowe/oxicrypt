@@ -78,7 +78,6 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
   pub const fn reset(&mut self)
   {
     self.h = unsafe { initial_state::<S>(Self::V) };
-    self.block = [0; B];
     self.len = 0;
     self.blocklen = 0;
   }
