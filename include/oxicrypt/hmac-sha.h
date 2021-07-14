@@ -1,7 +1,6 @@
 #ifndef OXICRYPT_HMAC_H_
 #define OXICRYPT_HMAC_H_
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
