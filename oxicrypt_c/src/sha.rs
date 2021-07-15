@@ -2,9 +2,8 @@
 
 use core::slice;
 
-use oxicrypt::crypto::sha;
-use oxicrypt::crypto::sha::Implementation;
-use oxicrypt::crypto::sha::Variant;
+use oxicrypt::hazmat::sha;
+use oxicrypt::sha::Implementation;
 use oxicrypt::sha::Sha1;
 use oxicrypt::sha::Sha224;
 use oxicrypt::sha::Sha256;
@@ -12,6 +11,7 @@ use oxicrypt::sha::Sha384;
 use oxicrypt::sha::Sha512;
 use oxicrypt::sha::Sha512_224;
 use oxicrypt::sha::Sha512_256;
+use oxicrypt::sha::Variant;
 
 // Raw SHA functions.
 

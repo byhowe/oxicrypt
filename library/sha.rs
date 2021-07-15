@@ -7,12 +7,12 @@ use core::intrinsics::copy_nonoverlapping;
 use core::mem::size_of;
 use core::mem::MaybeUninit;
 
-use crate::crypto::sha::initial_state;
-use crate::crypto::sha::Engine;
+use crate::hazmat::sha::initial_state;
+use crate::hazmat::sha::Engine;
 #[doc(inline)]
-pub use crate::crypto::sha::Implementation;
+pub use crate::hazmat::sha::Implementation;
 #[doc(inline)]
-pub use crate::crypto::sha::Variant;
+pub use crate::hazmat::sha::Variant;
 use crate::hmac;
 
 /// SHA context.

@@ -2,12 +2,12 @@
 
 use core::slice;
 
+use oxicrypt::aes::Implementation;
 use oxicrypt::aes::Key128;
 use oxicrypt::aes::Key192;
 use oxicrypt::aes::Key256;
-use oxicrypt::crypto::aes;
-use oxicrypt::crypto::aes::Implementation;
-use oxicrypt::crypto::aes::Variant;
+use oxicrypt::aes::Variant;
+use oxicrypt::hazmat::aes;
 
 // Raw AES functions.
 

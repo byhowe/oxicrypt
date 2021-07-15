@@ -14,7 +14,7 @@ extern crate alloc;
 #[cfg(any(feature = "std", doc))]
 extern crate std;
 
-pub mod crypto;
+pub mod hazmat;
 
 pub mod aes;
 pub mod hmac;
