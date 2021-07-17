@@ -62,18 +62,16 @@ where
 {
   pub fn with_key<K: AsRef<[u8]>>(implementation: H::Implementation, key: K) -> Self
   {
-    let mut ctx = Self {
-      hash: unsafe { MaybeUninit::uninit().assume_init() },
-      key: [0; B],
-    };
-    ctx.set_key(implementation, key);
-    ctx
+    let mut ctx: MaybeUninit<Self> = MaybeUninit::uninit();
+    unsafe { ctx.assume_init_mut() }.set_key(implementation, key);
+    unsafe { ctx.assume_init() }
   }
 
   pub fn set_key<K: AsRef<[u8]>>(&mut self, implementation: H::Implementation, key: K)
   {
     let key = key.as_ref();
     self.hash.digest_reset();
+    self.key = [0; B];
     if key.len() > B {
       self.hash.digest_update(implementation, key);
       self.hash.digest_finish(implementation, &mut self.key);
