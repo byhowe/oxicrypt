@@ -14,36 +14,43 @@ extern "C" {
 
 typedef struct oxi_hmac_sha1_t {
   oxi_sha1_t hash;
+  bool x5c;
   uint8_t key[OXI_SHA1_BLOCK_LEN];
 } oxi_hmac_sha1_t;
 
 typedef struct oxi_hmac_sha224_t {
   oxi_sha224_t hash;
+  bool x5c;
   uint8_t key[OXI_SHA224_BLOCK_LEN];
 } oxi_hmac_sha224_t;
 
 typedef struct oxi_hmac_sha256_t {
   oxi_sha256_t hash;
+  bool x5c;
   uint8_t key[OXI_SHA256_BLOCK_LEN];
 } oxi_hmac_sha256_t;
 
 typedef struct oxi_hmac_sha384_t {
   oxi_sha384_t hash;
+  bool x5c;
   uint8_t key[OXI_SHA384_BLOCK_LEN];
 } oxi_hmac_sha384_t;
 
 typedef struct oxi_hmac_sha512_t {
   oxi_sha512_t hash;
+  bool x5c;
   uint8_t key[OXI_SHA512_BLOCK_LEN];
 } oxi_hmac_sha512_t;
 
 typedef struct oxi_hmac_sha512_224_t {
   oxi_sha512_224_t hash;
+  bool x5c;
   uint8_t key[OXI_SHA512_224_BLOCK_LEN];
 } oxi_hmac_sha512_224_t;
 
 typedef struct oxi_hmac_sha512_256_t {
   oxi_sha512_256_t hash;
+  bool x5c;
   uint8_t key[OXI_SHA512_256_BLOCK_LEN];
 } oxi_hmac_sha512_256_t;
 

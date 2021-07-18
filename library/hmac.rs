@@ -38,6 +38,7 @@ where
   H: Digest,
 {
   hash: H,
+  x5c: bool,
   key: [u8; B],
 }
 
@@ -82,11 +83,18 @@ where
     for i in 0 .. B {
       self.key[i] ^= 0x36;
     }
+    self.x5c = false;
     self.hash.digest_update(implementation, &self.key);
   }
 
   pub fn reset(&mut self, implementation: H::Implementation)
   {
+    if self.x5c {
+      for i in 0 .. B {
+        self.key[i] ^= 0x36 ^ 0x5c;
+      }
+      self.x5c = false;
+    }
     self.hash.digest_reset();
     self.hash.digest_update(implementation, &self.key);
   }
@@ -122,14 +130,12 @@ where
     for i in 0 .. B {
       self.key[i] ^= 0x36 ^ 0x5c;
     }
+    self.x5c = true;
     self.hash.digest_update(implementation, &self.key);
     self
       .hash
       .digest_update(implementation, unsafe { digest.assume_init_ref() });
     self.hash.digest_finish(implementation, output);
-    for i in 0 .. B {
-      self.key[i] ^= 0x36 ^ 0x5c;
-    }
   }
 
   pub fn oneshot<K: AsRef<[u8]>, D: AsRef<[u8]>>(implementation: H::Implementation, key: K, data: D) -> [u8; O]
