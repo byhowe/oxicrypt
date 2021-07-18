@@ -110,6 +110,42 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
     }
   }
 
+  fn finish_raw(&mut self, implementation: Implementation)
+  {
+    self.block[self.blocklen] = 0b10000000;
+    self.len += self.blocklen as u64;
+    self.blocklen += 1;
+
+    if self.blocklen > (Variant::block_len(Self::V) - Variant::pad_len(Self::V)) {
+      self.block[self.blocklen ..].fill(0);
+      unsafe { Engine::as_ref(Self::V, implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
+      self.blocklen = 0;
+    }
+
+    self.block[self.blocklen .. (Variant::block_len(Self::V) - 8)].fill(0);
+    self.len *= 8;
+    self.len = self.len.to_be();
+    self.block[(Variant::block_len(Self::V) - 8) .. Variant::block_len(Self::V)]
+      .copy_from_slice(&self.len.to_ne_bytes());
+    unsafe { Engine::as_ref(Self::V, implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
+
+    #[cfg(target_endian = "little")]
+    match Self::V {
+      | Variant::Sha1 | Variant::Sha224 | Variant::Sha256 => {
+        for i in 0 .. Variant::state_len(Self::V) / size_of::<u32>() {
+          let p = unsafe { self.h.as_mut_ptr().cast::<u32>().add(i) };
+          unsafe { *p = u32::to_be(*p) };
+        }
+      }
+      | Variant::Sha384 | Variant::Sha512 | Variant::Sha512_224 | Variant::Sha512_256 => {
+        for i in 0 .. Variant::state_len(Self::V) / size_of::<u64>() {
+          let p = unsafe { self.h.as_mut_ptr().cast::<u64>().add(i) };
+          unsafe { *p = u64::to_be(*p) };
+        }
+      }
+    }
+  }
+
   /// Compute and return the resulting digest value.
   ///
   /// # Note
@@ -145,39 +181,7 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
   /// the slice being affected, where `N` is the digest length of the particular SHA algorithm.
   pub fn finish_into(&mut self, implementation: Implementation, output: &mut [u8])
   {
-    self.block[self.blocklen] = 0b10000000;
-    self.len += self.blocklen as u64;
-    self.blocklen += 1;
-
-    if self.blocklen > (Variant::block_len(Self::V) - Variant::pad_len(Self::V)) {
-      self.block[self.blocklen ..].fill(0);
-      unsafe { Engine::as_ref(Self::V, implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
-      self.blocklen = 0;
-    }
-
-    self.block[self.blocklen .. (Variant::block_len(Self::V) - 8)].fill(0);
-    self.len *= 8;
-    self.len = self.len.to_be();
-    self.block[(Variant::block_len(Self::V) - 8) .. Variant::block_len(Self::V)]
-      .copy_from_slice(&self.len.to_ne_bytes());
-    unsafe { Engine::as_ref(Self::V, implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
-
-    #[cfg(target_endian = "little")]
-    match Self::V {
-      | Variant::Sha1 | Variant::Sha224 | Variant::Sha256 => {
-        for i in 0 .. Variant::state_len(Self::V) / size_of::<u32>() {
-          let p = unsafe { self.h.as_mut_ptr().cast::<u32>().add(i) };
-          unsafe { *p = u32::to_be(*p) };
-        }
-      }
-      | Variant::Sha384 | Variant::Sha512 | Variant::Sha512_224 | Variant::Sha512_256 => {
-        for i in 0 .. Variant::state_len(Self::V) / size_of::<u64>() {
-          let p = unsafe { self.h.as_mut_ptr().cast::<u64>().add(i) };
-          unsafe { *p = u64::to_be(*p) };
-        }
-      }
-    }
-
+    self.finish_raw(implementation);
     unsafe {
       copy_nonoverlapping(
         self.h.as_ptr(),
@@ -185,6 +189,20 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
         min(output.len(), Variant::digest_len(Self::V)),
       )
     };
+  }
+
+  /// Same as [`finish`](`Self::finish`), but returns a reference to the inner state, which
+  /// contains the digest.
+  ///
+  /// # Note
+  ///
+  /// Because this reference points to the state stored in the context itself, calling a function
+  /// that mutates the context will nullify the validity of the digest pointed by this reference.
+  /// Rust compiler should recognize this and abort compilation.
+  pub fn finish_sliced(&mut self, implementation: Implementation) -> &[u8]
+  {
+    self.finish_raw(implementation);
+    &self.h[0 .. O]
   }
 
   /// Convenience function that creates a context, updates it and returns the resulting digest.
@@ -247,10 +265,16 @@ mod tests
     for (md, msg, _) in tests {
       let mdb = hex::decode(md).unwrap();
       let msgb = hex::decode(msg).unwrap();
+
       ctx.update(i, &msgb);
       let digest = ctx.finish(i);
-      ctx.reset();
       assert_eq!(mdb, digest);
+      ctx.reset();
+
+      ctx.update(i, &msgb);
+      let digest = ctx.finish_sliced(i);
+      assert_eq!(mdb, digest);
+      ctx.reset();
     }
   }
 
