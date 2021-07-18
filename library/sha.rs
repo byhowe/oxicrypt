@@ -68,6 +68,7 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
     | _ => unsafe { core::hint::unreachable_unchecked() },
   };
 
+  /// Create a new SHA context.
   pub const fn new() -> Self
   {
     let mut ctx: MaybeUninit<Self> = MaybeUninit::uninit();
@@ -75,6 +76,9 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
     unsafe { ctx.assume_init() }
   }
 
+  /// Reset a context to its original state.
+  ///
+  /// It is useful when processing multiple types of data without creating a new context each time.
   pub const fn reset(&mut self)
   {
     self.h = unsafe { initial_state::<S>(Self::V) };
@@ -82,6 +86,7 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
     self.blocklen = 0;
   }
 
+  /// Update the state of the context.
   pub fn update<D: AsRef<[u8]>>(&mut self, implementation: Implementation, data: D)
   {
     let mut data = data.as_ref();
@@ -105,6 +110,13 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
     }
   }
 
+  /// Compute and return the resulting digest value.
+  ///
+  /// # Note
+  ///
+  /// This function does not consume the context. Meaning that the context can be used after
+  /// finishing, but you need to call [`reset`](`Self::reset`) before doing so. Failing to call
+  /// `reset` will result in undefined behaviour.
   pub fn finish(&mut self, implementation: Implementation) -> [u8; O]
   {
     let mut output: MaybeUninit<[u8; O]> = MaybeUninit::uninit();
@@ -112,6 +124,7 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
     unsafe { output.assume_init() }
   }
 
+  /// Same as [`finish`](`Self::finish`), but returns the result in a [`Box`].
   #[cfg(any(feature = "alloc", doc))]
   #[doc(cfg(any(feature = "alloc", feature = "std")))]
   pub fn finish_boxed(&mut self, implementation: Implementation) -> Box<[u8]>
@@ -121,6 +134,15 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
     output
   }
 
+  /// Same as [`finish`](`Self::finish`), but you need to provide a mutable slice to put the data
+  /// into.
+  ///
+  /// # Note
+  ///
+  /// Size of `output` can be anything. Providing a slice with a smaller size than what is needed
+  /// by this context will result in the truncation of the resulting digest. Providing a slice with
+  /// a larger size than what is needed by this context will result in only the first `N` bytes of
+  /// the slice being affected, where `N` is the digest length of the particular SHA algorithm.
   pub fn finish_into(&mut self, implementation: Implementation, output: &mut [u8])
   {
     self.block[self.blocklen] = 0b10000000;
@@ -165,6 +187,7 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
     };
   }
 
+  /// Convenience function that creates a context, updates it and returns the resulting digest.
   pub fn oneshot<D: AsRef<[u8]>>(implementation: Implementation, data: D) -> [u8; O]
   {
     let mut ctx = Self::new();
@@ -172,6 +195,7 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
     ctx.finish(implementation)
   }
 
+  /// Same as [`oneshot`](`Self::oneshot`), but uses [`finish_boxed`](`Self::finish_boxed`).
   #[cfg(any(feature = "alloc", doc))]
   #[doc(cfg(any(feature = "alloc", feature = "std")))]
   pub fn oneshot_boxed<D: AsRef<[u8]>>(implementation: Implementation, data: D) -> Box<[u8]>
@@ -181,6 +205,7 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
     ctx.finish_boxed(implementation)
   }
 
+  /// Same as [`oneshot`](`Self::oneshot`), but uses [`finish_into`](`Self::finish_into`).
   pub fn oneshot_into<D: AsRef<[u8]>>(implementation: Implementation, data: D, output: &mut [u8])
   {
     let mut ctx = Self::new();
