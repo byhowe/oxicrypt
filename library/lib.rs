@@ -17,6 +17,8 @@ extern crate std;
 
 pub mod hazmat;
 
+pub use hazmat::Implementation;
+
 pub mod aes;
 pub mod hmac;
 pub mod sha;
