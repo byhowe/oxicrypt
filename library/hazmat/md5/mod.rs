@@ -8,6 +8,8 @@ pub mod generic
   }
 }
 
+use super::Implementation;
+
 /// Pointers to unsafe MD compression functions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Engine
@@ -17,7 +19,7 @@ pub struct Engine
 
 impl Engine
 {
-  const MD5_GENERIC: Self = unsafe { Self::new(Variant::Md5, Implementation::Generic) };
+  const MD5_GENERIC: Self = unsafe { Self::new(Variant::Md5, Implementation::new()) };
 
   /// Returns the appropriate engine for a given implementation.
   ///
@@ -30,7 +32,7 @@ impl Engine
   pub const unsafe fn new(variant: Variant, implementation: Implementation) -> Self
   {
     match implementation {
-      | Implementation::Generic => match variant {
+      | _ => match variant {
         | Variant::Md5 => Self {
           compress: generic::md5_compress,
         },
@@ -46,7 +48,7 @@ impl Engine
   pub const unsafe fn as_ref(variant: Variant, implementation: Implementation) -> &'static Self
   {
     match implementation {
-      | Implementation::Generic => match variant {
+      | _ => match variant {
         | Variant::Md5 => &Self::MD5_GENERIC,
       },
     }
@@ -56,44 +58,6 @@ impl Engine
   pub unsafe fn compress(&self, state: *mut u8, block: *const u8)
   {
     (self.compress)(state, block);
-  }
-}
-
-/// MD implementations.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "c", repr(C))]
-pub enum Implementation
-{
-  /// Generic implementation.
-  ///
-  /// This implementation is always available on all platforms.
-  Generic = 0,
-}
-
-impl Implementation
-{
-  /// Fastest implementation based on compile-time information.
-  ///
-  /// Currently returns [`Generic`](`Self::Generic`).
-  pub const fn fastest() -> Self
-  {
-    Self::Generic
-  }
-
-  /// Fastest implementation based on runtime information.
-  ///
-  /// Currently returns [`Generic`](`Self::Generic`).
-  pub fn fastest_rt() -> Self
-  {
-    Self::Generic
-  }
-
-  /// Performs a runtime check for wether or not a certain implementation is available.
-  pub fn is_available(self) -> bool
-  {
-    match self {
-      | Implementation::Generic => true,
-    }
   }
 }
 
