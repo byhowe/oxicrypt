@@ -137,3 +137,12 @@ impl core::fmt::Display for Variant
     }
   }
 }
+
+/// Initial state of the MD5 algorithm.
+#[rustfmt::skip]
+pub const H: [u32; 4] = [
+  0x67452301,
+  0xefcdab89,
+  0x98badcfe,
+  0x10325476
+];
