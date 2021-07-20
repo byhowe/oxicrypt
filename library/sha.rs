@@ -233,19 +233,17 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
 
 impl<const O: usize, const S: usize, const B: usize> hmac::Digest for Sha<O, S, B>
 {
-  type Implementation = Implementation;
-
   fn digest_reset(&mut self)
   {
     self.reset();
   }
 
-  fn digest_update<D: AsRef<[u8]>>(&mut self, implementation: Self::Implementation, data: D)
+  fn digest_update<D: AsRef<[u8]>>(&mut self, implementation: Implementation, data: D)
   {
     self.update(implementation, data);
   }
 
-  fn digest_finish(&mut self, implementation: Self::Implementation, output: &mut [u8])
+  fn digest_finish(&mut self, implementation: Implementation, output: &mut [u8])
   {
     self.finish_into(implementation, output);
   }

@@ -5,17 +5,16 @@ use alloc::boxed::Box;
 use core::mem::MaybeUninit;
 
 use crate::sha;
+use crate::Implementation;
 
 /// Hash functions that can be used with HMAC.
 pub trait Digest
 {
-  type Implementation: Copy;
-
   fn digest_reset(&mut self);
 
-  fn digest_update<D: AsRef<[u8]>>(&mut self, implementation: Self::Implementation, data: D);
+  fn digest_update<D: AsRef<[u8]>>(&mut self, implementation: Implementation, data: D);
 
-  fn digest_finish(&mut self, implementation: Self::Implementation, output: &mut [u8]);
+  fn digest_finish(&mut self, implementation: Implementation, output: &mut [u8]);
 }
 
 /// HMAC context.
@@ -61,14 +60,14 @@ impl<H, const O: usize, const B: usize> Hmac<H, O, B>
 where
   H: Digest,
 {
-  pub fn with_key<K: AsRef<[u8]>>(implementation: H::Implementation, key: K) -> Self
+  pub fn with_key<K: AsRef<[u8]>>(implementation: Implementation, key: K) -> Self
   {
     let mut ctx: MaybeUninit<Self> = MaybeUninit::uninit();
     unsafe { ctx.assume_init_mut() }.set_key(implementation, key);
     unsafe { ctx.assume_init() }
   }
 
-  pub fn set_key<K: AsRef<[u8]>>(&mut self, implementation: H::Implementation, key: K)
+  pub fn set_key<K: AsRef<[u8]>>(&mut self, implementation: Implementation, key: K)
   {
     let key = key.as_ref();
     self.hash.digest_reset();
@@ -87,7 +86,7 @@ where
     self.hash.digest_update(implementation, &self.key);
   }
 
-  pub fn reset(&mut self, implementation: H::Implementation)
+  pub fn reset(&mut self, implementation: Implementation)
   {
     if self.x5c {
       for i in 0 .. B {
@@ -99,12 +98,12 @@ where
     self.hash.digest_update(implementation, &self.key);
   }
 
-  pub fn update<D: AsRef<[u8]>>(&mut self, implementation: H::Implementation, data: D)
+  pub fn update<D: AsRef<[u8]>>(&mut self, implementation: Implementation, data: D)
   {
     self.hash.digest_update(implementation, data);
   }
 
-  pub fn finish(&mut self, implementation: H::Implementation) -> [u8; O]
+  pub fn finish(&mut self, implementation: Implementation) -> [u8; O]
   {
     let mut output: MaybeUninit<[u8; O]> = MaybeUninit::uninit();
     self.finish_into(implementation, unsafe { output.assume_init_mut() });
@@ -113,14 +112,14 @@ where
 
   #[cfg(any(feature = "alloc", doc))]
   #[doc(cfg(any(feature = "alloc", feature = "std")))]
-  pub fn finish_boxed(&mut self, implementation: H::Implementation) -> Box<[u8]>
+  pub fn finish_boxed(&mut self, implementation: Implementation) -> Box<[u8]>
   {
     let mut output = unsafe { Box::new_uninit_slice(O).assume_init() };
     self.finish_into(implementation, &mut output);
     output
   }
 
-  pub fn finish_into(&mut self, implementation: H::Implementation, output: &mut [u8])
+  pub fn finish_into(&mut self, implementation: Implementation, output: &mut [u8])
   {
     let mut digest: MaybeUninit<[u8; O]> = MaybeUninit::uninit();
     self
@@ -138,7 +137,7 @@ where
     self.hash.digest_finish(implementation, output);
   }
 
-  pub fn oneshot<K: AsRef<[u8]>, D: AsRef<[u8]>>(implementation: H::Implementation, key: K, data: D) -> [u8; O]
+  pub fn oneshot<K: AsRef<[u8]>, D: AsRef<[u8]>>(implementation: Implementation, key: K, data: D) -> [u8; O]
   {
     let mut ctx = Self::with_key(implementation, key);
     ctx.update(implementation, data);
@@ -147,8 +146,7 @@ where
 
   #[cfg(any(feature = "alloc", doc))]
   #[doc(cfg(any(feature = "alloc", feature = "std")))]
-  pub fn oneshot_boxed<K: AsRef<[u8]>, D: AsRef<[u8]>>(implementation: H::Implementation, key: K, data: D)
-  -> Box<[u8]>
+  pub fn oneshot_boxed<K: AsRef<[u8]>, D: AsRef<[u8]>>(implementation: Implementation, key: K, data: D) -> Box<[u8]>
   {
     let mut ctx = Self::with_key(implementation, key);
     ctx.update(implementation, data);
@@ -156,7 +154,7 @@ where
   }
 
   pub fn oneshot_into<K: AsRef<[u8]>, D: AsRef<[u8]>>(
-    implementation: H::Implementation,
+    implementation: Implementation,
     data: D,
     key: K,
     output: &mut [u8],
