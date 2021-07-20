@@ -70,7 +70,7 @@ macro_rules! r4 {
 /// of 64 (64 bytes).
 #[allow(clippy::many_single_char_names)]
 #[allow(unused_assignments)]
-pub unsafe fn sha1_compress_generic(state: *mut u32, block: *const u8)
+pub const unsafe fn sha1_compress_generic(state: *mut u32, block: *const u8)
 {
   let mut a: u32 = *state.add(0);
   let mut b: u32 = *state.add(1);
@@ -164,11 +164,11 @@ pub unsafe fn sha1_compress_generic(state: *mut u32, block: *const u8)
   r4!(c, d, e, a, b, block, w, 78);
   r4!(b, c, d, e, a, block, w, 79);
 
-  state.add(0).write((*state.add(0)).wrapping_add(a));
-  state.add(1).write((*state.add(1)).wrapping_add(b));
-  state.add(2).write((*state.add(2)).wrapping_add(c));
-  state.add(3).write((*state.add(3)).wrapping_add(d));
-  state.add(4).write((*state.add(4)).wrapping_add(e));
+  *state.add(0) = (*state.add(0)).wrapping_add(a);
+  *state.add(1) = (*state.add(1)).wrapping_add(b);
+  *state.add(2) = (*state.add(2)).wrapping_add(c);
+  *state.add(3) = (*state.add(3)).wrapping_add(d);
+  *state.add(4) = (*state.add(4)).wrapping_add(e);
 }
 
 #[cfg(test)]

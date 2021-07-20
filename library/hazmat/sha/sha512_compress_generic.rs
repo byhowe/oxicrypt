@@ -28,7 +28,7 @@ macro_rules! sha2_64_f {
 /// of 128 (128 bytes).
 #[allow(clippy::many_single_char_names)]
 #[allow(unused_assignments)]
-pub unsafe fn sha512_compress_generic(state: *mut u64, block: *const u8)
+pub const unsafe fn sha512_compress_generic(state: *mut u64, block: *const u8)
 {
   let mut a: u64 = *state.add(0);
   let mut b: u64 = *state.add(1);
@@ -141,14 +141,14 @@ pub unsafe fn sha512_compress_generic(state: *mut u64, block: *const u8)
   sha2_64_f!(c, d, e, f, g, h, a, b, w14, w12, w07, w15, 0x5fcb6fab3ad6faec);
   sha2_64_f!(b, c, d, e, f, g, h, a, w15, w13, w08, w00, 0x6c44198c4a475817);
 
-  state.add(0).write((*state.add(0)).wrapping_add(a));
-  state.add(1).write((*state.add(1)).wrapping_add(b));
-  state.add(2).write((*state.add(2)).wrapping_add(c));
-  state.add(3).write((*state.add(3)).wrapping_add(d));
-  state.add(4).write((*state.add(4)).wrapping_add(e));
-  state.add(5).write((*state.add(5)).wrapping_add(f));
-  state.add(6).write((*state.add(6)).wrapping_add(g));
-  state.add(7).write((*state.add(7)).wrapping_add(h));
+  *state.add(0) = (*state.add(0)).wrapping_add(a);
+  *state.add(1) = (*state.add(1)).wrapping_add(b);
+  *state.add(2) = (*state.add(2)).wrapping_add(c);
+  *state.add(3) = (*state.add(3)).wrapping_add(d);
+  *state.add(4) = (*state.add(4)).wrapping_add(e);
+  *state.add(5) = (*state.add(5)).wrapping_add(f);
+  *state.add(6) = (*state.add(6)).wrapping_add(g);
+  *state.add(7) = (*state.add(7)).wrapping_add(h);
 }
 
 #[cfg(test)]

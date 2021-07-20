@@ -4,17 +4,17 @@ mod sha512_compress_generic;
 
 pub mod generic
 {
-  pub unsafe fn sha1_compress(state: *mut u8, block: *const u8)
+  pub const unsafe fn sha1_compress(state: *mut u8, block: *const u8)
   {
     super::sha1_compress_generic::sha1_compress_generic(state.cast(), block);
   }
 
-  pub unsafe fn sha256_compress(state: *mut u8, block: *const u8)
+  pub const unsafe fn sha256_compress(state: *mut u8, block: *const u8)
   {
     super::sha256_compress_generic::sha256_compress_generic(state.cast(), block);
   }
 
-  pub unsafe fn sha512_compress(state: *mut u8, block: *const u8)
+  pub const unsafe fn sha512_compress(state: *mut u8, block: *const u8)
   {
     super::sha512_compress_generic::sha512_compress_generic(state.cast(), block);
   }

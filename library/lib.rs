@@ -7,6 +7,7 @@
 #![feature(const_ptr_offset)]
 #![feature(const_fn_transmute)]
 #![feature(const_maybe_uninit_assume_init)]
+#![feature(const_raw_ptr_deref)]
 #![cfg_attr(feature = "alloc", feature(new_uninit))]
 
 #[cfg(any(feature = "alloc", doc))]
