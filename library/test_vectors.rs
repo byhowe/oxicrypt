@@ -2,6 +2,8 @@ pub const SHA1_COMPRESS: &[([u32; 5], [u32; 5], [u8; 64])] = &include!(env!("OXI
 pub const SHA256_COMPRESS: &[([u32; 8], [u32; 8], [u8; 64])] = &include!(env!("OXI_TEST_sha256-compress.txt"));
 pub const SHA512_COMPRESS: &[([u64; 8], [u64; 8], [u8; 128])] = &include!(env!("OXI_TEST_sha512-compress.txt"));
 
+pub const MD5_COMPRESS: &[([u32; 4], [u32; 4], [u8; 64])] = &include!(env!("OXI_TEST_md5-compress.txt"));
+
 pub const AES128_EXPAND_KEY: &[([u8; 16], [u8; 176])] = &include!(env!("OXI_TEST_aes128-expand-key.txt"));
 pub const AES192_EXPAND_KEY: &[([u8; 24], [u8; 208])] = &include!(env!("OXI_TEST_aes192-expand-key.txt"));
 pub const AES256_EXPAND_KEY: &[([u8; 32], [u8; 240])] = &include!(env!("OXI_TEST_aes256-expand-key.txt"));
