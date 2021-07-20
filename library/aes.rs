@@ -56,6 +56,7 @@ impl<const N: usize> Key<N>
   ///
   /// ```
   /// # use oxicrypt::aes::*;
+  /// # use oxicrypt::Implementation;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
   /// let implementation = Implementation::fastest_rt();
   /// let mut keysched = Key128::uninit();
@@ -220,6 +221,7 @@ impl<const N: usize> Key<N>
   /// Encryption key -> Decryption key OK!
   /// ```
   /// # use oxicrypt::aes::*;
+  /// # use oxicrypt::Implementation;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
   /// let implementation = Implementation::fastest_rt();
   /// let keysched_r = Key128::with_decrypt_key(implementation, &key).unwrap();
@@ -231,6 +233,7 @@ impl<const N: usize> Key<N>
   /// Decryption key -> Encryption key NOT OK!
   /// ```should_panic
   /// # use oxicrypt::aes::*;
+  /// # use oxicrypt::Implementation;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
   /// let implementation = Implementation::fastest_rt();
   /// let keysched_r = Key128::with_encrypt_key(implementation, &key).unwrap();
