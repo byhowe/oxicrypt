@@ -22,6 +22,8 @@ pub mod generic
 
 use core::mem;
 
+use super::Implementation;
+
 /// Pointers to unsafe SHA compression functions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Engine
@@ -31,9 +33,9 @@ pub struct Engine
 
 impl Engine
 {
-  const E1_GENERIC: Self = unsafe { Self::new(Variant::Sha1, Implementation::Generic) };
-  const E256_GENERIC: Self = unsafe { Self::new(Variant::Sha256, Implementation::Generic) };
-  const E512_GENERIC: Self = unsafe { Self::new(Variant::Sha512, Implementation::Generic) };
+  const E1_GENERIC: Self = unsafe { Self::new(Variant::Sha1, Implementation::new()) };
+  const E256_GENERIC: Self = unsafe { Self::new(Variant::Sha256, Implementation::new()) };
+  const E512_GENERIC: Self = unsafe { Self::new(Variant::Sha512, Implementation::new()) };
 
   /// Returns the appropriate engine for a given implementation.
   ///
@@ -46,7 +48,7 @@ impl Engine
   pub const unsafe fn new(variant: Variant, implementation: Implementation) -> Self
   {
     match implementation {
-      | Implementation::Generic => match variant {
+      | _ => match variant {
         | Variant::Sha1 => Self {
           compress: generic::sha1_compress,
         },
@@ -68,7 +70,7 @@ impl Engine
   pub const unsafe fn as_ref(variant: Variant, implementation: Implementation) -> &'static Self
   {
     match implementation {
-      | Implementation::Generic => match variant {
+      | _ => match variant {
         | Variant::Sha1 => &Self::E1_GENERIC,
         | Variant::Sha224 | Variant::Sha256 => &Self::E256_GENERIC,
         | Variant::Sha384 | Variant::Sha512 | Variant::Sha512_224 | Variant::Sha512_256 => &Self::E512_GENERIC,
@@ -80,44 +82,6 @@ impl Engine
   pub unsafe fn compress(&self, state: *mut u8, block: *const u8)
   {
     (self.compress)(state, block);
-  }
-}
-
-/// SHA implementations.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "c", repr(C))]
-pub enum Implementation
-{
-  /// Generic implementation.
-  ///
-  /// This implementation is always available on all platforms.
-  Generic = 0,
-}
-
-impl Implementation
-{
-  /// Fastest implementation based on compile-time information.
-  ///
-  /// Currently returns [`Generic`](`Self::Generic`).
-  pub const fn fastest() -> Self
-  {
-    Self::Generic
-  }
-
-  /// Fastest implementation based on runtime information.
-  ///
-  /// Currently returns [`Generic`](`Self::Generic`).
-  pub fn fastest_rt() -> Self
-  {
-    Self::Generic
-  }
-
-  /// Performs a runtime check for wether or not a certain implementation is available.
-  pub fn is_available(self) -> bool
-  {
-    match self {
-      | Implementation::Generic => true,
-    }
   }
 }
 

@@ -10,9 +10,8 @@ use core::mem::MaybeUninit;
 use crate::hazmat::sha::initial_state;
 use crate::hazmat::sha::Engine;
 #[doc(inline)]
-pub use crate::hazmat::sha::Implementation;
-#[doc(inline)]
 pub use crate::hazmat::sha::Variant;
+use crate::hazmat::Implementation;
 use crate::hmac;
 
 /// SHA context.

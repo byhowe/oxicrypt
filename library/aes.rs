@@ -4,9 +4,8 @@ use core::mem::MaybeUninit;
 
 use crate::hazmat::aes::Engine;
 #[doc(inline)]
-pub use crate::hazmat::aes::Implementation;
-#[doc(inline)]
 pub use crate::hazmat::aes::Variant;
+use crate::hazmat::Implementation;
 
 /// Expanded key to use with AES.
 ///

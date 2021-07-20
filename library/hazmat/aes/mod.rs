@@ -3,6 +3,8 @@
 pub mod aesni;
 pub mod lut;
 
+use super::Implementation;
+
 /// Pointers to unsafe AES functions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Engine
@@ -16,14 +18,14 @@ pub struct Engine
 impl Engine
 {
   #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-  const E128_AESNI: Self = unsafe { Self::new(Variant::Aes128, Implementation::Aesni) };
-  const E128_LUT: Self = unsafe { Self::new(Variant::Aes128, Implementation::Lut) };
+  const E128_AESNI: Self = unsafe { Self::new(Variant::Aes128, Implementation::AES) };
+  const E128_LUT: Self = unsafe { Self::new(Variant::Aes128, Implementation::new()) };
   #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-  const E192_AESNI: Self = unsafe { Self::new(Variant::Aes192, Implementation::Aesni) };
-  const E192_LUT: Self = unsafe { Self::new(Variant::Aes192, Implementation::Lut) };
+  const E192_AESNI: Self = unsafe { Self::new(Variant::Aes192, Implementation::AES) };
+  const E192_LUT: Self = unsafe { Self::new(Variant::Aes192, Implementation::new()) };
   #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-  const E256_AESNI: Self = unsafe { Self::new(Variant::Aes256, Implementation::Aesni) };
-  const E256_LUT: Self = unsafe { Self::new(Variant::Aes256, Implementation::Lut) };
+  const E256_AESNI: Self = unsafe { Self::new(Variant::Aes256, Implementation::AES) };
+  const E256_LUT: Self = unsafe { Self::new(Variant::Aes256, Implementation::new()) };
 
   /// Returns the appropriate engine for a given implementation.
   ///
@@ -36,28 +38,8 @@ impl Engine
   pub const unsafe fn new(variant: Variant, implementation: Implementation) -> Self
   {
     match implementation {
-      | Implementation::Lut => match variant {
-        | Variant::Aes128 => Self {
-          expand_key: lut::aes128_expand_key,
-          inverse_key: lut::aes128_inverse_key,
-          encrypt1: lut::aes128_encrypt1,
-          decrypt1: lut::aes128_decrypt1,
-        },
-        | Variant::Aes192 => Self {
-          expand_key: lut::aes192_expand_key,
-          inverse_key: lut::aes192_inverse_key,
-          encrypt1: lut::aes192_encrypt1,
-          decrypt1: lut::aes192_decrypt1,
-        },
-        | Variant::Aes256 => Self {
-          expand_key: lut::aes256_expand_key,
-          inverse_key: lut::aes256_inverse_key,
-          encrypt1: lut::aes256_encrypt1,
-          decrypt1: lut::aes256_decrypt1,
-        },
-      },
       #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-      | Implementation::Aesni => match variant {
+      | i if i.is_present(Implementation::AES) => match variant {
         | Variant::Aes128 => Self {
           expand_key: aesni::aes128_expand_key,
           inverse_key: aesni::aes128_inverse_key,
@@ -77,6 +59,26 @@ impl Engine
           decrypt1: aesni::aes256_decrypt1,
         },
       },
+      | _ => match variant {
+        | Variant::Aes128 => Self {
+          expand_key: lut::aes128_expand_key,
+          inverse_key: lut::aes128_inverse_key,
+          encrypt1: lut::aes128_encrypt1,
+          decrypt1: lut::aes128_decrypt1,
+        },
+        | Variant::Aes192 => Self {
+          expand_key: lut::aes192_expand_key,
+          inverse_key: lut::aes192_inverse_key,
+          encrypt1: lut::aes192_encrypt1,
+          decrypt1: lut::aes192_decrypt1,
+        },
+        | Variant::Aes256 => Self {
+          expand_key: lut::aes256_expand_key,
+          inverse_key: lut::aes256_inverse_key,
+          encrypt1: lut::aes256_encrypt1,
+          decrypt1: lut::aes256_decrypt1,
+        },
+      },
     }
   }
 
@@ -88,16 +90,16 @@ impl Engine
   pub const unsafe fn as_ref(variant: Variant, implementation: Implementation) -> &'static Self
   {
     match implementation {
-      | Implementation::Lut => match variant {
-        | Variant::Aes128 => &Self::E128_LUT,
-        | Variant::Aes192 => &Self::E192_LUT,
-        | Variant::Aes256 => &Self::E256_LUT,
-      },
       #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-      | Implementation::Aesni => match variant {
+      | i if i.is_present(Implementation::AES) => match variant {
         | Variant::Aes128 => &Self::E128_AESNI,
         | Variant::Aes192 => &Self::E192_AESNI,
         | Variant::Aes256 => &Self::E256_AESNI,
+      },
+      | _ => match variant {
+        | Variant::Aes128 => &Self::E128_LUT,
+        | Variant::Aes192 => &Self::E192_LUT,
+        | Variant::Aes256 => &Self::E256_LUT,
       },
     }
   }
@@ -124,68 +126,6 @@ impl Engine
   pub unsafe fn decrypt1(&self, block: *mut u8, key_schedule: *const u8)
   {
     (self.decrypt1)(block, key_schedule);
-  }
-}
-
-/// AES implementations.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "c", repr(C))]
-pub enum Implementation
-{
-  /// Look-up table based implementation.
-  ///
-  /// This implementation is always available on all platforms.
-  Lut = 0,
-  /// Hardware accelerated implementation.
-  ///
-  /// This implementation is only available on x86 based chips that have the AES feature.
-  #[cfg(any(any(target_arch = "x86", target_arch = "x86_64"), doc))]
-  #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-  Aesni = 1,
-}
-
-impl Implementation
-{
-  /// Fastest implementation based on compile-time information.
-  ///
-  /// This will generally return [`Lut`](`Self::Lut`) as it is the generic implementation that is
-  /// available on all platforms. If compiled using `RUSTFLAGS='-C target-feature=+aes'` or certain
-  /// feature is known to be available during compile-time, then this function will return the
-  /// fastest implementation based on that.
-  pub const fn fastest() -> Self
-  {
-    if cfg!(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "aes"
-    )) {
-      Self::Aesni
-    } else {
-      Self::Lut
-    }
-  }
-
-  /// Fastest implementation based on runtime information.
-  pub fn fastest_rt() -> Self
-  {
-    if cfg!(all(
-      any(target_arch = "x86", target_arch = "x86_64"),
-      target_feature = "aes"
-    )) || Self::is_available(Self::Aesni)
-    {
-      Self::Aesni
-    } else {
-      Self::Lut
-    }
-  }
-
-  /// Performs a runtime check for wether or not a certain implementation is available.
-  pub fn is_available(self) -> bool
-  {
-    match self {
-      | Implementation::Lut => true,
-      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-      | Implementation::Aesni => std_detect::is_x86_feature_detected!("aes"),
-    }
   }
 }
 
