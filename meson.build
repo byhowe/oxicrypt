@@ -16,12 +16,6 @@ else
   cargo_args += ['--release']
 endif
 
-cargo_args += ['--']
-
-if get_option('target-cpu') != ''
-  cargo_args += ['-C', 'target-cpu=' + get_option('target-cpu')]
-endif
-
 system = build_machine.system()
 if system == 'windows'
   ext_dynamic = 'dll'
