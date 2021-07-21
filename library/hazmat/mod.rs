@@ -31,7 +31,7 @@ impl Implementation
     let mut i = Self::new();
 
     #[cfg(all(any(target_arch = "x86", target_arch = "x86_64"), target_feature = "aes"))]
-    i.enable_aes();
+    i.enable(Self::AES);
 
     i
   }
