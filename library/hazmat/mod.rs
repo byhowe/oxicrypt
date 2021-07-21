@@ -4,14 +4,14 @@
 ///
 /// # Bits
 ///
-/// `1 << 0` - AES
+/// `1 << 0` - AES with hardware acceleration
 #[repr(transparent)]
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct Implementation(u64);
 
 impl Implementation
 {
-  /// Bits for AES.
+  /// Bits for AES with hardware acceleration.
   pub const AES: Self = Self(1 << 0);
 
   /// Implementation with all features disabled.
