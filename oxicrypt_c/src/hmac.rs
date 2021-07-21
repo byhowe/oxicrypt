@@ -10,7 +10,7 @@ use oxicrypt::hmac::HmacSha512;
 use oxicrypt::hmac::HmacSha512_224;
 use oxicrypt::hmac::HmacSha512_256;
 
-use crate::sha::oxi_sha_implementation_t;
+use crate::oxi_implementation_t;
 
 // HMAC contexts.
 
@@ -38,7 +38,7 @@ pub type oxi_hmac_sha512_256_t = HmacSha512_256;
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha1_set_key(
   ctx: *mut oxi_hmac_sha1_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
 )
@@ -50,7 +50,7 @@ pub unsafe extern "C" fn oxi_hmac_sha1_set_key(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha224_set_key(
   ctx: *mut oxi_hmac_sha224_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
 )
@@ -62,7 +62,7 @@ pub unsafe extern "C" fn oxi_hmac_sha224_set_key(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha256_set_key(
   ctx: *mut oxi_hmac_sha256_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
 )
@@ -74,7 +74,7 @@ pub unsafe extern "C" fn oxi_hmac_sha256_set_key(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha384_set_key(
   ctx: *mut oxi_hmac_sha384_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
 )
@@ -86,7 +86,7 @@ pub unsafe extern "C" fn oxi_hmac_sha384_set_key(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha512_set_key(
   ctx: *mut oxi_hmac_sha512_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
 )
@@ -98,7 +98,7 @@ pub unsafe extern "C" fn oxi_hmac_sha512_set_key(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha512_224_set_key(
   ctx: *mut oxi_hmac_sha512_224_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
 )
@@ -110,7 +110,7 @@ pub unsafe extern "C" fn oxi_hmac_sha512_224_set_key(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha512_256_set_key(
   ctx: *mut oxi_hmac_sha512_256_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
 )
@@ -122,7 +122,7 @@ pub unsafe extern "C" fn oxi_hmac_sha512_256_set_key(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha1_update(
   ctx: *mut oxi_hmac_sha1_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   data: *const u8,
   datalen: usize,
 )
@@ -134,7 +134,7 @@ pub unsafe extern "C" fn oxi_hmac_sha1_update(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha224_update(
   ctx: *mut oxi_hmac_sha224_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   data: *const u8,
   datalen: usize,
 )
@@ -146,7 +146,7 @@ pub unsafe extern "C" fn oxi_hmac_sha224_update(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha256_update(
   ctx: *mut oxi_hmac_sha256_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   data: *const u8,
   datalen: usize,
 )
@@ -158,7 +158,7 @@ pub unsafe extern "C" fn oxi_hmac_sha256_update(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha384_update(
   ctx: *mut oxi_hmac_sha384_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   data: *const u8,
   datalen: usize,
 )
@@ -170,7 +170,7 @@ pub unsafe extern "C" fn oxi_hmac_sha384_update(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha512_update(
   ctx: *mut oxi_hmac_sha512_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   data: *const u8,
   datalen: usize,
 )
@@ -182,7 +182,7 @@ pub unsafe extern "C" fn oxi_hmac_sha512_update(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha512_224_update(
   ctx: *mut oxi_hmac_sha512_224_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   data: *const u8,
   datalen: usize,
 )
@@ -194,7 +194,7 @@ pub unsafe extern "C" fn oxi_hmac_sha512_224_update(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha512_256_update(
   ctx: *mut oxi_hmac_sha512_256_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   data: *const u8,
   datalen: usize,
 )
@@ -206,7 +206,7 @@ pub unsafe extern "C" fn oxi_hmac_sha512_256_update(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha1_finish(
   ctx: *mut oxi_hmac_sha1_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   out: *mut u8,
   outlen: usize,
 )
@@ -218,7 +218,7 @@ pub unsafe extern "C" fn oxi_hmac_sha1_finish(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha224_finish(
   ctx: *mut oxi_hmac_sha224_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   out: *mut u8,
   outlen: usize,
 )
@@ -230,7 +230,7 @@ pub unsafe extern "C" fn oxi_hmac_sha224_finish(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha256_finish(
   ctx: *mut oxi_hmac_sha256_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   out: *mut u8,
   outlen: usize,
 )
@@ -242,7 +242,7 @@ pub unsafe extern "C" fn oxi_hmac_sha256_finish(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha384_finish(
   ctx: *mut oxi_hmac_sha384_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   out: *mut u8,
   outlen: usize,
 )
@@ -254,7 +254,7 @@ pub unsafe extern "C" fn oxi_hmac_sha384_finish(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha512_finish(
   ctx: *mut oxi_hmac_sha512_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   out: *mut u8,
   outlen: usize,
 )
@@ -266,7 +266,7 @@ pub unsafe extern "C" fn oxi_hmac_sha512_finish(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha512_224_finish(
   ctx: *mut oxi_hmac_sha512_224_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   out: *mut u8,
   outlen: usize,
 )
@@ -278,7 +278,7 @@ pub unsafe extern "C" fn oxi_hmac_sha512_224_finish(
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha512_256_finish(
   ctx: *mut oxi_hmac_sha512_256_t,
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   out: *mut u8,
   outlen: usize,
 )
@@ -289,7 +289,7 @@ pub unsafe extern "C" fn oxi_hmac_sha512_256_finish(
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha1_oneshot(
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
   data: *const u8,
@@ -308,7 +308,7 @@ pub unsafe extern "C" fn oxi_hmac_sha1_oneshot(
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha224_oneshot(
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
   data: *const u8,
@@ -327,7 +327,7 @@ pub unsafe extern "C" fn oxi_hmac_sha224_oneshot(
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha256_oneshot(
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
   data: *const u8,
@@ -346,7 +346,7 @@ pub unsafe extern "C" fn oxi_hmac_sha256_oneshot(
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha384_oneshot(
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
   data: *const u8,
@@ -365,7 +365,7 @@ pub unsafe extern "C" fn oxi_hmac_sha384_oneshot(
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha512_oneshot(
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
   data: *const u8,
@@ -384,7 +384,7 @@ pub unsafe extern "C" fn oxi_hmac_sha512_oneshot(
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha512_224_oneshot(
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
   data: *const u8,
@@ -403,7 +403,7 @@ pub unsafe extern "C" fn oxi_hmac_sha512_224_oneshot(
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha512_256_oneshot(
-  implementation: oxi_sha_implementation_t,
+  implementation: oxi_implementation_t,
   key: *const u8,
   keylen: usize,
   data: *const u8,
