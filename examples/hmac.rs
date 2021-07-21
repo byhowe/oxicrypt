@@ -5,7 +5,7 @@ use std::io::stdout;
 use std::io::Write;
 
 use oxicrypt::hmac;
-use oxicrypt::sha::Implementation;
+use oxicrypt::Implementation;
 
 fn main() -> std::io::Result<()>
 {
