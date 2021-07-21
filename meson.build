@@ -50,6 +50,7 @@ endif
 install_data(libraries, install_dir : get_option('libdir'))
 
 headers = [
+  join_paths('include', 'oxicrypt', 'oxicrypt.h'),
   join_paths('include', 'oxicrypt', 'aes.h'),
   join_paths('include', 'oxicrypt', 'sha.h'),
 ]
