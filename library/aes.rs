@@ -284,6 +284,54 @@ impl<const N: usize> Key<N>
     Ok(())
   }
 
+  /// Encrypts two 16 byte blocks in-place.
+  ///
+  /// Returns an [`Err`](`Result::Err`) when length of `block` is not `32`.
+  pub fn encrypt2(&self, implementation: Implementation, block: &mut [u8]) -> Result<(), LenError>
+  {
+    if block.len() != 32 {
+      return Err(LenError {
+        field: "block",
+        expected: 32,
+        got: block.len(),
+      });
+    }
+    unsafe { self.encrypt2_unchecked(implementation, block) };
+    Ok(())
+  }
+
+  /// Encrypts four 16 byte blocks in-place.
+  ///
+  /// Returns an [`Err`](`Result::Err`) when length of `block` is not `64`.
+  pub fn encrypt4(&self, implementation: Implementation, block: &mut [u8]) -> Result<(), LenError>
+  {
+    if block.len() != 64 {
+      return Err(LenError {
+        field: "block",
+        expected: 64,
+        got: block.len(),
+      });
+    }
+    unsafe { self.encrypt4_unchecked(implementation, block) };
+    Ok(())
+  }
+
+  /// Encrypts eight 16 byte blocks in-place.
+  ///
+  /// Returns an [`Err`](`Result::Err`) when length of `block` is not `128`.
+  pub fn encrypt8(&self, implementation: Implementation, block: &mut [u8]) -> Result<(), LenError>
+  {
+    if block.len() != 128 {
+      return Err(LenError {
+        field: "block",
+        expected: 128,
+        got: block.len(),
+      });
+    }
+    unsafe { self.encrypt8_unchecked(implementation, block) };
+    Ok(())
+  }
+
   /// Decrypts a single 16 byte block in-place.
   ///
   /// Returns an [`Err`](`Result::Err`) when length of `block` is not `16`.
@@ -297,6 +345,54 @@ impl<const N: usize> Key<N>
       });
     }
     unsafe { self.decrypt1_unchecked(implementation, block) };
+    Ok(())
+  }
+
+  /// Decrypts two 16 byte blocks in-place.
+  ///
+  /// Returns an [`Err`](`Result::Err`) when length of `block` is not `32`.
+  pub fn decrypt2(&self, implementation: Implementation, block: &mut [u8]) -> Result<(), LenError>
+  {
+    if block.len() != 32 {
+      return Err(LenError {
+        field: "block",
+        expected: 32,
+        got: block.len(),
+      });
+    }
+    unsafe { self.decrypt2_unchecked(implementation, block) };
+    Ok(())
+  }
+
+  /// Decrypts four 16 byte blocks in-place.
+  ///
+  /// Returns an [`Err`](`Result::Err`) when length of `block` is not `64`.
+  pub fn decrypt4(&self, implementation: Implementation, block: &mut [u8]) -> Result<(), LenError>
+  {
+    if block.len() != 64 {
+      return Err(LenError {
+        field: "block",
+        expected: 64,
+        got: block.len(),
+      });
+    }
+    unsafe { self.decrypt4_unchecked(implementation, block) };
+    Ok(())
+  }
+
+  /// Decrypts eight 16 byte blocks in-place.
+  ///
+  /// Returns an [`Err`](`Result::Err`) when length of `block` is not `128`.
+  pub fn decrypt8(&self, implementation: Implementation, block: &mut [u8]) -> Result<(), LenError>
+  {
+    if block.len() != 128 {
+      return Err(LenError {
+        field: "block",
+        expected: 128,
+        got: block.len(),
+      });
+    }
+    unsafe { self.decrypt8_unchecked(implementation, block) };
     Ok(())
   }
 
@@ -322,6 +418,80 @@ impl<const N: usize> Key<N>
     }
   }
 
+  /// Encrypts two 16 byte blocks in-place.
+  ///
+  /// # Safety
+  ///
+  /// * Length of `block` must be `32`.
+  pub unsafe fn encrypt2_unchecked(&self, implementation: Implementation, block: &mut [u8])
+  {
+    match implementation {
+      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+      | i if i.is_present(Implementation::AES) => match Self::V {
+        | Variant::Aes128 => aes::aesni::aes128_encrypt2(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes192 => aes::aesni::aes192_encrypt2(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes256 => aes::aesni::aes256_encrypt2(block.as_mut_ptr(), self.as_ptr()),
+      },
+      | _ => {
+        // TODO Is there a more performant way of doing this?
+        self.encrypt1_unchecked(implementation, &mut block[0 .. 16]);
+        self.encrypt1_unchecked(implementation, &mut block[16 .. 32]);
+      }
+    }
+  }
+
+  /// Encrypts four 16 byte blocks in-place.
+  ///
+  /// # Safety
+  ///
+  /// * Length of `block` must be `64`.
+  pub unsafe fn encrypt4_unchecked(&self, implementation: Implementation, block: &mut [u8])
+  {
+    match implementation {
+      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+      | i if i.is_present(Implementation::AES) => match Self::V {
+        | Variant::Aes128 => aes::aesni::aes128_encrypt4(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes192 => aes::aesni::aes192_encrypt4(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes256 => aes::aesni::aes256_encrypt4(block.as_mut_ptr(), self.as_ptr()),
+      },
+      | _ => {
+        // TODO Is there a more performant way of doing this?
+        self.encrypt1_unchecked(implementation, &mut block[0 .. 16]);
+        self.encrypt1_unchecked(implementation, &mut block[16 .. 32]);
+        self.encrypt1_unchecked(implementation, &mut block[32 .. 48]);
+        self.encrypt1_unchecked(implementation, &mut block[48 .. 64]);
+      }
+    }
+  }
+
+  /// Encrypts eight 16 byte blocks in-place.
+  ///
+  /// # Safety
+  ///
+  /// * Length of `block` must be `128`.
+  pub unsafe fn encrypt8_unchecked(&self, implementation: Implementation, block: &mut [u8])
+  {
+    match implementation {
+      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+      | i if i.is_present(Implementation::AES) => match Self::V {
+        | Variant::Aes128 => aes::aesni::aes128_encrypt8(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes192 => aes::aesni::aes192_encrypt8(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes256 => aes::aesni::aes256_encrypt8(block.as_mut_ptr(), self.as_ptr()),
+      },
+      | _ => {
+        // TODO Is there a more performant way of doing this?
+        self.encrypt1_unchecked(implementation, &mut block[0 .. 16]);
+        self.encrypt1_unchecked(implementation, &mut block[16 .. 32]);
+        self.encrypt1_unchecked(implementation, &mut block[32 .. 48]);
+        self.encrypt1_unchecked(implementation, &mut block[48 .. 64]);
+        self.encrypt1_unchecked(implementation, &mut block[64 .. 80]);
+        self.encrypt1_unchecked(implementation, &mut block[80 .. 96]);
+        self.encrypt1_unchecked(implementation, &mut block[96 .. 112]);
+        self.encrypt1_unchecked(implementation, &mut block[112 .. 128]);
+      }
+    }
+  }
+
   /// Decrypts a single 16 byte block in-place.
   ///
   /// # Safety
@@ -341,6 +511,80 @@ impl<const N: usize> Key<N>
         | Variant::Aes192 => aes::lut::aes192_decrypt1(block.as_mut_ptr(), self.as_ptr()),
         | Variant::Aes256 => aes::lut::aes256_decrypt1(block.as_mut_ptr(), self.as_ptr()),
       },
+    }
+  }
+
+  /// Decrypts two 16 byte blocks in-place.
+  ///
+  /// # Safety
+  ///
+  /// * Length of `block` must be `32`.
+  pub unsafe fn decrypt2_unchecked(&self, implementation: Implementation, block: &mut [u8])
+  {
+    match implementation {
+      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+      | i if i.is_present(Implementation::AES) => match Self::V {
+        | Variant::Aes128 => aes::aesni::aes128_decrypt2(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes192 => aes::aesni::aes192_decrypt2(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes256 => aes::aesni::aes256_decrypt2(block.as_mut_ptr(), self.as_ptr()),
+      },
+      | _ => {
+        // TODO Is there a more performant way of doing this?
+        self.decrypt1_unchecked(implementation, &mut block[0 .. 16]);
+        self.decrypt1_unchecked(implementation, &mut block[16 .. 32]);
+      }
+    }
+  }
+
+  /// Decrypts four 16 byte blocks in-place.
+  ///
+  /// # Safety
+  ///
+  /// * Length of `block` must be `64`.
+  pub unsafe fn decrypt4_unchecked(&self, implementation: Implementation, block: &mut [u8])
+  {
+    match implementation {
+      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+      | i if i.is_present(Implementation::AES) => match Self::V {
+        | Variant::Aes128 => aes::aesni::aes128_decrypt4(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes192 => aes::aesni::aes192_decrypt4(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes256 => aes::aesni::aes256_decrypt4(block.as_mut_ptr(), self.as_ptr()),
+      },
+      | _ => {
+        // TODO Is there a more performant way of doing this?
+        self.decrypt1_unchecked(implementation, &mut block[0 .. 16]);
+        self.decrypt1_unchecked(implementation, &mut block[16 .. 32]);
+        self.decrypt1_unchecked(implementation, &mut block[32 .. 48]);
+        self.decrypt1_unchecked(implementation, &mut block[48 .. 64]);
+      }
+    }
+  }
+
+  /// Decrypts eight 16 byte blocks in-place.
+  ///
+  /// # Safety
+  ///
+  /// * Length of `block` must be `128`.
+  pub unsafe fn decrypt8_unchecked(&self, implementation: Implementation, block: &mut [u8])
+  {
+    match implementation {
+      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+      | i if i.is_present(Implementation::AES) => match Self::V {
+        | Variant::Aes128 => aes::aesni::aes128_decrypt8(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes192 => aes::aesni::aes192_decrypt8(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes256 => aes::aesni::aes256_decrypt8(block.as_mut_ptr(), self.as_ptr()),
+      },
+      | _ => {
+        // TODO Is there a more performant way of doing this?
+        self.decrypt1_unchecked(implementation, &mut block[0 .. 16]);
+        self.decrypt1_unchecked(implementation, &mut block[16 .. 32]);
+        self.decrypt1_unchecked(implementation, &mut block[32 .. 48]);
+        self.decrypt1_unchecked(implementation, &mut block[48 .. 64]);
+        self.decrypt1_unchecked(implementation, &mut block[64 .. 80]);
+        self.decrypt1_unchecked(implementation, &mut block[80 .. 96]);
+        self.decrypt1_unchecked(implementation, &mut block[96 .. 112]);
+        self.decrypt1_unchecked(implementation, &mut block[112 .. 128]);
+      }
     }
   }
 }
