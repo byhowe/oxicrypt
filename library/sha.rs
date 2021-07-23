@@ -11,7 +11,6 @@ use crate::hazmat::sha;
 use crate::hazmat::sha::initial_state;
 use crate::hazmat::sha::Variant;
 use crate::hazmat::Implementation;
-use crate::hmac;
 
 /// SHA context.
 #[derive(Debug, Clone, Copy)]
@@ -242,24 +241,6 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
     let mut ctx = Self::new();
     ctx.update(implementation, data);
     ctx.finish_into(implementation, output);
-  }
-}
-
-impl<const O: usize, const S: usize, const B: usize> hmac::Digest for Sha<O, S, B>
-{
-  fn digest_reset(&mut self)
-  {
-    self.reset();
-  }
-
-  fn digest_update<D: AsRef<[u8]>>(&mut self, implementation: Implementation, data: D)
-  {
-    self.update(implementation, data);
-  }
-
-  fn digest_finish(&mut self, implementation: Implementation, output: &mut [u8])
-  {
-    self.finish_into(implementation, output);
   }
 }
 
