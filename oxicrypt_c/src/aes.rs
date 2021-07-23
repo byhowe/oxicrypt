@@ -372,6 +372,18 @@ pub unsafe extern "C" fn oxi_aes128_inverse_key(ctx: *mut oxi_aes128_key_t, impl
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_encrypt(
+  ctx: *const oxi_aes128_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+  blocklen: usize,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt_unchecked(implementation, slice::from_raw_parts_mut(block, blocklen));
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_encrypt1(
   ctx: *const oxi_aes128_key_t,
   implementation: oxi_implementation_t,
@@ -383,6 +395,51 @@ pub unsafe extern "C" fn oxi_aes128_encrypt1(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_encrypt2(
+  ctx: *const oxi_aes128_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt2_unchecked(implementation, slice::from_raw_parts_mut(block, 32));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_encrypt4(
+  ctx: *const oxi_aes128_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt4_unchecked(implementation, slice::from_raw_parts_mut(block, 64));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_encrypt8(
+  ctx: *const oxi_aes128_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt8_unchecked(implementation, slice::from_raw_parts_mut(block, 128));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_decrypt(
+  ctx: *const oxi_aes128_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+  blocklen: usize,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt_unchecked(implementation, slice::from_raw_parts_mut(block, blocklen));
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_decrypt1(
   ctx: *const oxi_aes128_key_t,
   implementation: oxi_implementation_t,
@@ -391,6 +448,39 @@ pub unsafe extern "C" fn oxi_aes128_decrypt1(
 {
   let ctx = &*ctx;
   ctx.decrypt1_unchecked(implementation, slice::from_raw_parts_mut(block, 16));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_decrypt2(
+  ctx: *const oxi_aes128_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt2_unchecked(implementation, slice::from_raw_parts_mut(block, 32));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_decrypt4(
+  ctx: *const oxi_aes128_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt4_unchecked(implementation, slice::from_raw_parts_mut(block, 64));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_decrypt8(
+  ctx: *const oxi_aes128_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt8_unchecked(implementation, slice::from_raw_parts_mut(block, 128));
 }
 
 #[no_mangle]
@@ -429,6 +519,18 @@ pub unsafe extern "C" fn oxi_aes192_inverse_key(ctx: *mut oxi_aes192_key_t, impl
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_encrypt(
+  ctx: *const oxi_aes192_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+  blocklen: usize,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt_unchecked(implementation, slice::from_raw_parts_mut(block, blocklen));
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_encrypt1(
   ctx: *const oxi_aes192_key_t,
   implementation: oxi_implementation_t,
@@ -440,6 +542,51 @@ pub unsafe extern "C" fn oxi_aes192_encrypt1(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_encrypt2(
+  ctx: *const oxi_aes192_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt2_unchecked(implementation, slice::from_raw_parts_mut(block, 32));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_encrypt4(
+  ctx: *const oxi_aes192_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt4_unchecked(implementation, slice::from_raw_parts_mut(block, 64));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_encrypt8(
+  ctx: *const oxi_aes192_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt8_unchecked(implementation, slice::from_raw_parts_mut(block, 192));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_decrypt(
+  ctx: *const oxi_aes192_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+  blocklen: usize,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt_unchecked(implementation, slice::from_raw_parts_mut(block, blocklen));
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_decrypt1(
   ctx: *const oxi_aes192_key_t,
   implementation: oxi_implementation_t,
@@ -448,6 +595,39 @@ pub unsafe extern "C" fn oxi_aes192_decrypt1(
 {
   let ctx = &*ctx;
   ctx.decrypt1_unchecked(implementation, slice::from_raw_parts_mut(block, 16));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_decrypt2(
+  ctx: *const oxi_aes192_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt2_unchecked(implementation, slice::from_raw_parts_mut(block, 32));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_decrypt4(
+  ctx: *const oxi_aes192_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt4_unchecked(implementation, slice::from_raw_parts_mut(block, 64));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_decrypt8(
+  ctx: *const oxi_aes192_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt8_unchecked(implementation, slice::from_raw_parts_mut(block, 192));
 }
 
 #[no_mangle]
@@ -486,6 +666,18 @@ pub unsafe extern "C" fn oxi_aes256_inverse_key(ctx: *mut oxi_aes256_key_t, impl
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_encrypt(
+  ctx: *const oxi_aes256_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+  blocklen: usize,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt_unchecked(implementation, slice::from_raw_parts_mut(block, blocklen));
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_encrypt1(
   ctx: *const oxi_aes256_key_t,
   implementation: oxi_implementation_t,
@@ -497,6 +689,51 @@ pub unsafe extern "C" fn oxi_aes256_encrypt1(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_encrypt2(
+  ctx: *const oxi_aes256_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt2_unchecked(implementation, slice::from_raw_parts_mut(block, 32));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_encrypt4(
+  ctx: *const oxi_aes256_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt4_unchecked(implementation, slice::from_raw_parts_mut(block, 64));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_encrypt8(
+  ctx: *const oxi_aes256_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.encrypt8_unchecked(implementation, slice::from_raw_parts_mut(block, 128));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_decrypt(
+  ctx: *const oxi_aes256_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+  blocklen: usize,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt_unchecked(implementation, slice::from_raw_parts_mut(block, blocklen));
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_decrypt1(
   ctx: *const oxi_aes256_key_t,
   implementation: oxi_implementation_t,
@@ -505,4 +742,37 @@ pub unsafe extern "C" fn oxi_aes256_decrypt1(
 {
   let ctx = &*ctx;
   ctx.decrypt1_unchecked(implementation, slice::from_raw_parts_mut(block, 16));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_decrypt2(
+  ctx: *const oxi_aes256_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt2_unchecked(implementation, slice::from_raw_parts_mut(block, 32));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_decrypt4(
+  ctx: *const oxi_aes256_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt4_unchecked(implementation, slice::from_raw_parts_mut(block, 64));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_decrypt8(
+  ctx: *const oxi_aes256_key_t,
+  implementation: oxi_implementation_t,
+  block: *mut u8,
+)
+{
+  let ctx = &*ctx;
+  ctx.decrypt8_unchecked(implementation, slice::from_raw_parts_mut(block, 128));
 }
