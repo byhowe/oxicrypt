@@ -17,6 +17,7 @@ extern crate std;
 
 pub mod hazmat;
 
+#[doc(inline)]
 pub use hazmat::Implementation;
 
 pub mod aes;
