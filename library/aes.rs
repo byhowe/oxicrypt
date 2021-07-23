@@ -230,6 +230,7 @@ impl<const N: usize> Key<N>
   /// Encryption key -> Decryption key OK!
   /// ```
   /// # use oxicrypt::aes::*;
+  /// # use oxicrypt::hazmat::aes::Variant;
   /// # use oxicrypt::Implementation;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
   /// let implementation = Implementation::fastest_rt();
@@ -242,6 +243,7 @@ impl<const N: usize> Key<N>
   /// Decryption key -> Encryption key NOT OK!
   /// ```should_panic
   /// # use oxicrypt::aes::*;
+  /// # use oxicrypt::hazmat::aes::Variant;
   /// # use oxicrypt::Implementation;
   /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
   /// let implementation = Implementation::fastest_rt();

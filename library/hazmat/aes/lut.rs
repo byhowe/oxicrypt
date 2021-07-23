@@ -483,7 +483,7 @@ pub unsafe fn aes256_decrypt1(block: *mut u8, key_schedule: *const u8)
 mod tests
 {
   use super::*;
-  use crate::aes::Variant;
+  use crate::hazmat::aes::Variant;
   use crate::test_vectors::*;
 
   #[test]

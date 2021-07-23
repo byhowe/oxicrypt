@@ -591,7 +591,7 @@ mod tests
   use std_detect::is_x86_feature_detected;
 
   use super::*;
-  use crate::aes::Variant;
+  use crate::hazmat::aes::Variant;
   use crate::test_vectors::*;
 
   #[test]
