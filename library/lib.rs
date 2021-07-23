@@ -1,6 +1,7 @@
 #![no_std]
 #![deny(incomplete_features)]
 #![feature(doc_cfg)]
+#![feature(stmt_expr_attributes)]
 #![feature(const_fn_fn_ptr_basics)]
 #![feature(const_unreachable_unchecked)]
 #![feature(const_mut_refs)]
