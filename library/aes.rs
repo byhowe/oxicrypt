@@ -3,8 +3,7 @@
 use core::mem::MaybeUninit;
 
 use crate::hazmat::aes;
-#[doc(inline)]
-pub use crate::hazmat::aes::Variant;
+use crate::hazmat::aes::Variant;
 use crate::hazmat::Implementation;
 
 /// Expanded key to use with AES.
