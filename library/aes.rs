@@ -306,7 +306,7 @@ impl<const N: usize> Key<N>
   ///
   /// # Safety
   ///
-  /// * Length of `key` must be `16`.
+  /// * Length of `block` must be `16`.
   pub unsafe fn encrypt1_unchecked(&self, implementation: Implementation, block: &mut [u8])
   {
     match implementation {
@@ -328,7 +328,7 @@ impl<const N: usize> Key<N>
   ///
   /// # Safety
   ///
-  /// * Length of `key` must be `16`.
+  /// * Length of `block` must be `16`.
   pub unsafe fn decrypt1_unchecked(&self, implementation: Implementation, block: &mut [u8])
   {
     match implementation {
