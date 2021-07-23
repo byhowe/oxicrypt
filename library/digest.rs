@@ -27,6 +27,21 @@ pub struct Digest<D, const M: usize, const O: usize>
   inner: D,
 }
 
+/// SHA-1
+pub type Sha1 = Digest<sha::Sha1, 0x5ba_1, 20>;
+/// SHA-224
+pub type Sha224 = Digest<sha::Sha224, 0x5ba_224, 28>;
+/// SHA-256
+pub type Sha256 = Digest<sha::Sha256, 0x5ba_256, 32>;
+/// SHA-384
+pub type Sha384 = Digest<sha::Sha384, 0x5ba_384, 48>;
+/// SHA-512
+pub type Sha512 = Digest<sha::Sha512, 0x5ba_512, 64>;
+/// SHA-512/224
+pub type Sha512_224 = Digest<sha::Sha512_224, 0x5ba_512_224, 28>;
+/// SHA-512/256
+pub type Sha512_256 = Digest<sha::Sha512_256, 0x5ba_512_256, 32>;
+
 impl<D, const M: usize, const O: usize> Digest<D, M, O>
 {
   const V: Variant = match (M, O) {
