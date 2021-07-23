@@ -22,69 +22,6 @@ pub mod generic
 
 use core::mem;
 
-use super::Implementation;
-
-/// Pointers to unsafe SHA compression functions.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Engine
-{
-  compress: unsafe fn(*mut u8, *const u8),
-}
-
-impl Engine
-{
-  const E1_GENERIC: Self = unsafe { Self::new(Variant::Sha1, Implementation::new()) };
-  const E256_GENERIC: Self = unsafe { Self::new(Variant::Sha256, Implementation::new()) };
-  const E512_GENERIC: Self = unsafe { Self::new(Variant::Sha512, Implementation::new()) };
-
-  /// Returns the appropriate engine for a given implementation.
-  ///
-  /// # Safety
-  ///
-  /// Note that this function does not perform any kind of check for wheter a given
-  /// implementation is available during runtime. If you try to use an engine with an
-  /// implementation that is not available during runtime, it might result in an illegal
-  /// instruction signal.
-  pub const unsafe fn new(variant: Variant, implementation: Implementation) -> Self
-  {
-    match implementation {
-      | _ => match variant {
-        | Variant::Sha1 => Self {
-          compress: generic::sha1_compress,
-        },
-        | Variant::Sha224 | Variant::Sha256 => Self {
-          compress: generic::sha256_compress,
-        },
-        | Variant::Sha384 | Variant::Sha512 | Variant::Sha512_224 | Variant::Sha512_256 => Engine {
-          compress: generic::sha512_compress,
-        },
-      },
-    }
-  }
-
-  /// Returns a reference to the appropriate engine for a given implementation.
-  ///
-  /// # Safety
-  ///
-  /// Same as [`Engine::new`].
-  pub const unsafe fn as_ref(variant: Variant, implementation: Implementation) -> &'static Self
-  {
-    match implementation {
-      | _ => match variant {
-        | Variant::Sha1 => &Self::E1_GENERIC,
-        | Variant::Sha224 | Variant::Sha256 => &Self::E256_GENERIC,
-        | Variant::Sha384 | Variant::Sha512 | Variant::Sha512_224 | Variant::Sha512_256 => &Self::E512_GENERIC,
-      },
-    }
-  }
-
-  #[allow(clippy::missing_safety_doc)]
-  pub unsafe fn compress(&self, state: *mut u8, block: *const u8)
-  {
-    (self.compress)(state, block);
-  }
-}
-
 /// SHA variants.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Variant
