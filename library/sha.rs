@@ -7,8 +7,8 @@ use core::intrinsics::copy_nonoverlapping;
 use core::mem::size_of;
 use core::mem::MaybeUninit;
 
+use crate::hazmat::sha;
 use crate::hazmat::sha::initial_state;
-use crate::hazmat::sha::Engine;
 #[doc(inline)]
 pub use crate::hazmat::sha::Variant;
 use crate::hazmat::Implementation;
@@ -85,6 +85,21 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
     self.blocklen = 0;
   }
 
+  unsafe fn compress(&mut self, implementation: Implementation)
+  {
+    match implementation {
+      | _ => match Self::V {
+        | Variant::Sha1 => sha::generic::sha1_compress(self.h.as_mut_ptr(), self.block.as_ptr()),
+        | Variant::Sha224 => sha::generic::sha256_compress(self.h.as_mut_ptr(), self.block.as_ptr()),
+        | Variant::Sha256 => sha::generic::sha256_compress(self.h.as_mut_ptr(), self.block.as_ptr()),
+        | Variant::Sha384 => sha::generic::sha512_compress(self.h.as_mut_ptr(), self.block.as_ptr()),
+        | Variant::Sha512 => sha::generic::sha512_compress(self.h.as_mut_ptr(), self.block.as_ptr()),
+        | Variant::Sha512_224 => sha::generic::sha512_compress(self.h.as_mut_ptr(), self.block.as_ptr()),
+        | Variant::Sha512_256 => sha::generic::sha512_compress(self.h.as_mut_ptr(), self.block.as_ptr()),
+      },
+    }
+  }
+
   /// Update the state of the context.
   pub fn update<D: AsRef<[u8]>>(&mut self, implementation: Implementation, data: D)
   {
@@ -102,7 +117,7 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
         data = &data[emptyspace ..];
       }
       if self.blocklen == Variant::block_len(Self::V) {
-        unsafe { Engine::as_ref(Self::V, implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
+        unsafe { self.compress(implementation) };
         self.blocklen = 0;
         self.len += Variant::block_len(Self::V) as u64;
       }
@@ -117,7 +132,7 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
 
     if self.blocklen > (Variant::block_len(Self::V) - Variant::pad_len(Self::V)) {
       self.block[self.blocklen ..].fill(0);
-      unsafe { Engine::as_ref(Self::V, implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
+      unsafe { self.compress(implementation) };
       self.blocklen = 0;
     }
 
@@ -126,7 +141,7 @@ impl<const O: usize, const S: usize, const B: usize> Sha<O, S, B>
     self.len = self.len.to_be();
     self.block[(Variant::block_len(Self::V) - 8) .. Variant::block_len(Self::V)]
       .copy_from_slice(&self.len.to_ne_bytes());
-    unsafe { Engine::as_ref(Self::V, implementation).compress(self.h.as_mut_ptr(), self.block.as_ptr()) };
+    unsafe { self.compress(implementation) };
 
     #[cfg(target_endian = "little")]
     match Self::V {
