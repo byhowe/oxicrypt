@@ -50,6 +50,24 @@ impl<const N: usize> Key<N>
     | _ => unsafe { core::hint::unreachable_unchecked() },
   };
 
+  /// Returns the byte slice.
+  pub const fn as_bytes(&self) -> &[u8]
+  {
+    &self.k
+  }
+
+  /// Returns a pointer to the key schedule.
+  pub const fn as_ptr(&self) -> *const u8
+  {
+    self.k.as_ptr()
+  }
+
+  /// Returns a mutable pointer to the key schedule.
+  pub const fn as_mut_ptr(&mut self) -> *mut u8
+  {
+    self.k.as_mut_ptr()
+  }
+
   /// Uninitialized key schedule.
   ///
   /// # Examples
@@ -344,24 +362,6 @@ impl<const N: usize> Key<N>
         | Variant::Aes256 => aes::lut::aes256_decrypt1(block.as_mut_ptr(), self.as_ptr()),
       },
     }
-  }
-
-  /// Returns the byte slice.
-  pub const fn as_bytes(&self) -> &[u8]
-  {
-    &self.k
-  }
-
-  /// Returns a pointer to the key schedule.
-  pub const fn as_ptr(&self) -> *const u8
-  {
-    self.k.as_ptr()
-  }
-
-  /// Returns a mutable pointer to the key schedule.
-  pub const fn as_mut_ptr(&mut self) -> *mut u8
-  {
-    self.k.as_mut_ptr()
   }
 }
 
