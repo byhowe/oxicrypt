@@ -85,7 +85,7 @@ impl<D, const M: usize, const O: usize, const B: usize> Hmac<D, M, O, B>
     self.hash.update(implementation, &self.key);
   }
 
-  pub fn update<D: AsRef<[u8]>>(&mut self, implementation: Implementation, data: D)
+  pub fn update<I: AsRef<[u8]>>(&mut self, implementation: Implementation, data: I)
   {
     self.hash.update(implementation, data.as_ref());
   }
@@ -133,7 +133,7 @@ impl<D, const M: usize, const O: usize, const B: usize> Hmac<D, M, O, B>
     self.hash.finish_sliced(implementation)
   }
 
-  pub fn oneshot<K: AsRef<[u8]>, D: AsRef<[u8]>>(implementation: Implementation, key: K, data: D) -> [u8; O]
+  pub fn oneshot<K: AsRef<[u8]>, I: AsRef<[u8]>>(implementation: Implementation, key: K, data: I) -> [u8; O]
   {
     let mut ctx = Self::with_key(implementation, key);
     ctx.update(implementation, data);
@@ -142,16 +142,16 @@ impl<D, const M: usize, const O: usize, const B: usize> Hmac<D, M, O, B>
 
   #[cfg(any(feature = "alloc", doc))]
   #[doc(cfg(any(feature = "alloc", feature = "std")))]
-  pub fn oneshot_boxed<K: AsRef<[u8]>, D: AsRef<[u8]>>(implementation: Implementation, key: K, data: D) -> Box<[u8]>
+  pub fn oneshot_boxed<K: AsRef<[u8]>, I: AsRef<[u8]>>(implementation: Implementation, key: K, data: I) -> Box<[u8]>
   {
     let mut ctx = Self::with_key(implementation, key);
     ctx.update(implementation, data);
     ctx.finish_boxed(implementation)
   }
 
-  pub fn oneshot_into<K: AsRef<[u8]>, D: AsRef<[u8]>>(
+  pub fn oneshot_into<K: AsRef<[u8]>, I: AsRef<[u8]>>(
     implementation: Implementation,
-    data: D,
+    data: I,
     key: K,
     output: &mut [u8],
   )
