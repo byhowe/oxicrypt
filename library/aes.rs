@@ -270,7 +270,7 @@ impl<const N: usize> Key<N>
   /// Encrypts `B` 16 byte blocks in-place.
   ///
   /// Returns an [`Err`](`Result::Err`) when length of `block` is not a multiple of `16`.
-  pub fn encrypt(&self, implementation: Implementation, mut block: &mut [u8]) -> Result<(), LenError>
+  pub fn encrypt(&self, implementation: Implementation, block: &mut [u8]) -> Result<(), LenError>
   {
     if block.len() % 16 != 0 {
       return Err(LenError {
@@ -279,26 +279,7 @@ impl<const N: usize> Key<N>
         got: block.len(),
       });
     }
-    while !block.is_empty() {
-      match block.len() / 16 {
-        | n if n >= 8 => {
-          unsafe { self.encrypt8_unchecked(implementation, block[.. 8 * 16]) };
-          block = &mut block[8 * 16 ..];
-        }
-        | n if n >= 4 => {
-          unsafe { self.encrypt4_unchecked(implementation, block[.. 4 * 16]) };
-          block = &mut block[4 * 16 ..];
-        }
-        | n if n >= 2 => {
-          unsafe { self.encrypt4_unchecked(implementation, block[.. 2 * 16]) };
-          block = &mut block[2 * 16 ..];
-        }
-        | _ => {
-          unsafe { self.encrypt1_unchecked(implementation, block[.. 1 * 16]) };
-          block = &mut block[1 * 16 ..];
-        }
-      }
-    }
+    unsafe { self.encrypt_unchecked(implementation, block) };
     Ok(())
   }
 
@@ -369,7 +350,7 @@ impl<const N: usize> Key<N>
   /// Decrypts `B` 16 byte blocks in-place.
   ///
   /// Returns an [`Err`](`Result::Err`) when length of `block` is not a multiple of `16`.
-  pub fn decrypt(&self, implementation: Implementation, mut block: &mut [u8]) -> Result<(), LenError>
+  pub fn decrypt(&self, implementation: Implementation, block: &mut [u8]) -> Result<(), LenError>
   {
     if block.len() % 16 != 0 {
       return Err(LenError {
@@ -378,26 +359,7 @@ impl<const N: usize> Key<N>
         got: block.len(),
       });
     }
-    while !block.is_empty() {
-      match block.len() / 16 {
-        | n if n >= 8 => {
-          unsafe { self.decrypt8_unchecked(implementation, block[.. 8 * 16]) };
-          block = &mut block[8 * 16 ..];
-        }
-        | n if n >= 4 => {
-          unsafe { self.decrypt4_unchecked(implementation, block[.. 4 * 16]) };
-          block = &mut block[4 * 16 ..];
-        }
-        | n if n >= 2 => {
-          unsafe { self.decrypt4_unchecked(implementation, block[.. 2 * 16]) };
-          block = &mut block[2 * 16 ..];
-        }
-        | _ => {
-          unsafe { self.decrypt1_unchecked(implementation, block[.. 1 * 16]) };
-          block = &mut block[1 * 16 ..];
-        }
-      }
-    }
+    unsafe { self.decrypt_unchecked(implementation, block) };
     Ok(())
   }
 
@@ -463,6 +425,35 @@ impl<const N: usize> Key<N>
     }
     unsafe { self.decrypt8_unchecked(implementation, block) };
     Ok(())
+  }
+
+  /// Encrypts `B` 16 byte blocks in-place.
+  ///
+  /// # Safety
+  ///
+  /// * Length of `block` must be multiple of `16`.
+  pub unsafe fn encrypt_unchecked(&self, implementation: Implementation, mut block: &mut [u8])
+  {
+    while !block.is_empty() {
+      match block.len() / 16 {
+        | n if n >= 8 => {
+          self.encrypt8_unchecked(implementation, &mut block[.. 8 * 16]);
+          block = &mut block[8 * 16 ..];
+        }
+        | n if n >= 4 => {
+          self.encrypt4_unchecked(implementation, &mut block[.. 4 * 16]);
+          block = &mut block[4 * 16 ..];
+        }
+        | n if n >= 2 => {
+          self.encrypt4_unchecked(implementation, &mut block[.. 2 * 16]);
+          block = &mut block[2 * 16 ..];
+        }
+        | _ => {
+          self.encrypt1_unchecked(implementation, &mut block[.. 1 * 16]);
+          block = &mut block[1 * 16 ..];
+        }
+      }
+    }
   }
 
   /// Encrypts a single 16 byte block in-place.
@@ -557,6 +548,35 @@ impl<const N: usize> Key<N>
         self.encrypt1_unchecked(implementation, &mut block[80 .. 96]);
         self.encrypt1_unchecked(implementation, &mut block[96 .. 112]);
         self.encrypt1_unchecked(implementation, &mut block[112 .. 128]);
+      }
+    }
+  }
+
+  /// Decrypts `B` 16 byte blocks in-place.
+  ///
+  /// # Safety
+  ///
+  /// * Length of `block` must be `16`.
+  pub unsafe fn decrypt_unchecked(&self, implementation: Implementation, mut block: &mut [u8])
+  {
+    while !block.is_empty() {
+      match block.len() / 16 {
+        | n if n >= 8 => {
+          self.decrypt8_unchecked(implementation, &mut block[.. 8 * 16]);
+          block = &mut block[8 * 16 ..];
+        }
+        | n if n >= 4 => {
+          self.decrypt4_unchecked(implementation, &mut block[.. 4 * 16]);
+          block = &mut block[4 * 16 ..];
+        }
+        | n if n >= 2 => {
+          self.decrypt4_unchecked(implementation, &mut block[.. 2 * 16]);
+          block = &mut block[2 * 16 ..];
+        }
+        | _ => {
+          self.decrypt1_unchecked(implementation, &mut block[.. 1 * 16]);
+          block = &mut block[1 * 16 ..];
+        }
       }
     }
   }
