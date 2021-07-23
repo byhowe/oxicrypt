@@ -2,7 +2,7 @@
 
 use core::mem::MaybeUninit;
 
-use crate::hazmat::aes::Engine;
+use crate::hazmat::aes;
 #[doc(inline)]
 pub use crate::hazmat::aes::Variant;
 use crate::hazmat::Implementation;
@@ -195,7 +195,19 @@ impl<const N: usize> Key<N>
   /// * Length of `key` must be equal to [`Variant::key_len(V)`](`Variant::key_len`).
   pub unsafe fn set_encrypt_key_unchecked<K: AsRef<[u8]>>(&mut self, implementation: Implementation, key: K)
   {
-    Engine::as_ref(Self::V, implementation).expand_key(key.as_ref().as_ptr(), self.k.as_mut_ptr());
+    match implementation {
+      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+      | i if i.is_present(Implementation::AES) => match Self::V {
+        | Variant::Aes128 => aes::aesni::aes128_expand_key(key.as_ref().as_ptr(), self.k.as_mut_ptr()),
+        | Variant::Aes192 => aes::aesni::aes192_expand_key(key.as_ref().as_ptr(), self.k.as_mut_ptr()),
+        | Variant::Aes256 => aes::aesni::aes256_expand_key(key.as_ref().as_ptr(), self.k.as_mut_ptr()),
+      },
+      | _ => match Self::V {
+        | Variant::Aes128 => aes::lut::aes128_expand_key(key.as_ref().as_ptr(), self.k.as_mut_ptr()),
+        | Variant::Aes192 => aes::lut::aes192_expand_key(key.as_ref().as_ptr(), self.k.as_mut_ptr()),
+        | Variant::Aes256 => aes::lut::aes256_expand_key(key.as_ref().as_ptr(), self.k.as_mut_ptr()),
+      },
+    }
   }
 
   /// Sets decryption key.
@@ -243,7 +255,19 @@ impl<const N: usize> Key<N>
   /// ```
   pub fn inverse_key(&mut self, implementation: Implementation)
   {
-    unsafe { Engine::as_ref(Self::V, implementation).inverse_key(self.k.as_mut_ptr()) };
+    match implementation {
+      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+      | i if i.is_present(Implementation::AES) => match Self::V {
+        | Variant::Aes128 => unsafe { aes::aesni::aes128_inverse_key(self.k.as_mut_ptr()) },
+        | Variant::Aes192 => unsafe { aes::aesni::aes192_inverse_key(self.k.as_mut_ptr()) },
+        | Variant::Aes256 => unsafe { aes::aesni::aes256_inverse_key(self.k.as_mut_ptr()) },
+      },
+      | _ => match Self::V {
+        | Variant::Aes128 => unsafe { aes::lut::aes128_inverse_key(self.k.as_mut_ptr()) },
+        | Variant::Aes192 => unsafe { aes::lut::aes192_inverse_key(self.k.as_mut_ptr()) },
+        | Variant::Aes256 => unsafe { aes::lut::aes256_inverse_key(self.k.as_mut_ptr()) },
+      },
+    }
   }
 
   /// Encrypts a single 16 byte block in-place.
@@ -258,7 +282,7 @@ impl<const N: usize> Key<N>
         got: block.len(),
       });
     }
-    unsafe { Engine::as_ref(Self::V, implementation).encrypt1(block.as_mut_ptr(), self.as_ptr()) };
+    unsafe { self.encrypt1_unchecked(implementation, block) };
     Ok(())
   }
 
@@ -274,7 +298,7 @@ impl<const N: usize> Key<N>
         got: block.len(),
       });
     }
-    unsafe { Engine::as_ref(Self::V, implementation).decrypt1(block.as_mut_ptr(), self.as_ptr()) };
+    unsafe { self.decrypt1_unchecked(implementation, block) };
     Ok(())
   }
 
@@ -285,7 +309,19 @@ impl<const N: usize> Key<N>
   /// * Length of `key` must be `16`.
   pub unsafe fn encrypt1_unchecked(&self, implementation: Implementation, block: &mut [u8])
   {
-    Engine::as_ref(Self::V, implementation).encrypt1(block.as_mut_ptr(), self.as_ptr());
+    match implementation {
+      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+      | i if i.is_present(Implementation::AES) => match Self::V {
+        | Variant::Aes128 => aes::aesni::aes128_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes192 => aes::aesni::aes192_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes256 => aes::aesni::aes256_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+      },
+      | _ => match Self::V {
+        | Variant::Aes128 => aes::lut::aes128_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes192 => aes::lut::aes192_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes256 => aes::lut::aes256_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+      },
+    }
   }
 
   /// Decrypts a single 16 byte block in-place.
@@ -295,7 +331,19 @@ impl<const N: usize> Key<N>
   /// * Length of `key` must be `16`.
   pub unsafe fn decrypt1_unchecked(&self, implementation: Implementation, block: &mut [u8])
   {
-    Engine::as_ref(Self::V, implementation).decrypt1(block.as_mut_ptr(), self.as_ptr());
+    match implementation {
+      #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+      | i if i.is_present(Implementation::AES) => match Self::V {
+        | Variant::Aes128 => aes::aesni::aes128_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes192 => aes::aesni::aes192_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes256 => aes::aesni::aes256_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+      },
+      | _ => match Self::V {
+        | Variant::Aes128 => aes::lut::aes128_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes192 => aes::lut::aes192_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+        | Variant::Aes256 => aes::lut::aes256_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+      },
+    }
   }
 
   /// Returns the byte slice.
