@@ -83,24 +83,6 @@ void oxi_aes256_decrypt4_aesni(uint8_t* block, const uint8_t* key_schedule);
 void oxi_aes256_decrypt8_aesni(uint8_t* block, const uint8_t* key_schedule);
 #endif
 
-/* Engine. */
-
-typedef struct oxi_aes_engine_t {
-  void (*expand_key)(const uint8_t*, uint8_t*);
-  void (*inverse_key)(uint8_t*);
-  void (*encrypt1)(uint8_t*, const uint8_t*);
-  void (*decrypt1)(uint8_t*, const uint8_t*);
-} oxi_aes_engine_t;
-
-oxi_aes_engine_t oxi_aes128_engine_new(oxi_implementation_t implementation);
-const oxi_aes_engine_t* oxi_aes128_engine_as_ref(oxi_implementation_t implementation);
-
-oxi_aes_engine_t oxi_aes192_engine_new(oxi_implementation_t implementation);
-const oxi_aes_engine_t* oxi_aes192_engine_as_ref(oxi_implementation_t implementation);
-
-oxi_aes_engine_t oxi_aes256_engine_new(oxi_implementation_t implementation);
-const oxi_aes_engine_t* oxi_aes256_engine_as_ref(oxi_implementation_t implementation);
-
 /* Key schedules. */
 
 typedef struct oxi_aes128_key_t {
