@@ -68,26 +68,6 @@ impl<const N: usize> Key<N>
     self.k.as_mut_ptr()
   }
 
-  /// Uninitialized key schedule.
-  ///
-  /// # Examples
-  ///
-  /// ```
-  /// # use oxicrypt::aes::*;
-  /// # use oxicrypt::Implementation;
-  /// let key: Vec<u8> = (0u8 .. Variant::key_len(Variant::Aes128) as u8).collect();
-  /// let implementation = Implementation::fastest_rt();
-  /// let mut keysched = Key128::uninit();
-  /// unsafe { keysched.assume_init_mut() }
-  ///   .set_encrypt_key(implementation, &key)
-  ///   .unwrap();
-  /// let keysched = unsafe { keysched.assume_init() };
-  /// ```
-  pub const fn uninit() -> MaybeUninit<Self>
-  {
-    MaybeUninit::uninit()
-  }
-
   /// Creates a key schedule to use in encryption mode.
   ///
   /// Returns an [`Err`](`Result::Err`) when length of `key` is not equal to
