@@ -596,6 +596,7 @@ impl<const N: usize> AsRef<[u8]> for Key<N>
   }
 }
 
+/// Error type for when the input length is not quite right.
 #[derive(Clone, Copy, Debug)]
 pub struct LenError
 {
