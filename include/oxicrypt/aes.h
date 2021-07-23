@@ -52,17 +52,35 @@ void oxi_aes256_decrypt1_lut(uint8_t* block, const uint8_t* key_schedule);
 void oxi_aes128_expand_key_aesni(const uint8_t* key, uint8_t* key_schedule);
 void oxi_aes128_inverse_key_aesni(uint8_t* key_schedule);
 void oxi_aes128_encrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes128_encrypt2_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes128_encrypt4_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes128_encrypt8_aesni(uint8_t* block, const uint8_t* key_schedule);
 void oxi_aes128_decrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes128_decrypt2_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes128_decrypt4_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes128_decrypt8_aesni(uint8_t* block, const uint8_t* key_schedule);
 
 void oxi_aes192_expand_key_aesni(const uint8_t* key, uint8_t* key_schedule);
 void oxi_aes192_inverse_key_aesni(uint8_t* key_schedule);
 void oxi_aes192_encrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes192_encrypt2_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes192_encrypt4_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes192_encrypt8_aesni(uint8_t* block, const uint8_t* key_schedule);
 void oxi_aes192_decrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes192_decrypt2_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes192_decrypt4_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes192_decrypt8_aesni(uint8_t* block, const uint8_t* key_schedule);
 
 void oxi_aes256_expand_key_aesni(const uint8_t* key, uint8_t* key_schedule);
 void oxi_aes256_inverse_key_aesni(uint8_t* key_schedule);
 void oxi_aes256_encrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes256_encrypt2_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes256_encrypt4_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes256_encrypt8_aesni(uint8_t* block, const uint8_t* key_schedule);
 void oxi_aes256_decrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes256_decrypt2_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes256_decrypt4_aesni(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes256_decrypt8_aesni(uint8_t* block, const uint8_t* key_schedule);
 #endif
 
 /* Engine. */

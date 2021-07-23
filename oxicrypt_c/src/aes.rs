@@ -112,9 +112,57 @@ pub unsafe extern "C" fn oxi_aes128_encrypt1_aesni(block: *mut u8, key_schedule:
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[target_feature(enable = "aes")]
 #[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_encrypt2_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes128_encrypt2(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_encrypt4_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes128_encrypt4(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_encrypt8_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes128_encrypt8(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
 pub unsafe extern "C" fn oxi_aes128_decrypt1_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes::aesni::aes128_decrypt1(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_decrypt2_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes128_decrypt2(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_decrypt4_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes128_decrypt4(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes128_decrypt8_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes128_decrypt8(block, key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -144,9 +192,57 @@ pub unsafe extern "C" fn oxi_aes192_encrypt1_aesni(block: *mut u8, key_schedule:
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[target_feature(enable = "aes")]
 #[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_encrypt2_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes192_encrypt2(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_encrypt4_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes192_encrypt4(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_encrypt8_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes192_encrypt8(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
 pub unsafe extern "C" fn oxi_aes192_decrypt1_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes::aesni::aes192_decrypt1(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_decrypt2_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes192_decrypt2(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_decrypt4_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes192_decrypt4(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes192_decrypt8_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes192_decrypt8(block, key_schedule);
 }
 
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
@@ -176,9 +272,57 @@ pub unsafe extern "C" fn oxi_aes256_encrypt1_aesni(block: *mut u8, key_schedule:
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 #[target_feature(enable = "aes")]
 #[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_encrypt2_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes256_encrypt2(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_encrypt4_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes256_encrypt4(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_encrypt8_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes256_encrypt8(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
 pub unsafe extern "C" fn oxi_aes256_decrypt1_aesni(block: *mut u8, key_schedule: *const u8)
 {
   aes::aesni::aes256_decrypt1(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_decrypt2_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes256_decrypt2(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_decrypt4_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes256_decrypt4(block, key_schedule);
+}
+
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+#[target_feature(enable = "aes")]
+#[no_mangle]
+pub unsafe extern "C" fn oxi_aes256_decrypt8_aesni(block: *mut u8, key_schedule: *const u8)
+{
+  aes::aesni::aes256_decrypt8(block, key_schedule);
 }
 
 // Engine.
