@@ -288,6 +288,76 @@ pub unsafe extern "C" fn oxi_hmac_sha512_256_finish(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn oxi_hmac_sha1_finish_sliced(
+  ctx: *mut oxi_hmac_sha1_t,
+  implementation: oxi_implementation_t,
+) -> *const u8
+{
+  let ctx = &mut *ctx;
+  ctx.finish_sliced(implementation).as_ptr()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_hmac_sha224_finish_sliced(
+  ctx: *mut oxi_hmac_sha224_t,
+  implementation: oxi_implementation_t,
+) -> *const u8
+{
+  let ctx = &mut *ctx;
+  ctx.finish_sliced(implementation).as_ptr()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_hmac_sha256_finish_sliced(
+  ctx: *mut oxi_hmac_sha256_t,
+  implementation: oxi_implementation_t,
+) -> *const u8
+{
+  let ctx = &mut *ctx;
+  ctx.finish_sliced(implementation).as_ptr()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_hmac_sha384_finish_sliced(
+  ctx: *mut oxi_hmac_sha384_t,
+  implementation: oxi_implementation_t,
+) -> *const u8
+{
+  let ctx = &mut *ctx;
+  ctx.finish_sliced(implementation).as_ptr()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_hmac_sha512_finish_sliced(
+  ctx: *mut oxi_hmac_sha512_t,
+  implementation: oxi_implementation_t,
+) -> *const u8
+{
+  let ctx = &mut *ctx;
+  ctx.finish_sliced(implementation).as_ptr()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_hmac_sha512_224_finish_sliced(
+  ctx: *mut oxi_hmac_sha512_224_t,
+  implementation: oxi_implementation_t,
+) -> *const u8
+{
+  let ctx = &mut *ctx;
+  ctx.finish_sliced(implementation).as_ptr()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_hmac_sha512_256_finish_sliced(
+  ctx: *mut oxi_hmac_sha512_256_t,
+  implementation: oxi_implementation_t,
+) -> *const u8
+{
+  let ctx = &mut *ctx;
+  ctx.finish_sliced(implementation).as_ptr()
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn oxi_hmac_sha1_oneshot(
   implementation: oxi_implementation_t,
   key: *const u8,

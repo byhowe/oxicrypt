@@ -79,6 +79,14 @@ void oxi_hmac_sha512_finish(oxi_hmac_sha512_t* ctx, oxi_implementation_t impleme
 void oxi_hmac_sha512_224_finish(oxi_hmac_sha512_224_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
 void oxi_hmac_sha512_256_finish(oxi_hmac_sha512_256_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
 
+const uint8_t* oxi_hmac_sha1_finish_sliced(oxi_hmac_sha1_t* ctx, oxi_implementation_t implementation);
+const uint8_t* oxi_hmac_sha224_finish_sliced(oxi_hmac_sha224_t* ctx, oxi_implementation_t implementation);
+const uint8_t* oxi_hmac_sha256_finish_sliced(oxi_hmac_sha256_t* ctx, oxi_implementation_t implementation);
+const uint8_t* oxi_hmac_sha384_finish_sliced(oxi_hmac_sha384_t* ctx, oxi_implementation_t implementation);
+const uint8_t* oxi_hmac_sha512_finish_sliced(oxi_hmac_sha512_t* ctx, oxi_implementation_t implementation);
+const uint8_t* oxi_hmac_sha512_224_finish_sliced(oxi_hmac_sha512_224_t* ctx, oxi_implementation_t implementation);
+const uint8_t* oxi_hmac_sha512_256_finish_sliced(oxi_hmac_sha512_256_t* ctx, oxi_implementation_t implementation);
+
 void oxi_hmac_sha1_oneshot(oxi_implementation_t implementation, const uint8_t* key, size_t keylen, const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen);
 void oxi_hmac_sha224_oneshot(oxi_implementation_t implementation, const uint8_t* key, size_t keylen, const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen);
 void oxi_hmac_sha256_oneshot(oxi_implementation_t implementation, const uint8_t* key, size_t keylen, const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen);
