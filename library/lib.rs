@@ -24,6 +24,7 @@ pub use hazmat::Implementation;
 
 pub mod aes;
 pub mod digest;
+pub mod hkdf;
 pub mod hmac;
 pub mod sha;
 
