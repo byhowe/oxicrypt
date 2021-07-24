@@ -3,6 +3,7 @@
 use core::slice;
 
 use oxicrypt::hazmat::sha;
+use oxicrypt::hazmat::sha::Variant;
 use oxicrypt::sha::Sha1;
 use oxicrypt::sha::Sha224;
 use oxicrypt::sha::Sha256;
@@ -10,7 +11,6 @@ use oxicrypt::sha::Sha384;
 use oxicrypt::sha::Sha512;
 use oxicrypt::sha::Sha512_224;
 use oxicrypt::sha::Sha512_256;
-use oxicrypt::hazmat::sha::Variant;
 use oxicrypt::Implementation;
 
 use crate::oxi_implementation_t;

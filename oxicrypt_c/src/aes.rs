@@ -5,8 +5,8 @@ use core::slice;
 use oxicrypt::aes::Key128;
 use oxicrypt::aes::Key192;
 use oxicrypt::aes::Key256;
-use oxicrypt::hazmat::aes::Variant;
 use oxicrypt::hazmat::aes;
+use oxicrypt::hazmat::aes::Variant;
 
 use crate::oxi_implementation_t;
 
