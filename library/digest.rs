@@ -45,7 +45,8 @@ pub type Sha512_224 = Digest<sha::Sha512_224, 0x5ba_512_224, 28>;
 pub type Sha512_256 = Digest<sha::Sha512_256, 0x5ba_512_256, 32>;
 
 impl<D, const M: usize, const O: usize> Digest<D, M, O>
-where D: core::fmt::Debug + Clone + Copy,
+where
+  D: core::fmt::Debug + Clone + Copy,
 {
   const V: Variant = match (M, O) {
     | (0x5ba_1, 20) => Variant::Sha1,

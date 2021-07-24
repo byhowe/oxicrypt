@@ -24,7 +24,8 @@ use crate::Implementation;
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "c", repr(C))]
 pub struct Hmac<D, const M: usize, const O: usize, const B: usize>
-where D: core::fmt::Debug + Clone + Copy
+where
+  D: core::fmt::Debug + Clone + Copy,
 {
   hash: Digest<D, M, O>,
   x5c: bool,
@@ -47,7 +48,8 @@ pub type HmacSha512_224 = Hmac<sha::Sha512_224, 0x5ba_512_224, 28, 128>;
 pub type HmacSha512_256 = Hmac<sha::Sha512_256, 0x5ba_512_256, 32, 128>;
 
 impl<D, const M: usize, const O: usize, const B: usize> Hmac<D, M, O, B>
-where D: core::fmt::Debug + Clone + Copy,
+where
+  D: core::fmt::Debug + Clone + Copy,
 {
   pub fn with_key<K: AsRef<[u8]>>(implementation: Implementation, key: K) -> Self
   {
