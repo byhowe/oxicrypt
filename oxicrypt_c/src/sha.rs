@@ -10,7 +10,7 @@ use oxicrypt::sha::Sha384;
 use oxicrypt::sha::Sha512;
 use oxicrypt::sha::Sha512_224;
 use oxicrypt::sha::Sha512_256;
-use oxicrypt::sha::Variant;
+use oxicrypt::hazmat::sha::Variant;
 use oxicrypt::Implementation;
 
 use crate::oxi_implementation_t;
