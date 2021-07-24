@@ -10,13 +10,13 @@ use crate::Implementation;
 
 enum Variant
 {
-  Sha1 = 0x5ba_1,
-  Sha224 = 0x5ba_224,
-  Sha256 = 0x5ba_256,
-  Sha384 = 0x5ba_384,
-  Sha512 = 0x5ba_512,
-  Sha512_224 = 0x5ba_512_224,
-  Sha512_256 = 0x5ba_512_256,
+  Sha1,
+  Sha224,
+  Sha256,
+  Sha384,
+  Sha512,
+  Sha512_224,
+  Sha512_256,
 }
 
 /// Digest context.
