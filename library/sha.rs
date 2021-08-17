@@ -10,7 +10,7 @@ use core::mem::MaybeUninit;
 use crate::hazmat::sha;
 use crate::hazmat::sha::initial_state;
 use crate::hazmat::sha::Variant;
-use crate::hazmat::Implementation;
+use crate::Implementation;
 
 /// SHA context.
 #[derive(Debug, Clone, Copy)]

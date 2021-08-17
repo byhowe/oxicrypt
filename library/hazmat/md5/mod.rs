@@ -8,7 +8,7 @@ pub mod generic
   }
 }
 
-use super::Implementation;
+use crate::Implementation;
 
 /// Pointers to unsafe MD compression functions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
