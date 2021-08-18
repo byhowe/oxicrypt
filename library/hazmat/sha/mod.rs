@@ -4,147 +4,224 @@ mod sha512_compress_generic;
 
 pub mod generic
 {
-  pub const unsafe fn sha1_compress(state: *mut u8, block: *const u8)
+  pub const unsafe fn sha1_compress(state: *mut u32, block: *const u8)
   {
-    super::sha1_compress_generic::sha1_compress_generic(state.cast(), block);
+    super::sha1_compress_generic::sha1_compress_generic(state, block);
   }
 
-  pub const unsafe fn sha256_compress(state: *mut u8, block: *const u8)
+  pub const unsafe fn sha256_compress(state: *mut u32, block: *const u8)
   {
-    super::sha256_compress_generic::sha256_compress_generic(state.cast(), block);
+    super::sha256_compress_generic::sha256_compress_generic(state, block);
   }
 
-  pub const unsafe fn sha512_compress(state: *mut u8, block: *const u8)
+  pub const unsafe fn sha512_compress(state: *mut u64, block: *const u8)
   {
-    super::sha512_compress_generic::sha512_compress_generic(state.cast(), block);
+    super::sha512_compress_generic::sha512_compress_generic(state, block);
   }
 }
 
 use core::mem;
+use core::mem::MaybeUninit;
+use core::slice;
 
-/// SHA variants.
+use crate::Implementation;
+
+macro_rules! impl_engine {
+  (
+    struct $engine:ident;
+    const BLOCK_LEN = $block_len:expr;
+    const STATE_LEN = $state_len:expr;
+    type STATE_INT = $state_int:ident;
+    type LEN_INT = $len_int:ident;
+  ) => {
+    impl $engine
+    {
+      /// Create a new context with the given state.
+      #[inline(always)]
+      pub const fn with_state(state: [$state_int; $state_len]) -> Self
+      {
+        let mut ctx: MaybeUninit<Self> = MaybeUninit::uninit();
+        unsafe { ctx.assume_init_mut() }.set_state(state);
+        unsafe { ctx.assume_init() }
+      }
+
+      /// Reset the context using the given state.
+      #[inline(always)]
+      pub const fn set_state(&mut self, state: [$state_int; $state_len])
+      {
+        self.h = state;
+        self.blocklen = 0;
+        self.len = 0;
+      }
+
+      /// Consume the context and return the inner state.
+      #[inline(always)]
+      pub const fn into_state(self) -> [$state_int; $state_len]
+      {
+        self.h
+      }
+
+      /// Return a slice to the inner state.
+      #[inline(always)]
+      pub fn as_state(&self) -> &[u8]
+      {
+        unsafe { slice::from_raw_parts(self.h.as_ptr().cast::<u8>(), $state_len * mem::size_of::<$state_int>()) }
+      }
+
+      /// Update the state with the given data.
+      #[inline(always)]
+      pub fn update(&mut self, implementation: Implementation, mut data: &[u8])
+      {
+        // Loop until all the data is read.
+        while !data.is_empty() {
+          let emptyspace = $block_len - self.blocklen;
+          // If there is enough empty space in the inner block, then we can just copy `data` into
+          // `self.block`.
+          if emptyspace >= data.len() {
+            let newblocklen = self.blocklen + data.len();
+            self.block[self.blocklen .. newblocklen].copy_from_slice(data);
+            self.blocklen = newblocklen;
+            // We need to set the length of `data` to 0 so we can exit out of the loop.
+            data = &data[0 .. 0];
+          } else {
+            self.block[self.blocklen .. $block_len].copy_from_slice(&data[0 .. emptyspace]);
+            // We filled `self.block` completely.
+            self.blocklen = $block_len;
+            data = &data[emptyspace ..];
+          }
+
+          if self.blocklen == $block_len {
+            // SAFETY: We know the inner block is full.
+            unsafe { self.compress(implementation) };
+            self.blocklen = 0;
+            self.len += $block_len;
+          }
+        }
+      }
+
+      /// Calculates the digest value and store the result in the inner state.
+      ///
+      /// The calculated result can be accessed via [`as_state`](`Self::as_state`).
+      #[inline(always)]
+      pub fn finish(&mut self, implementation: Implementation)
+      {
+        // We can do this without checking for `self.blocklen`, because we know `update` makes sure
+        // `self.blocklen` is always less than block length.
+        self.block[self.blocklen] = 0b10000000;
+        // Increment the inner length counter to account for the latest block length.
+        self.len += self.blocklen as $len_int;
+        // Account for the byte we added.
+        self.blocklen += 1;
+
+        // If there is not enough space to write the inner length counter, fill the remaining space with
+        // zeros and compress the block.
+        if self.blocklen > ($block_len - mem::size_of::<$len_int>()) {
+          self.block[self.blocklen ..].fill(0);
+          unsafe { self.compress(implementation) };
+          self.blocklen = 0;
+        }
+
+        self.block[self.blocklen .. $block_len - mem::size_of::<$len_int>()].fill(0);
+        self.len *= 8;
+        self.block[$block_len - mem::size_of::<$len_int>() ..].copy_from_slice(&self.len.to_be_bytes());
+        unsafe { self.compress(implementation) };
+
+        for i in 0 .. $state_len {
+          self.h[i] = self.h[i].to_be();
+        }
+      }
+    }
+  };
+}
+
+/// Unsafe SHA-1 engine.
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "c", repr(C))]
+pub struct Engine1
+{
+  h: [u32; 5],
+  block: [u8; 64],
+  blocklen: usize,
+  len: u64,
+}
+
+impl Engine1
+{
+  #[allow(clippy::missing_safety_doc)]
+  #[allow(unused_variables)]
+  unsafe fn compress(&mut self, implementation: Implementation)
+  {
+    generic::sha1_compress(self.h.as_mut_ptr(), self.block.as_ptr());
+  }
+}
+
+/// Unsafe SHA-256 engine.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Variant
+#[cfg_attr(feature = "c", repr(C))]
+pub struct Engine256
 {
-  /// SHA-1
-  Sha1,
-  /// SHA-224
-  Sha224,
-  /// SHA-256
-  Sha256,
-  /// SHA-384
-  Sha384,
-  /// SHA-512
-  Sha512,
-  /// SHA-512/224
-  Sha512_224,
-  /// SHA-512/256
-  Sha512_256,
+  h: [u32; 8],
+  block: [u8; 64],
+  blocklen: usize,
+  len: u64,
 }
 
-impl Variant
+impl Engine256
 {
-  /// Padding length.
-  ///
-  /// * SHA-1 | SHA-224 | SHA-256 - `mem::size_of::<u64>()`
-  /// * SHA-384 | SHA-512 | SHA-512/224 | SHA-512/256 - `mem::size_of::<u128>()`
-  pub const fn pad_len(self) -> usize
+  #[allow(clippy::missing_safety_doc)]
+  #[allow(unused_variables)]
+  unsafe fn compress(&mut self, implementation: Implementation)
   {
-    match self {
-      | Self::Sha1 | Self::Sha224 | Self::Sha256 => mem::size_of::<u64>(),
-      | Self::Sha384 | Self::Sha512 | Self::Sha512_224 | Self::Sha512_256 => mem::size_of::<u128>(),
-    }
-  }
-
-  /// State length.
-  ///
-  /// * SHA-1 - `20`
-  /// * SHA-224 | SHA-256 - `32`
-  /// * SHA-384 | SHA-512 | SHA-512/224 | SHA-512/256 - `64`
-  pub const fn state_len(self) -> usize
-  {
-    match self {
-      | Self::Sha1 => 20,
-      | Self::Sha224 | Self::Sha256 => 32,
-      | Self::Sha384 | Self::Sha512 | Self::Sha512_224 | Self::Sha512_256 => 64,
-    }
-  }
-
-  /// Digest length.
-  ///
-  /// * SHA-1 - `20`
-  /// * SHA-224 | SHA-512/224 - `28`
-  /// * SHA-256 | SHA-512/256 - `32`
-  /// * SHA-384 - `48`
-  /// * SHA-512 - `64`
-  pub const fn digest_len(self) -> usize
-  {
-    match self {
-      | Self::Sha1 => 20,
-      | Self::Sha224 | Self::Sha512_224 => 28,
-      | Self::Sha256 | Self::Sha512_256 => 32,
-      | Self::Sha384 => 48,
-      | Self::Sha512 => 64,
-    }
-  }
-
-  /// Block length.
-  ///
-  /// * SHA-1 | SHA-224 | SHA-256 - `64`
-  /// * SHA-384 | SHA-512 | SHA-512/224 | SHA-512/256 - `128`
-  pub const fn block_len(self) -> usize
-  {
-    match self {
-      | Self::Sha1 | Self::Sha224 | Self::Sha256 => 64,
-      | Self::Sha384 | Self::Sha512 | Self::Sha512_224 | Self::Sha512_256 => 128,
-    }
+    generic::sha256_compress(self.h.as_mut_ptr(), self.block.as_ptr());
   }
 }
 
-impl core::fmt::Display for Variant
+/// Unsafe SHA-512 engine.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "c", repr(C))]
+pub struct Engine512
 {
-  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result
+  h: [u64; 8],
+  block: [u8; 128],
+  blocklen: usize,
+  len: u128,
+}
+
+impl Engine512
+{
+  #[allow(clippy::missing_safety_doc)]
+  #[allow(unused_variables)]
+  unsafe fn compress(&mut self, implementation: Implementation)
   {
-    match *self {
-      | Self::Sha1 => f.write_str("SHA-1"),
-      | Self::Sha224 => f.write_str("SHA-224"),
-      | Self::Sha256 => f.write_str("SHA-256"),
-      | Self::Sha384 => f.write_str("SHA-384"),
-      | Self::Sha512 => f.write_str("SHA-512"),
-      | Self::Sha512_224 => f.write_str("SHA-512/224"),
-      | Self::Sha512_256 => f.write_str("SHA-512/256"),
-    }
+    generic::sha512_compress(self.h.as_mut_ptr(), self.block.as_ptr());
   }
 }
 
-/// Initial state.
-///
-/// # Safety
-///
-/// It is undefined behavior to specify `(S, variant)` pairs other than:
-///
-/// * SHA-1 - `(20, Variant::Sha1)`
-/// * SHA-224 - `(32, Variant::Sha224)`
-/// * SHA-256 - `(32, Variant::Sha256)`
-/// * SHA-384 - `(64, Variant::Sha384)`
-/// * SHA-512 - `(64, Variant::Sha512)`
-/// * SHA-512/224 - `(64, Variant::Sha512_224)`
-/// * SHA-512/256 - `(64, Variant::Sha512_256)`
-pub const unsafe fn initial_state<const S: usize>(variant: Variant) -> [u8; S]
-{
-  use core::mem::transmute;
-  match variant {
-    | Variant::Sha1 => *transmute::<&[u32; 5], &[u8; S]>(&H1),
-    | Variant::Sha224 => *transmute::<&[u32; 8], &[u8; S]>(&H224),
-    | Variant::Sha256 => *transmute::<&[u32; 8], &[u8; S]>(&H256),
-    | Variant::Sha384 => *transmute::<&[u64; 8], &[u8; S]>(&H384),
-    | Variant::Sha512 => *transmute::<&[u64; 8], &[u8; S]>(&H512),
-    | Variant::Sha512_224 => *transmute::<&[u64; 8], &[u8; S]>(&H512_224),
-    | Variant::Sha512_256 => *transmute::<&[u64; 8], &[u8; S]>(&H512_256),
-  }
+impl_engine! {
+  struct Engine1;
+  const BLOCK_LEN = 64;
+  const STATE_LEN = 5;
+  type STATE_INT = u32;
+  type LEN_INT = u64;
 }
 
-/// Initial state of the SHA-1 algorithm. Use with the SHA-1 compression function.
+impl_engine! {
+  struct Engine256;
+  const BLOCK_LEN = 64;
+  const STATE_LEN = 8;
+  type STATE_INT = u32;
+  type LEN_INT = u64;
+}
+
+impl_engine! {
+  struct Engine512;
+  const BLOCK_LEN = 128;
+  const STATE_LEN = 8;
+  type STATE_INT = u64;
+  type LEN_INT = u128;
+}
+
+/// Initial state for the SHA-1 algorithm.
 #[rustfmt::skip]
 pub const H1: [u32; 5] = [
   0x67452301,
@@ -154,7 +231,7 @@ pub const H1: [u32; 5] = [
   0xc3d2e1f0,
 ];
 
-/// Initial state of the SHA-224 algorithm. Use with the SHA-256 compression function.
+/// Initial state for the SHA-224 algorithm.
 #[rustfmt::skip]
 pub const H224: [u32; 8] = [
   0xc1059ed8,
@@ -167,7 +244,7 @@ pub const H224: [u32; 8] = [
   0xbefa4fa4,
 ];
 
-/// Initial state of the SHA-256 algorithm. Use with the SHA-256 compression function.
+/// Initial state for the SHA-256 algorithm.
 #[rustfmt::skip]
 pub const H256: [u32; 8] = [
   0x6a09e667,
@@ -180,7 +257,7 @@ pub const H256: [u32; 8] = [
   0x5be0cd19,
 ];
 
-/// Initial state of the SHA-384 algorithm. Use with the SHA-512 compression function.
+/// Initial state for the SHA-384 algorithm.
 #[rustfmt::skip]
 pub const H384: [u64; 8] = [
   0xcbbb9d5dc1059ed8,
@@ -193,7 +270,7 @@ pub const H384: [u64; 8] = [
   0x47b5481dbefa4fa4,
 ];
 
-/// Initial state of the SHA-512 algorithm. Use with the SHA-512 compression function.
+/// Initial state for the SHA-512 algorithm.
 #[rustfmt::skip]
 pub const H512: [u64; 8] = [
   0x6a09e667f3bcc908,
@@ -206,7 +283,7 @@ pub const H512: [u64; 8] = [
   0x5be0cd19137e2179,
 ];
 
-/// Initial state of the SHA-512/224 algorithm. Use with the SHA-512 compression function.
+/// Initial state for the SHA-512/224 algorithm.
 #[rustfmt::skip]
 pub const H512_224: [u64; 8] = [
   0x8c3d37c819544da2,
@@ -219,7 +296,7 @@ pub const H512_224: [u64; 8] = [
   0x1112e6ad91d692a1,
 ];
 
-/// Initial state of the SHA-512/256 algorithm. Use with the SHA-512 compression function.
+/// Initial state for the SHA-512/256 algorithm.
 #[rustfmt::skip]
 pub const H512_256: [u64; 8] = [
   0x22312194fc2bf72c,
