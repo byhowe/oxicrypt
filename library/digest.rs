@@ -1,11 +1,11 @@
-//! All things digest.
+//! Common digest object.
 
-#[cfg(any(feature = "alloc", doc))]
-use alloc::boxed::Box;
+use core::fmt::Debug;
 use core::mem::transmute;
 use core::mem::MaybeUninit;
 
 use crate::sha;
+use crate::Control;
 use crate::Implementation;
 
 enum Variant
@@ -22,9 +22,9 @@ enum Variant
 /// Digest context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Digest<D, const M: usize, const O: usize>
+pub struct Digest<D, const M: u64, const O: usize>
 where
-  D: core::fmt::Debug + Clone + Copy,
+  D: Debug + Clone + Copy,
 {
   inner: D,
 }
@@ -44,10 +44,75 @@ pub type Sha512_224 = Digest<sha::Sha512_224, 0x5ba_512_224, 28>;
 /// SHA-512/256
 pub type Sha512_256 = Digest<sha::Sha512_256, 0x5ba_512_256, 32>;
 
-impl<D, const M: usize, const O: usize> Digest<D, M, O>
+impl<D, const M: u64, const O: usize> Default for Digest<D, M, O>
 where
-  D: core::fmt::Debug + Clone + Copy,
+  D: Debug + Clone + Copy,
 {
+  fn default() -> Self
+  {
+    Self::new()
+  }
+}
+
+impl<D, const M: u64, const O: usize> core::hash::Hasher for Digest<D, M, O>
+where
+  D: Debug + Clone + Copy,
+{
+  fn finish(&self) -> u64
+  {
+    let mut ctx: Self = *self;
+    let mut digest: MaybeUninit<[u8; 8]> = MaybeUninit::uninit();
+    unsafe { digest.assume_init_mut() }.copy_from_slice(&ctx.finish_sliced()[0 .. 8]);
+    u64::from_be_bytes(unsafe { digest.assume_init() })
+  }
+
+  fn write(&mut self, bytes: &[u8])
+  {
+    self.update(bytes);
+  }
+}
+
+#[cfg(any(feature = "std", doc))]
+#[doc(cfg(feature = "std"))]
+impl<D, const M: u64, const O: usize> std::io::Write for Digest<D, M, O>
+where
+  D: Debug + Clone + Copy,
+{
+  fn write(&mut self, buf: &[u8]) -> std::io::Result<usize>
+  {
+    self.update(buf);
+    Ok(buf.len())
+  }
+
+  fn write_all(&mut self, buf: &[u8]) -> std::io::Result<()>
+  {
+    self.update(buf);
+    Ok(())
+  }
+
+  fn flush(&mut self) -> std::io::Result<()>
+  {
+    Ok(())
+  }
+}
+
+impl<D, const M: u64, const O: usize> Digest<D, M, O>
+where
+  D: Debug + Clone + Copy,
+{
+  pub const BLOCK_LEN: usize = match Self::V {
+    | Variant::Sha1 | Variant::Sha224 | Variant::Sha256 => 64,
+    | Variant::Sha384 | Variant::Sha512 | Variant::Sha512_224 | Variant::Sha512_256 => 128,
+  };
+  pub const DIGEST_LEN: usize = match Self::V {
+    | Variant::Sha1 => 20,
+    | Variant::Sha224 => 28,
+    | Variant::Sha256 => 32,
+    | Variant::Sha384 => 48,
+    | Variant::Sha512 => 64,
+    | Variant::Sha512_224 => 28,
+    | Variant::Sha512_256 => 32,
+  };
   const V: Variant = match (M, O) {
     | (0x5ba_1, 20) => Variant::Sha1,
     | (0x5ba_224, 28) => Variant::Sha224,
@@ -80,61 +145,53 @@ where
     };
   }
 
-  pub fn update<B: AsRef<[u8]>>(&mut self, implementation: Implementation, data: B)
+  pub fn update(&mut self, data: &[u8])
+  {
+    self.update_impl(Control::get_global_implementation(), data);
+  }
+
+  pub fn update_impl(&mut self, implementation: Implementation, data: &[u8])
   {
     #[rustfmt::skip]
     match Self::V {
-      | Variant::Sha1 => unsafe { transmute::<&mut D, &mut sha::Sha1>(&mut self.inner) }.update(implementation, data),
-      | Variant::Sha224 => unsafe { transmute::<&mut D, &mut sha::Sha224>(&mut self.inner) }.update(implementation, data),
-      | Variant::Sha256 => unsafe { transmute::<&mut D, &mut sha::Sha256>(&mut self.inner) }.update(implementation, data),
-      | Variant::Sha384 => unsafe { transmute::<&mut D, &mut sha::Sha384>(&mut self.inner) }.update(implementation, data),
-      | Variant::Sha512 => unsafe { transmute::<&mut D, &mut sha::Sha512>(&mut self.inner) }.update(implementation, data),
-      | Variant::Sha512_224 => unsafe { transmute::<&mut D, &mut sha::Sha512_224>(&mut self.inner) }.update(implementation, data),
-      | Variant::Sha512_256 => unsafe { transmute::<&mut D, &mut sha::Sha512_256>(&mut self.inner) }.update(implementation, data),
+      | Variant::Sha1 => unsafe { transmute::<&mut D, &mut sha::Sha1>(&mut self.inner) }.update_impl(implementation, data),
+      | Variant::Sha224 => unsafe { transmute::<&mut D, &mut sha::Sha224>(&mut self.inner) }.update_impl(implementation, data),
+      | Variant::Sha256 => unsafe { transmute::<&mut D, &mut sha::Sha256>(&mut self.inner) }.update_impl(implementation, data),
+      | Variant::Sha384 => unsafe { transmute::<&mut D, &mut sha::Sha384>(&mut self.inner) }.update_impl(implementation, data),
+      | Variant::Sha512 => unsafe { transmute::<&mut D, &mut sha::Sha512>(&mut self.inner) }.update_impl(implementation, data),
+      | Variant::Sha512_224 => unsafe { transmute::<&mut D, &mut sha::Sha512_224>(&mut self.inner) }.update_impl(implementation, data),
+      | Variant::Sha512_256 => unsafe { transmute::<&mut D, &mut sha::Sha512_256>(&mut self.inner) }.update_impl(implementation, data),
     };
   }
 
-  pub fn finish(&mut self, implementation: Implementation) -> [u8; O]
+  pub fn finish_sliced<'context>(&'context mut self) -> &'context [u8]
   {
-    let mut output: MaybeUninit<[u8; O]> = MaybeUninit::uninit();
-    self.finish_into(implementation, unsafe { output.assume_init_mut() });
-    unsafe { output.assume_init() }
+    self.finish_sliced_impl(Control::get_global_implementation())
   }
 
-  #[cfg(any(feature = "alloc", doc))]
-  #[doc(cfg(any(feature = "alloc", feature = "std")))]
-  pub fn finish_boxed(&mut self, implementation: Implementation) -> Box<[u8]>
-  {
-    let mut output: Box<[u8]> = unsafe { Box::new_uninit_slice(O).assume_init() };
-    self.finish_into(implementation, &mut output);
-    output
-  }
-
-  pub fn finish_into(&mut self, implementation: Implementation, output: &mut [u8])
+  pub fn finish_sliced_impl<'context>(&'context mut self, implementation: Implementation) -> &'context [u8]
   {
     #[rustfmt::skip]
     match Self::V {
-      | Variant::Sha1 => unsafe { transmute::<&mut D, &mut sha::Sha1>(&mut self.inner) }.finish_into(implementation, output),
-      | Variant::Sha224 => unsafe { transmute::<&mut D, &mut sha::Sha224>(&mut self.inner) }.finish_into(implementation, output),
-      | Variant::Sha256 => unsafe { transmute::<&mut D, &mut sha::Sha256>(&mut self.inner) }.finish_into(implementation, output),
-      | Variant::Sha384 => unsafe { transmute::<&mut D, &mut sha::Sha384>(&mut self.inner) }.finish_into(implementation, output),
-      | Variant::Sha512 => unsafe { transmute::<&mut D, &mut sha::Sha512>(&mut self.inner) }.finish_into(implementation, output),
-      | Variant::Sha512_224 => unsafe { transmute::<&mut D, &mut sha::Sha512_224>(&mut self.inner) }.finish_into(implementation, output),
-      | Variant::Sha512_256 => unsafe { transmute::<&mut D, &mut sha::Sha512_256>(&mut self.inner) }.finish_into(implementation, output),
+      | Variant::Sha1 => unsafe { transmute::<&mut D, &mut sha::Sha1>(&mut self.inner) }.finish_sliced_impl(implementation),
+      | Variant::Sha224 => unsafe { transmute::<&mut D, &mut sha::Sha224>(&mut self.inner) }.finish_sliced_impl(implementation),
+      | Variant::Sha256 => unsafe { transmute::<&mut D, &mut sha::Sha256>(&mut self.inner) }.finish_sliced_impl(implementation),
+      | Variant::Sha384 => unsafe { transmute::<&mut D, &mut sha::Sha384>(&mut self.inner) }.finish_sliced_impl(implementation),
+      | Variant::Sha512 => unsafe { transmute::<&mut D, &mut sha::Sha512>(&mut self.inner) }.finish_sliced_impl(implementation),
+      | Variant::Sha512_224 => unsafe { transmute::<&mut D, &mut sha::Sha512_224>(&mut self.inner) }.finish_sliced_impl(implementation),
+      | Variant::Sha512_256 => unsafe { transmute::<&mut D, &mut sha::Sha512_256>(&mut self.inner) }.finish_sliced_impl(implementation),
     }
   }
 
-  pub fn finish_sliced(&mut self, implementation: Implementation) -> &[u8]
+  pub fn finish(&mut self) -> [u8; O]
   {
-    #[rustfmt::skip]
-    match Self::V {
-      | Variant::Sha1 => unsafe { transmute::<&mut D, &mut sha::Sha1>(&mut self.inner) }.finish_sliced(implementation),
-      | Variant::Sha224 => unsafe { transmute::<&mut D, &mut sha::Sha224>(&mut self.inner) }.finish_sliced(implementation),
-      | Variant::Sha256 => unsafe { transmute::<&mut D, &mut sha::Sha256>(&mut self.inner) }.finish_sliced(implementation),
-      | Variant::Sha384 => unsafe { transmute::<&mut D, &mut sha::Sha384>(&mut self.inner) }.finish_sliced(implementation),
-      | Variant::Sha512 => unsafe { transmute::<&mut D, &mut sha::Sha512>(&mut self.inner) }.finish_sliced(implementation),
-      | Variant::Sha512_224 => unsafe { transmute::<&mut D, &mut sha::Sha512_224>(&mut self.inner) }.finish_sliced(implementation),
-      | Variant::Sha512_256 => unsafe { transmute::<&mut D, &mut sha::Sha512_256>(&mut self.inner) }.finish_sliced(implementation),
-    }
+    self.finish_impl(Control::get_global_implementation())
+  }
+
+  pub fn finish_impl(&mut self, implementation: Implementation) -> [u8; O]
+  {
+    let mut digest: MaybeUninit<[u8; O]> = MaybeUninit::uninit();
+    unsafe { digest.assume_init_mut() }.copy_from_slice(&self.finish_sliced_impl(implementation)[0 .. O]);
+    unsafe { digest.assume_init() }
   }
 }
