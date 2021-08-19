@@ -194,4 +194,21 @@ where
     unsafe { digest.assume_init_mut() }.copy_from_slice(&self.finish_sliced_impl(implementation)[0 .. O]);
     unsafe { digest.assume_init() }
   }
+
+  pub fn finish_into(&mut self, output: &mut [u8]) {
+    self.finish_into_impl(Control::get_global_implementation(), output);
+  }
+
+  pub fn finish_into_impl(&mut self, implementation: Implementation, output: &mut [u8]) {
+    #[rustfmt::skip]
+    match Self::V {
+      | Variant::Sha1 => unsafe { transmute::<&mut D, &mut sha::Sha1>(&mut self.inner) }.finish_into_impl(implementation, output),
+      | Variant::Sha224 => unsafe { transmute::<&mut D, &mut sha::Sha224>(&mut self.inner) }.finish_into_impl(implementation, output),
+      | Variant::Sha256 => unsafe { transmute::<&mut D, &mut sha::Sha256>(&mut self.inner) }.finish_into_impl(implementation, output),
+      | Variant::Sha384 => unsafe { transmute::<&mut D, &mut sha::Sha384>(&mut self.inner) }.finish_into_impl(implementation, output),
+      | Variant::Sha512 => unsafe { transmute::<&mut D, &mut sha::Sha512>(&mut self.inner) }.finish_into_impl(implementation, output),
+      | Variant::Sha512_224 => unsafe { transmute::<&mut D, &mut sha::Sha512_224>(&mut self.inner) }.finish_into_impl(implementation, output),
+      | Variant::Sha512_256 => unsafe { transmute::<&mut D, &mut sha::Sha512_256>(&mut self.inner) }.finish_into_impl(implementation, output),
+    }
+  }
 }
