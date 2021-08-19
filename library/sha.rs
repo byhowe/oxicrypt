@@ -131,6 +131,22 @@ macro_rules! impl_sha {
         unsafe { digest.assume_init_mut() }.copy_from_slice(&self.engine.as_state()[0 .. $digest_len]);
         unsafe { digest.assume_init() }
       }
+
+      /// Calculates the digest and writes into the given buffer.
+      ///
+      /// The length of the provided buffer does not matter.
+      pub fn finish_into(&mut self, output: &mut [u8])
+      {
+        self.finish_into_impl(Control::get_global_implementation(), output);
+      }
+
+      /// Same as [`finish_into`](`Self::finish_into`), but accepts an `Implementation` variable.
+      pub fn finish_into_impl(&mut self, implementation: Implementation, output: &mut [u8])
+      {
+        use core::cmp::min;
+        let digest = self.finish_sliced_impl(implementation);
+        output[0 .. min($digest_len, output.len())].copy_from_slice(&digest[0 .. min($digest_len, output.len())]);
+      }
     }
   };
 }
