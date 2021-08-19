@@ -35,6 +35,48 @@ pub type HmacSha512_224 = Hmac<sha::Sha512_224, 0x5ba_512_224, 28, 128>;
 /// HMAC-SHA-512/256
 pub type HmacSha512_256 = Hmac<sha::Sha512_256, 0x5ba_512_256, 32, 128>;
 
+impl<D, const M: u64, const O: usize, const B: usize> core::hash::Hasher for Hmac<D, M, O, B>
+where
+  D: Debug + Clone + Copy,
+{
+  fn finish(&self) -> u64
+  {
+    let mut ctx: Self = *self;
+    let mut digest: MaybeUninit<[u8; 8]> = MaybeUninit::uninit();
+    unsafe { digest.assume_init_mut() }.copy_from_slice(&ctx.finish_sliced()[0 .. 8]);
+    u64::from_be_bytes(unsafe { digest.assume_init() })
+  }
+
+  fn write(&mut self, bytes: &[u8])
+  {
+    self.update(bytes);
+  }
+}
+
+#[cfg(any(feature = "std", doc))]
+#[doc(cfg(feature = "std"))]
+impl<D, const M: u64, const O: usize, const B: usize> std::io::Write for Hmac<D, M, O, B>
+where
+  D: Debug + Clone + Copy,
+{
+  fn write(&mut self, buf: &[u8]) -> std::io::Result<usize>
+  {
+    self.update(buf);
+    Ok(buf.len())
+  }
+
+  fn write_all(&mut self, buf: &[u8]) -> std::io::Result<()>
+  {
+    self.update(buf);
+    Ok(())
+  }
+
+  fn flush(&mut self) -> std::io::Result<()>
+  {
+    Ok(())
+  }
+}
+
 impl<D, const M: u64, const O: usize, const B: usize> Hmac<D, M, O, B>
 where
   D: Debug + Clone + Copy,
