@@ -195,11 +195,13 @@ where
     unsafe { digest.assume_init() }
   }
 
-  pub fn finish_into(&mut self, output: &mut [u8]) {
+  pub fn finish_into(&mut self, output: &mut [u8])
+  {
     self.finish_into_impl(Control::get_global_implementation(), output);
   }
 
-  pub fn finish_into_impl(&mut self, implementation: Implementation, output: &mut [u8]) {
+  pub fn finish_into_impl(&mut self, implementation: Implementation, output: &mut [u8])
+  {
     #[rustfmt::skip]
     match Self::V {
       | Variant::Sha1 => unsafe { transmute::<&mut D, &mut sha::Sha1>(&mut self.inner) }.finish_into_impl(implementation, output),
