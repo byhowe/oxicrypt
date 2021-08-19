@@ -69,12 +69,18 @@ where
       self.key[0 .. key.len()].copy_from_slice(key);
     }
 
-    for i in 0 .. B {
-      self.key[i] ^= 0x36;
-    }
+    self.xor_key(0x36);
     self.x5c = false;
 
     self.digest.update_impl(implementation, &self.key);
+  }
+
+  #[inline(always)]
+  fn xor_key(&mut self, bits: u8)
+  {
+    for i in 0 .. B {
+      self.key[i] ^= bits;
+    }
   }
 
   pub fn reset(&mut self)
@@ -85,9 +91,7 @@ where
   pub fn reset_impl(&mut self, implementation: Implementation)
   {
     if self.x5c {
-      for i in 0 .. B {
-        self.key[i] ^= 0x36 ^ 0x5c;
-      }
+      self.xor_key(0x36 ^ 0x5c);
       self.x5c = false;
     }
 
@@ -115,9 +119,7 @@ where
     let digest = self.digest.finish_impl(implementation);
     self.digest.reset();
 
-    for i in 0 .. B {
-      self.key[i] ^= 0x36 ^ 0x5c;
-    }
+    self.xor_key(0x36 ^ 0x5c);
     self.x5c = true;
 
     self.digest.update_impl(implementation, &self.key);
