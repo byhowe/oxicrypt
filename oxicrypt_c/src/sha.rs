@@ -142,7 +142,7 @@ macro_rules! impl_sha {
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn $oneshot_into(
+    pub unsafe extern "C" fn $oneshot_impl(
       implementation: oxi_implementation_t,
       data: *const u8,
       datalen: usize,

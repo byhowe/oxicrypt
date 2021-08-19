@@ -48,82 +48,87 @@ macro_rules! impl_hmac {
     fn oneshot_impl = $oneshot_impl:ident;
   ) => {
     #[no_mangle]
-    pub unsafe extern "C" fn $set_key(ctx: *mut $hash, key: *const u8, keylen: usize)
+    pub unsafe extern "C" fn $set_key(ctx: *mut $hmac, key: *const u8, keylen: usize)
     {
-      let ctx: &mut $hash = &mut *ctx;
+      let ctx: &mut $hmac = &mut *ctx;
       ctx.set_key(slice::from_raw_parts(key, keylen));
     }
 
     #[no_mangle]
     pub unsafe extern "C" fn $set_key_impl(
-      ctx: *mut $hash,
+      ctx: *mut $hmac,
       implementation: oxi_implementation_t,
       key: *const u8,
       keylen: usize,
     )
     {
-      let ctx: &mut $hash = &mut *ctx;
-      ctx.set_key(implementation, slice::from_raw_parts(key, keylen));
+      let ctx: &mut $hmac = &mut *ctx;
+      ctx.set_key_impl(implementation, slice::from_raw_parts(key, keylen));
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn $reset(ctx: *mut $hash)
+    pub unsafe extern "C" fn $reset(ctx: *mut $hmac)
     {
-      let ctx: &mut $hash = &mut *ctx;
+      let ctx: &mut $hmac = &mut *ctx;
       ctx.reset();
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn $reset_impl(ctx: *mut $hash, implementation: oxi_implementation_t)
+    pub unsafe extern "C" fn $reset_impl(ctx: *mut $hmac, implementation: oxi_implementation_t)
     {
-      let ctx: &mut $hash = &mut *ctx;
+      let ctx: &mut $hmac = &mut *ctx;
       ctx.reset_impl(implementation);
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn $update(ctx: *mut $hash, data: *const u8, datalen: usize)
+    pub unsafe extern "C" fn $update(ctx: *mut $hmac, data: *const u8, datalen: usize)
     {
-      let ctx: &mut $hash = &mut *ctx;
+      let ctx: &mut $hmac = &mut *ctx;
       ctx.update(slice::from_raw_parts(data, datalen));
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn $update_impl(ctx: *mut $hash, data: *const u8, datalen: usize)
+    pub unsafe extern "C" fn $update_impl(
+      ctx: *mut $hmac,
+      implementation: oxi_implementation_t,
+      data: *const u8,
+      datalen: usize,
+    )
     {
-      let ctx: &mut $hash = &mut *ctx;
+      let ctx: &mut $hmac = &mut *ctx;
       ctx.update_impl(implementation, slice::from_raw_parts(data, datalen));
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn $finish_sliced(ctx: *mut $hash) -> *const u8
+    pub unsafe extern "C" fn $finish_sliced(ctx: *mut $hmac) -> *const u8
     {
-      let ctx: &mut $hash = &mut *ctx;
+      let ctx: &mut $hmac = &mut *ctx;
       ctx.finish_sliced().as_ptr()
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn $finish_sliced_impl(ctx: *mut $hash, implementation: oxi_implementation_t) -> *const u8
+    pub unsafe extern "C" fn $finish_sliced_impl(ctx: *mut $hmac, implementation: oxi_implementation_t) -> *const u8
     {
-      let ctx: &mut $hash = &mut *ctx;
+      let ctx: &mut $hmac = &mut *ctx;
       ctx.finish_sliced_impl(implementation).as_ptr()
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn $finish_into(ctx: *mut $hash, out: *mut u8, outlen: usize)
+    pub unsafe extern "C" fn $finish_into(ctx: *mut $hmac, out: *mut u8, outlen: usize)
     {
-      let ctx: &mut $hash = &mut *ctx;
+      let ctx: &mut $hmac = &mut *ctx;
       ctx.finish_into(slice::from_raw_parts_mut(out, outlen));
     }
 
     #[no_mangle]
     pub unsafe extern "C" fn $finish_into_impl(
-      ctx: *mut $hash,
+      ctx: *mut $hmac,
       implementation: oxi_implementation_t,
       out: *mut u8,
       outlen: usize,
     )
     {
-      let ctx: &mut $hash = &mut *ctx;
+      let ctx: &mut $hmac = &mut *ctx;
       ctx.finish_into_impl(implementation, slice::from_raw_parts_mut(out, outlen));
     }
 
@@ -137,7 +142,7 @@ macro_rules! impl_hmac {
       outlen: usize,
     )
     {
-      $hash::oneshot(
+      $hmac::oneshot_into(
         slice::from_raw_parts(key, keylen),
         slice::from_raw_parts(data, datalen),
         slice::from_raw_parts_mut(out, outlen),
@@ -155,7 +160,7 @@ macro_rules! impl_hmac {
       outlen: usize,
     )
     {
-      $hash::oneshot_impl(
+      $hmac::oneshot_into_impl(
         implementation,
         slice::from_raw_parts(key, keylen),
         slice::from_raw_parts(data, datalen),
