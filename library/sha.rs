@@ -163,6 +163,34 @@ macro_rules! impl_sha {
         let digest = self.finish_sliced_impl(implementation);
         output[0 .. n].copy_from_slice(&digest[0 .. n]);
       }
+
+      /// Compute the hash of a given data in one go.
+      pub fn oneshot(data: &[u8]) -> [u8; $digest_len]
+      {
+        Self::oneshot_impl(Control::get_global_implementation(), data)
+      }
+
+      /// Same as [`oneshot`](`Self::oneshot`), but accepts an `Implementation` variable.
+      pub fn oneshot_impl(implementation: Implementation, data: &[u8]) -> [u8; $digest_len]
+      {
+        let mut ctx = Self::new();
+        ctx.update_impl(implementation, data);
+        ctx.finish_impl(implementation)
+      }
+
+      /// Compute the hash of a given data in one go and writes the result into the given output buffer.
+      pub fn oneshot_into(data: &[u8], output: &mut [u8])
+      {
+        Self::oneshot_into_impl(Control::get_global_implementation(), data, output);
+      }
+
+      /// Same as [`oneshot_into`](`Self::oneshot_into`), but accepts an `Implementation` variable.
+      pub fn oneshot_into_impl(implementation: Implementation, data: &[u8], output: &mut [u8])
+      {
+        let mut ctx = Self::new();
+        ctx.update_impl(implementation, data);
+        ctx.finish_into_impl(implementation, output);
+      }
     }
   };
 }
