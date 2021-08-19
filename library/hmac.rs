@@ -150,4 +150,28 @@ where
     let n = core::cmp::min(O, output.len());
     output[0 .. n].copy_from_slice(&self.finish_sliced_impl(implementation)[0 .. n]);
   }
+
+  pub fn oneshot(key: &[u8], data: &[u8]) -> [u8; O]
+  {
+    Self::oneshot_impl(Control::get_global_implementation(), key, data)
+  }
+
+  pub fn oneshot_impl(implementation: Implementation, key: &[u8], data: &[u8]) -> [u8; O]
+  {
+    let mut ctx = Self::with_key_impl(implementation, key);
+    ctx.update_impl(implementation, data);
+    ctx.finish_impl(implementation)
+  }
+
+  pub fn oneshot_into(key: &[u8], data: &[u8], output: &mut [u8])
+  {
+    Self::oneshot_into_impl(Control::get_global_implementation(), key, data, output);
+  }
+
+  pub fn oneshot_into_impl(implementation: Implementation, key: &[u8], data: &[u8], output: &mut [u8])
+  {
+    let mut ctx = Self::with_key_impl(implementation, key);
+    ctx.update_impl(implementation, data);
+    ctx.finish_into_impl(implementation, output);
+  }
 }
