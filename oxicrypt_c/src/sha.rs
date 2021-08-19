@@ -69,8 +69,8 @@ macro_rules! impl_sha {
     fn update_impl = $update_impl:ident;
     fn finish_sliced = $finish_sliced:ident;
     fn finish_sliced_impl = $finish_sliced_impl:ident;
-    fn finish_into = $finish_into:ident;
-    fn finish_into_impl = $finish_into_impl:ident;
+    fn finish = $finish:ident;
+    fn finish_impl = $finish_impl:ident;
     fn oneshot = $oneshot:ident;
     fn oneshot_impl = $oneshot_impl:ident;
   ) => {
@@ -115,14 +115,14 @@ macro_rules! impl_sha {
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn $finish_into(ctx: *mut $sha, out: *mut u8, outlen: usize)
+    pub unsafe extern "C" fn $finish(ctx: *mut $sha, out: *mut u8, outlen: usize)
     {
       let ctx: &mut $sha = &mut *ctx;
       ctx.finish_into(slice::from_raw_parts_mut(out, outlen));
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn $finish_into_impl(
+    pub unsafe extern "C" fn $finish_impl(
       ctx: *mut $sha,
       implementation: oxi_implementation_t,
       out: *mut u8,
@@ -164,8 +164,8 @@ impl_sha! {
   fn update_impl = oxi_sha1_update_impl;
   fn finish_sliced = oxi_sha1_finish_sliced;
   fn finish_sliced_impl = oxi_sha1_finish_sliced_impl;
-  fn finish_into = oxi_sha1_finish_into;
-  fn finish_into_impl = oxi_sha1_finish_into_impl;
+  fn finish = oxi_sha1_finish;
+  fn finish_impl = oxi_sha1_finish_impl;
   fn oneshot = oxi_sha1_oneshot;
   fn oneshot_impl = oxi_sha1_oneshot_impl;
 }
@@ -177,8 +177,8 @@ impl_sha! {
   fn update_impl = oxi_sha224_update_impl;
   fn finish_sliced = oxi_sha224_finish_sliced;
   fn finish_sliced_impl = oxi_sha224_finish_sliced_impl;
-  fn finish_into = oxi_sha224_finish_into;
-  fn finish_into_impl = oxi_sha224_finish_into_impl;
+  fn finish = oxi_sha224_finish;
+  fn finish_impl = oxi_sha224_finish_impl;
   fn oneshot = oxi_sha224_oneshot;
   fn oneshot_impl = oxi_sha224_oneshot_impl;
 }
@@ -190,8 +190,8 @@ impl_sha! {
   fn update_impl = oxi_sha256_update_impl;
   fn finish_sliced = oxi_sha256_finish_sliced;
   fn finish_sliced_impl = oxi_sha256_finish_sliced_impl;
-  fn finish_into = oxi_sha256_finish_into;
-  fn finish_into_impl = oxi_sha256_finish_into_impl;
+  fn finish = oxi_sha256_finish;
+  fn finish_impl = oxi_sha256_finish_impl;
   fn oneshot = oxi_sha256_oneshot;
   fn oneshot_impl = oxi_sha256_oneshot_impl;
 }
@@ -203,8 +203,8 @@ impl_sha! {
   fn update_impl = oxi_sha384_update_impl;
   fn finish_sliced = oxi_sha384_finish_sliced;
   fn finish_sliced_impl = oxi_sha384_finish_sliced_impl;
-  fn finish_into = oxi_sha384_finish_into;
-  fn finish_into_impl = oxi_sha384_finish_into_impl;
+  fn finish = oxi_sha384_finish;
+  fn finish_impl = oxi_sha384_finish_impl;
   fn oneshot = oxi_sha384_oneshot;
   fn oneshot_impl = oxi_sha384_oneshot_impl;
 }
@@ -216,8 +216,8 @@ impl_sha! {
   fn update_impl = oxi_sha512_update_impl;
   fn finish_sliced = oxi_sha512_finish_sliced;
   fn finish_sliced_impl = oxi_sha512_finish_sliced_impl;
-  fn finish_into = oxi_sha512_finish_into;
-  fn finish_into_impl = oxi_sha512_finish_into_impl;
+  fn finish = oxi_sha512_finish;
+  fn finish_impl = oxi_sha512_finish_impl;
   fn oneshot = oxi_sha512_oneshot;
   fn oneshot_impl = oxi_sha512_oneshot_impl;
 }
@@ -229,8 +229,8 @@ impl_sha! {
   fn update_impl = oxi_sha512_224_update_impl;
   fn finish_sliced = oxi_sha512_224_finish_sliced;
   fn finish_sliced_impl = oxi_sha512_224_finish_sliced_impl;
-  fn finish_into = oxi_sha512_224_finish_into;
-  fn finish_into_impl = oxi_sha512_224_finish_into_impl;
+  fn finish = oxi_sha512_224_finish;
+  fn finish_impl = oxi_sha512_224_finish_impl;
   fn oneshot = oxi_sha512_224_oneshot;
   fn oneshot_impl = oxi_sha512_224_oneshot_impl;
 }
@@ -242,8 +242,8 @@ impl_sha! {
   fn update_impl = oxi_sha512_256_update_impl;
   fn finish_sliced = oxi_sha512_256_finish_sliced;
   fn finish_sliced_impl = oxi_sha512_256_finish_sliced_impl;
-  fn finish_into = oxi_sha512_256_finish_into;
-  fn finish_into_impl = oxi_sha512_256_finish_into_impl;
+  fn finish = oxi_sha512_256_finish;
+  fn finish_impl = oxi_sha512_256_finish_impl;
   fn oneshot = oxi_sha512_256_oneshot;
   fn oneshot_impl = oxi_sha512_256_oneshot_impl;
 }

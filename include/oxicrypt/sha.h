@@ -114,21 +114,21 @@ const uint8_t* oxi_sha512_finish_sliced_impl(oxi_sha512_t* ctx, oxi_implementati
 const uint8_t* oxi_sha512_224_finish_sliced_impl(oxi_sha512_224_t* ctx, oxi_implementation_t implementation);
 const uint8_t* oxi_sha512_256_finish_sliced_impl(oxi_sha512_256_t* ctx, oxi_implementation_t implementation);
 
-void oxi_sha1_finish_into(oxi_sha1_t* ctx, uint8_t* out, size_t outlen);
-void oxi_sha224_finish_into(oxi_sha224_t* ctx, uint8_t* out, size_t outlen);
-void oxi_sha256_finish_into(oxi_sha256_t* ctx, uint8_t* out, size_t outlen);
-void oxi_sha384_finish_into(oxi_sha384_t* ctx, uint8_t* out, size_t outlen);
-void oxi_sha512_finish_into(oxi_sha512_t* ctx, uint8_t* out, size_t outlen);
-void oxi_sha512_224_finish_into(oxi_sha512_224_t* ctx, uint8_t* out, size_t outlen);
-void oxi_sha512_256_finish_into(oxi_sha512_256_t* ctx, uint8_t* out, size_t outlen);
+void oxi_sha1_finish(oxi_sha1_t* ctx, uint8_t* out, size_t outlen);
+void oxi_sha224_finish(oxi_sha224_t* ctx, uint8_t* out, size_t outlen);
+void oxi_sha256_finish(oxi_sha256_t* ctx, uint8_t* out, size_t outlen);
+void oxi_sha384_finish(oxi_sha384_t* ctx, uint8_t* out, size_t outlen);
+void oxi_sha512_finish(oxi_sha512_t* ctx, uint8_t* out, size_t outlen);
+void oxi_sha512_224_finish(oxi_sha512_224_t* ctx, uint8_t* out, size_t outlen);
+void oxi_sha512_256_finish(oxi_sha512_256_t* ctx, uint8_t* out, size_t outlen);
 
-void oxi_sha1_finish_into_impl(oxi_sha1_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
-void oxi_sha224_finish_into_impl(oxi_sha224_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
-void oxi_sha256_finish_into_impl(oxi_sha256_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
-void oxi_sha384_finish_into_impl(oxi_sha384_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
-void oxi_sha512_finish_into_impl(oxi_sha512_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
-void oxi_sha512_224_finish_into_impl(oxi_sha512_224_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
-void oxi_sha512_256_finish_into_impl(oxi_sha512_256_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
+void oxi_sha1_finish_impl(oxi_sha1_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
+void oxi_sha224_finish_impl(oxi_sha224_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
+void oxi_sha256_finish_impl(oxi_sha256_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
+void oxi_sha384_finish_impl(oxi_sha384_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
+void oxi_sha512_finish_impl(oxi_sha512_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
+void oxi_sha512_224_finish_impl(oxi_sha512_224_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
+void oxi_sha512_256_finish_impl(oxi_sha512_256_t* ctx, oxi_implementation_t implementation, uint8_t* out, size_t outlen);
 
 void oxi_sha1_oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen);
 void oxi_sha224_oneshot(const uint8_t* data, size_t datalen, uint8_t* out, size_t outlen);
