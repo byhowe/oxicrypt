@@ -1,4 +1,20 @@
 //! High level SHA API.
+//!
+//! # Examples
+//!
+//! Small example that demonstrates the usage of a SHA function.
+//!
+//! ```
+//! use oxicrypt::sha::Sha256;
+//!
+//! let mut ctx = Sha256::new();
+//!
+//! ctx.update(b"Hello, ");
+//! ctx.update(b"world");
+//!
+//! let digest = ctx.finish_sliced();
+//! println!("SHA-256 digest of \"Hello, world\" is {}.", hex::encode(digest));
+//! ```
 
 use core::mem::MaybeUninit;
 
