@@ -5,10 +5,13 @@ use std::io::stdout;
 use std::io::Write;
 
 use oxicrypt::hmac;
+use oxicrypt::Control;
 use oxicrypt::Implementation;
 
 fn main() -> std::io::Result<()>
 {
+  Control::set_global_implementation(Implementation::fastest_rt());
+
   let mut sout = stdout();
   let sin = stdin();
 
@@ -18,8 +21,7 @@ fn main() -> std::io::Result<()>
   sout.flush()?;
   sin.read_line(&mut buffer)?;
 
-  let i = Implementation::fastest_rt();
-  let mut h = hmac::HmacSha256::with_key(i, &buffer[0 .. buffer.len() - 1]);
+  let mut h = hmac::HmacSha256::with_key(buffer[0 .. buffer.len() - 1].as_bytes());
 
   buffer.clear();
 
@@ -27,9 +29,9 @@ fn main() -> std::io::Result<()>
   sout.flush()?;
   sin.read_line(&mut buffer)?;
 
-  h.update(i, &buffer[0 .. buffer.len() - 1]);
-  let digest = h.finish(i);
-  let encoded = hex::encode(&digest);
+  h.update(buffer[0 .. buffer.len() - 1].as_bytes());
+  let digest = h.finish_sliced();
+  let encoded = hex::encode(digest);
   sout.write_all(encoded.as_bytes())?;
   sout.write_all(b"\n")?;
   sout.flush()?;

@@ -1,35 +1,23 @@
 //! HMAC.
 
-#[cfg(any(feature = "alloc", doc))]
-use alloc::boxed::Box;
+use core::fmt::Debug;
 use core::mem::MaybeUninit;
 
 use crate::digest::Digest;
 use crate::sha;
+use crate::Control;
 use crate::Implementation;
 
 /// HMAC context.
-///
-/// # Safety
-///
-/// It is undefined behaviour to specify `(D, M, O, B)` generics other than:
-///
-/// * HMAC-SHA-1 - `(Sha1, 0x5ba_1, 20, 64)`
-/// * HMAC-SHA-224 - `(Sha224, 0x5ba_224, 28, 64)`
-/// * HMAC-SHA-256 - `(Sha256, 0x5ba_256, 32, 64)`
-/// * HMAC-SHA-384 - `(Sha384, 0x5ba_384, 48, 128)`
-/// * HMAC-SHA-512 - `(Sha512, 0x5ba_512, 64, 128)`
-/// * HMAC-SHA-512/224 - `(Sha512_224, 0x5ba_512_224, 28, 128)`
-/// * HMAC-SHA-512/256 - `(Sha512_256, 0x5ba_512_256, 32, 128)`
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "c", repr(C))]
-pub struct Hmac<D, const M: usize, const O: usize, const B: usize>
+pub struct Hmac<D, const M: u64, const O: usize, const B: usize>
 where
-  D: core::fmt::Debug + Clone + Copy,
+  D: Debug + Clone + Copy,
 {
-  hash: Digest<D, M, O>,
-  x5c: bool,
+  digest: Digest<D, M, O>,
   key: [u8; B],
+  x5c: bool,
 }
 
 /// HMAC-SHA-1
@@ -47,37 +35,54 @@ pub type HmacSha512_224 = Hmac<sha::Sha512_224, 0x5ba_512_224, 28, 128>;
 /// HMAC-SHA-512/256
 pub type HmacSha512_256 = Hmac<sha::Sha512_256, 0x5ba_512_256, 32, 128>;
 
-impl<D, const M: usize, const O: usize, const B: usize> Hmac<D, M, O, B>
+impl<D, const M: u64, const O: usize, const B: usize> Hmac<D, M, O, B>
 where
-  D: core::fmt::Debug + Clone + Copy,
+  D: Debug + Clone + Copy,
 {
-  pub fn with_key<K: AsRef<[u8]>>(implementation: Implementation, key: K) -> Self
+  pub fn with_key(key: &[u8]) -> Self
+  {
+    Self::with_key_impl(Control::get_global_implementation(), key)
+  }
+
+  pub fn with_key_impl(implementation: Implementation, key: &[u8]) -> Self
   {
     let mut ctx: MaybeUninit<Self> = MaybeUninit::uninit();
-    unsafe { ctx.assume_init_mut() }.set_key(implementation, key);
+    unsafe { ctx.assume_init_mut() }.set_key_impl(implementation, key);
     unsafe { ctx.assume_init() }
   }
 
-  pub fn set_key<K: AsRef<[u8]>>(&mut self, implementation: Implementation, key: K)
+  pub fn set_key(&mut self, key: &[u8])
   {
-    let key = key.as_ref();
-    self.hash.reset();
+    self.set_key_impl(Control::get_global_implementation(), key);
+  }
+
+  pub fn set_key_impl(&mut self, implementation: Implementation, key: &[u8])
+  {
+    self.digest.reset();
+
     self.key = [0; B];
     if key.len() > B {
-      self.hash.update(implementation, key);
-      self.hash.finish_into(implementation, &mut self.key);
-      self.hash.reset();
+      self.digest.update_impl(implementation, key);
+      self.digest.finish_into_impl(implementation, &mut self.key);
+      self.digest.reset();
     } else {
       self.key[0 .. key.len()].copy_from_slice(key);
     }
+
     for i in 0 .. B {
       self.key[i] ^= 0x36;
     }
     self.x5c = false;
-    self.hash.update(implementation, &self.key);
+
+    self.digest.update_impl(implementation, &self.key);
   }
 
-  pub fn reset(&mut self, implementation: Implementation)
+  pub fn reset(&mut self)
+  {
+    self.reset_impl(Control::get_global_implementation());
+  }
+
+  pub fn reset_impl(&mut self, implementation: Implementation)
   {
     if self.x5c {
       for i in 0 .. B {
@@ -85,83 +90,62 @@ where
       }
       self.x5c = false;
     }
-    self.hash.reset();
-    self.hash.update(implementation, &self.key);
+
+    self.digest.reset();
+    self.digest.update_impl(implementation, &self.key);
   }
 
-  pub fn update<I: AsRef<[u8]>>(&mut self, implementation: Implementation, data: I)
+  pub fn update(&mut self, data: &[u8])
   {
-    self.hash.update(implementation, data.as_ref());
+    self.update_impl(Control::get_global_implementation(), data)
   }
 
-  pub fn finish(&mut self, implementation: Implementation) -> [u8; O]
+  pub fn update_impl(&mut self, implementation: Implementation, data: &[u8])
   {
-    let mut output: MaybeUninit<[u8; O]> = MaybeUninit::uninit();
-    self.finish_into(implementation, unsafe { output.assume_init_mut() });
-    unsafe { output.assume_init() }
+    self.digest.update_impl(implementation, data);
   }
 
-  #[cfg(any(feature = "alloc", doc))]
-  #[doc(cfg(any(feature = "alloc", feature = "std")))]
-  pub fn finish_boxed(&mut self, implementation: Implementation) -> Box<[u8]>
+  pub fn finish_sliced<'context>(&'context mut self) -> &'context [u8]
   {
-    let mut output = unsafe { Box::new_uninit_slice(O).assume_init() };
-    self.finish_into(implementation, &mut output);
-    output
+    self.finish_sliced_impl(Control::get_global_implementation())
   }
 
-  fn finish_raw(&mut self, implementation: Implementation)
+  pub fn finish_sliced_impl<'context>(&'context mut self, implementation: Implementation) -> &'context [u8]
   {
-    let mut digest: MaybeUninit<[u8; O]> = MaybeUninit::uninit();
-    self
-      .hash
-      .finish_into(implementation, unsafe { digest.assume_init_mut() });
-    self.hash.reset();
+    let digest = self.digest.finish_impl(implementation);
+    self.digest.reset();
+
     for i in 0 .. B {
       self.key[i] ^= 0x36 ^ 0x5c;
     }
     self.x5c = true;
-    self.hash.update(implementation, &self.key);
-    self.hash.update(implementation, unsafe { digest.assume_init_ref() });
+
+    self.digest.update_impl(implementation, &self.key);
+    self.digest.update_impl(implementation, &digest);
+
+    self.digest.finish_sliced_impl(implementation)
   }
 
-  pub fn finish_into(&mut self, implementation: Implementation, output: &mut [u8])
+  pub fn finish(&mut self) -> [u8; O]
   {
-    self.finish_raw(implementation);
-    self.hash.finish_into(implementation, output);
+    self.finish_impl(Control::get_global_implementation())
   }
 
-  pub fn finish_sliced(&mut self, implementation: Implementation) -> &[u8]
+  pub fn finish_impl(&mut self, implementation: Implementation) -> [u8; O]
   {
-    self.finish_raw(implementation);
-    self.hash.finish_sliced(implementation)
+    let mut output: MaybeUninit<[u8; O]> = MaybeUninit::uninit();
+    unsafe { output.assume_init_mut() }.copy_from_slice(self.finish_sliced_impl(implementation));
+    unsafe { output.assume_init() }
   }
 
-  pub fn oneshot<K: AsRef<[u8]>, I: AsRef<[u8]>>(implementation: Implementation, key: K, data: I) -> [u8; O]
+  pub fn finish_into(&mut self, output: &mut [u8])
   {
-    let mut ctx = Self::with_key(implementation, key);
-    ctx.update(implementation, data);
-    ctx.finish(implementation)
+    self.finish_into_impl(Control::get_global_implementation(), output);
   }
 
-  #[cfg(any(feature = "alloc", doc))]
-  #[doc(cfg(any(feature = "alloc", feature = "std")))]
-  pub fn oneshot_boxed<K: AsRef<[u8]>, I: AsRef<[u8]>>(implementation: Implementation, key: K, data: I) -> Box<[u8]>
+  pub fn finish_into_impl(&mut self, implementation: Implementation, output: &mut [u8])
   {
-    let mut ctx = Self::with_key(implementation, key);
-    ctx.update(implementation, data);
-    ctx.finish_boxed(implementation)
-  }
-
-  pub fn oneshot_into<K: AsRef<[u8]>, I: AsRef<[u8]>>(
-    implementation: Implementation,
-    data: I,
-    key: K,
-    output: &mut [u8],
-  )
-  {
-    let mut ctx = Self::with_key(implementation, key);
-    ctx.update(implementation, data);
-    ctx.finish_into(implementation, output);
+    let n = core::cmp::min(O, output.len());
+    output[0 .. n].copy_from_slice(&self.finish_sliced_impl(implementation)[0 .. n]);
   }
 }
