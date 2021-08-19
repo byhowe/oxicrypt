@@ -143,9 +143,9 @@ macro_rules! impl_sha {
       /// Same as [`finish_into`](`Self::finish_into`), but accepts an `Implementation` variable.
       pub fn finish_into_impl(&mut self, implementation: Implementation, output: &mut [u8])
       {
-        use core::cmp::min;
+        let n = core::cmp::min($digest_len, output.len());
         let digest = self.finish_sliced_impl(implementation);
-        output[0 .. min($digest_len, output.len())].copy_from_slice(&digest[0 .. min($digest_len, output.len())]);
+        output[0 .. n].copy_from_slice(&digest[0 .. n]);
       }
     }
   };
