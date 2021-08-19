@@ -10,6 +10,9 @@ extern "C" {
 
 typedef uint64_t oxi_implementation_t;
 
+void oxi_ctl_set_global_implementation(oxi_implementation_t implementation);
+oxi_implementation_t oxi_ctl_get_global_implementation();
+
 const oxi_implementation_t OXI_IMPL_GENERIC = 0;
 const oxi_implementation_t OXI_IMPL_AES = 1 << 0;
 

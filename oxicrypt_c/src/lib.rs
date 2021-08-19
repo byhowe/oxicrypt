@@ -1,6 +1,8 @@
 #![no_std]
 #![feature(const_fn_fn_ptr_basics)]
 
+use oxicrypt::Control;
+
 #[panic_handler]
 fn panic_handler(_info: &core::panic::PanicInfo<'_>) -> !
 {
@@ -9,6 +11,18 @@ fn panic_handler(_info: &core::panic::PanicInfo<'_>) -> !
 
 #[allow(non_camel_case_types)]
 pub type oxi_implementation_t = oxicrypt::Implementation;
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_ctl_set_global_implementation(implementation: oxi_implementation_t)
+{
+  Control::set_global_implementation(implementation)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn oxi_ctl_get_global_implementation() -> oxi_implementation_t
+{
+  Control::get_global_implementation()
+}
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_impl_fastest() -> oxi_implementation_t
