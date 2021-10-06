@@ -7,9 +7,9 @@ A cryptography library that is mainly implemented in Rust. I aim to implement bi
 This library contains the following crates:
 
 * `oxicrypt` is the core of this library. It implements and exposes primitive cryptography functions. It also exposes a higher level API for Rust applications.
-* `oxicrypt_c` is the C/C++ API. The C API is built using `meson`, which enables the `c` feature during compilation to activate parts of the library that implements the C interface.
+* `oxicrypt_c` is the C/C++ API. The C API is built using `meson`, which enables the `c` feature during compilation to activate parts of the library that implement the C interface.
 
-## Instsallation
+## Installation
 
 ### Rust
 
