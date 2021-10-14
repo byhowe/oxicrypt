@@ -3,7 +3,7 @@
 use core::mem::MaybeUninit;
 
 /// Common trait for digest objects.
-pub trait Digest = DigestInformation + Reset + Update + Finish + Oneshot;
+pub trait Digest = DigestInformation + Reset + Update + Finish + Oneshot + Clone + Copy;
 
 /// Information about the digest algorithm.
 pub trait DigestInformation
