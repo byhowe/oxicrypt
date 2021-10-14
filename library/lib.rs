@@ -21,6 +21,7 @@ extern crate alloc;
 extern crate std;
 
 pub mod hazmat;
+pub mod marker;
 
 // pub mod aes;
 pub mod digest;

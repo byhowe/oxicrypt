@@ -38,6 +38,7 @@ use crate::hazmat::sha::H384;
 use crate::hazmat::sha::H512;
 use crate::hazmat::sha::H512_224;
 use crate::hazmat::sha::H512_256;
+use crate::marker::Sha;
 
 macro_rules! impl_sha {
   (
@@ -47,6 +48,8 @@ macro_rules! impl_sha {
     const STATE = $state:expr;
     type Context = $ctx:ident;
   ) => {
+    impl<const I: Implementation> Sha for $sha<I> {}
+
     impl<const I: Implementation> const Default for $sha<I>
     {
       fn default() -> Self
