@@ -5,22 +5,32 @@
 //! Small example that demonstrates the usage of a SHA function.
 //!
 //! ```
+//! use oxicrypt::digest::Digest;
+//! use oxicrypt::sha::Implementation;
 //! use oxicrypt::sha::Sha256;
 //!
-//! let mut ctx = Sha256::new();
+//! let mut ctx = Sha256::<{ Implementation::Generic }>::new();
 //!
 //! ctx.update(b"Hello, ");
 //! ctx.update(b"world");
 //!
-//! let digest = ctx.finish_sliced();
-//! println!("SHA-256 digest of \"Hello, world\" is {}.", hex::encode(digest));
+//! let digest = ctx.finish();
+//! println!("SHA-256 digest of \"Hello, world\" is {}.", hex::encode(&digest));
 //! ```
 
+use core::cmp;
 use core::mem::MaybeUninit;
 
-use crate::hazmat::sha::Engine1;
-use crate::hazmat::sha::Engine256;
-use crate::hazmat::sha::Engine512;
+use crate::digest::Digest;
+use crate::digest::DigestInformation;
+use crate::digest::Finish;
+use crate::digest::Reset;
+use crate::digest::Update;
+use crate::hazmat::sha::Context1;
+use crate::hazmat::sha::Context256;
+use crate::hazmat::sha::Context512;
+#[doc(inline)]
+pub use crate::hazmat::sha::Implementation;
 use crate::hazmat::sha::H1;
 use crate::hazmat::sha::H224;
 use crate::hazmat::sha::H256;
@@ -28,8 +38,6 @@ use crate::hazmat::sha::H384;
 use crate::hazmat::sha::H512;
 use crate::hazmat::sha::H512_224;
 use crate::hazmat::sha::H512_256;
-use crate::Control;
-use crate::Implementation;
 
 macro_rules! impl_sha {
   (
@@ -37,9 +45,9 @@ macro_rules! impl_sha {
     const DIGEST_LEN = $digest_len:expr;
     const BLOCK_LEN = $block_len:expr;
     const STATE = $state:expr;
-    type Engine = $engine:ident;
+    type Context = $ctx:ident;
   ) => {
-    impl Default for $sha
+    impl<const I: Implementation> const Default for $sha<I>
     {
       fn default() -> Self
       {
@@ -47,13 +55,13 @@ macro_rules! impl_sha {
       }
     }
 
-    impl core::hash::Hasher for $sha
+    impl<const I: Implementation> core::hash::Hasher for $sha<I>
     {
       fn finish(&self) -> u64
       {
         let mut ctx: Self = *self;
         let mut digest: MaybeUninit<[u8; 8]> = MaybeUninit::uninit();
-        unsafe { digest.assume_init_mut() }.copy_from_slice(&ctx.finish_sliced()[0 .. 8]);
+        ctx.finish_into(unsafe { digest.assume_init_mut() });
         u64::from_be_bytes(unsafe { digest.assume_init() })
       }
 
@@ -65,7 +73,7 @@ macro_rules! impl_sha {
 
     #[cfg(any(feature = "std", doc))]
     #[doc(cfg(feature = "std"))]
-    impl std::io::Write for $sha
+    impl<const I: Implementation> std::io::Write for $sha<I>
     {
       fn write(&mut self, buf: &[u8]) -> std::io::Result<usize>
       {
@@ -85,111 +93,43 @@ macro_rules! impl_sha {
       }
     }
 
-    impl $sha
+    impl<const I: Implementation> DigestInformation for $sha<I>
     {
-      /// Block length used by the algorithm.
-      pub const BLOCK_LEN: usize = $block_len;
-      /// Digest length used by the algorithm.
-      pub const DIGEST_LEN: usize = $digest_len;
+      const BLOCK_LEN: usize = $block_len;
+      const DIGEST_LEN: usize = $digest_len;
+    }
 
-      /// Creates a new SHA context.
-      pub const fn new() -> Self
+    impl<const I: Implementation> const Reset for $sha<I>
+    {
+      fn new() -> Self
       {
-        Self {
-          engine: $engine::with_state($state),
-        }
+        let mut ctx: MaybeUninit<Self> = MaybeUninit::uninit();
+        unsafe { ctx.assume_init_mut() }.reset();
+        unsafe { ctx.assume_init() }
       }
 
-      /// Resets the context to its original state.
-      pub const fn reset(&mut self)
+      fn reset(&mut self)
       {
-        self.engine.set_state($state);
+        self.ctx.set_state($state);
       }
+    }
 
-      /// Updates the context with the given data.
-      pub fn update(&mut self, data: &[u8])
+    impl<const I: Implementation> Update for $sha<I>
+    {
+      fn update(&mut self, data: &[u8])
       {
-        self.engine.update(Control::get_global_implementation(), data);
+        self.ctx.update::<I>(data);
       }
+    }
 
-      /// Same as [`update`](`Self::update`), but accepts an `Implementation` variable.
-      pub fn update_impl(&mut self, implementation: Implementation, data: &[u8])
+    impl<const I: Implementation> Finish for $sha<I>
+    {
+      fn finish_into(&mut self, buf: &mut [u8])
       {
-        self.engine.update(implementation, data);
-      }
-
-      /// Calculate the digest and return a reference to it.
-      ///
-      /// The returned reference is only valid until the context is mutated.
-      pub fn finish_sliced<'context>(&'context mut self) -> &'context [u8]
-      {
-        self.finish_sliced_impl(Control::get_global_implementation())
-      }
-
-      /// Same as [`finish_sliced`](`Self::finish_sliced`), but accepts an `Implementation` variable.
-      pub fn finish_sliced_impl<'context>(&'context mut self, implementation: Implementation) -> &'context [u8]
-      {
-        self.engine.finish(implementation);
-        &self.engine.as_state()[0 .. $digest_len]
-      }
-
-      /// Calculates the digest and returns it.
-      pub fn finish(&mut self) -> [u8; $digest_len]
-      {
-        self.finish_impl(Control::get_global_implementation())
-      }
-
-      /// Same as [`finish`](`Self::finish`), but accepts an `Implementation` variable.
-      pub fn finish_impl(&mut self, implementation: Implementation) -> [u8; $digest_len]
-      {
-        let mut digest: MaybeUninit<[u8; $digest_len]> = MaybeUninit::uninit();
-        self.engine.finish(implementation);
-        unsafe { digest.assume_init_mut() }.copy_from_slice(&self.engine.as_state()[0 .. $digest_len]);
-        unsafe { digest.assume_init() }
-      }
-
-      /// Calculates the digest and writes into the given buffer.
-      ///
-      /// The length of the provided buffer does not matter.
-      pub fn finish_into(&mut self, output: &mut [u8])
-      {
-        self.finish_into_impl(Control::get_global_implementation(), output);
-      }
-
-      /// Same as [`finish_into`](`Self::finish_into`), but accepts an `Implementation` variable.
-      pub fn finish_into_impl(&mut self, implementation: Implementation, output: &mut [u8])
-      {
-        let n = core::cmp::min($digest_len, output.len());
-        let digest = self.finish_sliced_impl(implementation);
-        output[0 .. n].copy_from_slice(&digest[0 .. n]);
-      }
-
-      /// Compute the hash of a given data in one go.
-      pub fn oneshot(data: &[u8]) -> [u8; $digest_len]
-      {
-        Self::oneshot_impl(Control::get_global_implementation(), data)
-      }
-
-      /// Same as [`oneshot`](`Self::oneshot`), but accepts an `Implementation` variable.
-      pub fn oneshot_impl(implementation: Implementation, data: &[u8]) -> [u8; $digest_len]
-      {
-        let mut ctx = Self::new();
-        ctx.update_impl(implementation, data);
-        ctx.finish_impl(implementation)
-      }
-
-      /// Compute the hash of a given data in one go and writes the result into the given output buffer.
-      pub fn oneshot_into(data: &[u8], output: &mut [u8])
-      {
-        Self::oneshot_into_impl(Control::get_global_implementation(), data, output);
-      }
-
-      /// Same as [`oneshot_into`](`Self::oneshot_into`), but accepts an `Implementation` variable.
-      pub fn oneshot_into_impl(implementation: Implementation, data: &[u8], output: &mut [u8])
-      {
-        let mut ctx = Self::new();
-        ctx.update_impl(implementation, data);
-        ctx.finish_into_impl(implementation, output);
+        self.ctx.finish::<I>();
+        let n = cmp::min($digest_len, buf.len());
+        let digest = &self.ctx.as_state()[0 .. $digest_len];
+        buf[0 .. n].copy_from_slice(&digest[0 .. n]);
       }
     }
   };
@@ -198,57 +138,57 @@ macro_rules! impl_sha {
 /// SHA-1 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha1
+pub struct Sha1<const I: Implementation>
 {
-  engine: Engine1,
+  ctx: Context1,
 }
 
 /// SHA-224 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha224
+pub struct Sha224<const I: Implementation>
 {
-  engine: Engine256,
+  ctx: Context256,
 }
 
 /// SHA-256 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha256
+pub struct Sha256<const I: Implementation>
 {
-  engine: Engine256,
+  ctx: Context256,
 }
 
 /// SHA-384 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha384
+pub struct Sha384<const I: Implementation>
 {
-  engine: Engine512,
+  ctx: Context512,
 }
 
 /// SHA-512 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha512
+pub struct Sha512<const I: Implementation>
 {
-  engine: Engine512,
+  ctx: Context512,
 }
 
 /// SHA-512/224 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha512_224
+pub struct Sha512_224<const I: Implementation>
 {
-  engine: Engine512,
+  ctx: Context512,
 }
 
 /// SHA-512/256 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha512_256
+pub struct Sha512_256<const I: Implementation>
 {
-  engine: Engine512,
+  ctx: Context512,
 }
 
 impl_sha! {
@@ -256,7 +196,7 @@ impl_sha! {
   const DIGEST_LEN = 20;
   const BLOCK_LEN = 64;
   const STATE = H1;
-  type Engine = Engine1;
+  type Context = Context1;
 }
 
 impl_sha! {
@@ -264,7 +204,7 @@ impl_sha! {
   const DIGEST_LEN = 28;
   const BLOCK_LEN = 64;
   const STATE = H224;
-  type Engine = Engine256;
+  type Context = Context256;
 }
 
 impl_sha! {
@@ -272,7 +212,7 @@ impl_sha! {
   const DIGEST_LEN = 32;
   const BLOCK_LEN = 64;
   const STATE = H256;
-  type Engine = Engine256;
+  type Context = Context256;
 }
 
 impl_sha! {
@@ -280,7 +220,7 @@ impl_sha! {
   const DIGEST_LEN = 48;
   const BLOCK_LEN = 128;
   const STATE = H384;
-  type Engine = Engine512;
+  type Context = Context512;
 }
 
 impl_sha! {
@@ -288,7 +228,7 @@ impl_sha! {
   const DIGEST_LEN = 64;
   const BLOCK_LEN = 128;
   const STATE = H512;
-  type Engine = Engine512;
+  type Context = Context512;
 }
 
 impl_sha! {
@@ -296,7 +236,7 @@ impl_sha! {
   const DIGEST_LEN = 28;
   const BLOCK_LEN = 128;
   const STATE = H512_224;
-  type Engine = Engine512;
+  type Context = Context512;
 }
 
 impl_sha! {
@@ -304,7 +244,7 @@ impl_sha! {
   const DIGEST_LEN = 32;
   const BLOCK_LEN = 128;
   const STATE = H512_256;
-  type Engine = Engine512;
+  type Context = Context512;
 }
 
 #[cfg(test)]
@@ -318,18 +258,13 @@ mod tests
       #[test]
       fn $fn()
       {
-        let mut ctx = $sha::new();
+        let mut ctx = $sha::<{ Implementation::Generic }>::new();
         for (md, msg, _) in $tests {
           let mdb = hex::decode(md).unwrap();
           let msgb = hex::decode(msg).unwrap();
 
           ctx.update(&msgb);
           let digest = ctx.finish();
-          assert_eq!(mdb, digest);
-          ctx.reset();
-
-          ctx.update(&msgb);
-          let digest = ctx.finish_sliced();
           assert_eq!(mdb, digest);
           ctx.reset();
         }

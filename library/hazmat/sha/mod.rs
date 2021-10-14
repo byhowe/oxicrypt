@@ -2,6 +2,10 @@ mod sha1_compress_generic;
 mod sha256_compress_generic;
 mod sha512_compress_generic;
 
+use core::mem;
+use core::mem::MaybeUninit;
+use core::slice;
+
 pub mod generic
 {
   pub const unsafe fn sha1_compress(state: *mut u32, block: *const u8)
@@ -20,21 +24,21 @@ pub mod generic
   }
 }
 
-use core::mem;
-use core::mem::MaybeUninit;
-use core::slice;
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Implementation
+{
+  Generic,
+}
 
-use crate::Implementation;
-
-macro_rules! impl_engine {
+macro_rules! impl_context {
   (
-    struct $engine:ident;
+    struct $context:ident;
     const BLOCK_LEN = $block_len:expr;
     const STATE_LEN = $state_len:expr;
     type STATE_INT = $state_int:ident;
     type LEN_INT = $len_int:ident;
   ) => {
-    impl $engine
+    impl $context
     {
       /// Create a new context with the given state.
       #[inline(always)]
@@ -70,7 +74,7 @@ macro_rules! impl_engine {
 
       /// Update the state with the given data.
       #[inline(always)]
-      pub fn update(&mut self, implementation: Implementation, mut data: &[u8])
+      pub fn update<const I: Implementation>(&mut self, mut data: &[u8])
       {
         // Loop until all the data is read.
         while !data.is_empty() {
@@ -92,7 +96,7 @@ macro_rules! impl_engine {
 
           if self.blocklen == $block_len {
             // SAFETY: We know the inner block is full.
-            unsafe { self.compress(implementation) };
+            unsafe { self.compress::<I>() };
             self.blocklen = 0;
             self.len += $block_len;
           }
@@ -103,7 +107,7 @@ macro_rules! impl_engine {
       ///
       /// The calculated result can be accessed via [`as_state`](`Self::as_state`).
       #[inline(always)]
-      pub fn finish(&mut self, implementation: Implementation)
+      pub fn finish<const I: Implementation>(&mut self)
       {
         // We can do this without checking for `self.blocklen`, because we know `update` makes sure
         // `self.blocklen` is always less than block length.
@@ -117,14 +121,14 @@ macro_rules! impl_engine {
         // zeros and compress the block.
         if self.blocklen > ($block_len - mem::size_of::<$len_int>()) {
           self.block[self.blocklen ..].fill(0);
-          unsafe { self.compress(implementation) };
+          unsafe { self.compress::<I>() };
           self.blocklen = 0;
         }
 
         self.block[self.blocklen .. $block_len - mem::size_of::<$len_int>()].fill(0);
         self.len *= 8;
         self.block[$block_len - mem::size_of::<$len_int>() ..].copy_from_slice(&self.len.to_be_bytes());
-        unsafe { self.compress(implementation) };
+        unsafe { self.compress::<I>() };
 
         for i in 0 .. $state_len {
           self.h[i] = self.h[i].to_be();
@@ -134,10 +138,10 @@ macro_rules! impl_engine {
   };
 }
 
-/// Unsafe SHA-1 engine.
+/// Unsafe SHA-1 context.
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "c", repr(C))]
-pub struct Engine1
+pub struct Context1
 {
   h: [u32; 5],
   block: [u8; 64],
@@ -145,20 +149,22 @@ pub struct Engine1
   len: u64,
 }
 
-impl Engine1
+impl Context1
 {
   #[allow(clippy::missing_safety_doc)]
   #[allow(unused_variables)]
-  unsafe fn compress(&mut self, implementation: Implementation)
+  unsafe fn compress<const I: Implementation>(&mut self)
   {
-    generic::sha1_compress(self.h.as_mut_ptr(), self.block.as_ptr());
+    match I {
+      | Implementation::Generic => generic::sha1_compress(self.h.as_mut_ptr(), self.block.as_ptr()),
+    }
   }
 }
 
-/// Unsafe SHA-256 engine.
+/// Unsafe SHA-256 context.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "c", repr(C))]
-pub struct Engine256
+pub struct Context256
 {
   h: [u32; 8],
   block: [u8; 64],
@@ -166,20 +172,22 @@ pub struct Engine256
   len: u64,
 }
 
-impl Engine256
+impl Context256
 {
   #[allow(clippy::missing_safety_doc)]
   #[allow(unused_variables)]
-  unsafe fn compress(&mut self, implementation: Implementation)
+  unsafe fn compress<const I: Implementation>(&mut self)
   {
-    generic::sha256_compress(self.h.as_mut_ptr(), self.block.as_ptr());
+    match I {
+      | Implementation::Generic => generic::sha256_compress(self.h.as_mut_ptr(), self.block.as_ptr()),
+    }
   }
 }
 
-/// Unsafe SHA-512 engine.
+/// Unsafe SHA-512 context.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "c", repr(C))]
-pub struct Engine512
+pub struct Context512
 {
   h: [u64; 8],
   block: [u8; 128],
@@ -187,34 +195,36 @@ pub struct Engine512
   len: u128,
 }
 
-impl Engine512
+impl Context512
 {
   #[allow(clippy::missing_safety_doc)]
   #[allow(unused_variables)]
-  unsafe fn compress(&mut self, implementation: Implementation)
+  unsafe fn compress<const I: Implementation>(&mut self)
   {
-    generic::sha512_compress(self.h.as_mut_ptr(), self.block.as_ptr());
+    match I {
+      | Implementation::Generic => generic::sha512_compress(self.h.as_mut_ptr(), self.block.as_ptr()),
+    }
   }
 }
 
-impl_engine! {
-  struct Engine1;
+impl_context! {
+  struct Context1;
   const BLOCK_LEN = 64;
   const STATE_LEN = 5;
   type STATE_INT = u32;
   type LEN_INT = u64;
 }
 
-impl_engine! {
-  struct Engine256;
+impl_context! {
+  struct Context256;
   const BLOCK_LEN = 64;
   const STATE_LEN = 8;
   type STATE_INT = u32;
   type LEN_INT = u64;
 }
 
-impl_engine! {
-  struct Engine512;
+impl_context! {
+  struct Context512;
   const BLOCK_LEN = 128;
   const STATE_LEN = 8;
   type STATE_INT = u64;
