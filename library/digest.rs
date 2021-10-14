@@ -93,3 +93,10 @@ where
     ctx.finish_into(buf);
   }
 }
+
+/// Common trait for all SHA objects.
+pub trait Sha
+where
+  Self: Digest,
+{
+}
