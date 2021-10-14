@@ -1,7 +1,5 @@
 //! Traits for working with digest algorithms.
 
-use core::fmt::Debug;
-use core::mem::transmute;
 use core::mem::MaybeUninit;
 
 /// Common trait for digest objects.
