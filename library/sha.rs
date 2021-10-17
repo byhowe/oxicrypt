@@ -18,13 +18,13 @@
 //! println!("SHA-256 digest of \"Hello, world\" is {}.", hex::encode(&digest));
 //! ```
 
-use core::cmp;
 use core::mem::MaybeUninit;
 
-use crate::digest::Digest;
-use crate::digest::DigestInformation;
-use crate::digest::Finish;
+use crate::digest::DigestMeta;
+use crate::digest::FinishInternal;
+use crate::digest::FinishToSlice;
 use crate::digest::Reset;
+use crate::digest::Sha;
 use crate::digest::Update;
 use crate::hazmat::sha::Context1;
 use crate::hazmat::sha::Context256;
@@ -38,7 +38,6 @@ use crate::hazmat::sha::H384;
 use crate::hazmat::sha::H512;
 use crate::hazmat::sha::H512_224;
 use crate::hazmat::sha::H512_256;
-use crate::marker::Sha;
 
 macro_rules! impl_sha {
   (
@@ -48,13 +47,21 @@ macro_rules! impl_sha {
     const STATE = $state:expr;
     type Context = $ctx:ident;
   ) => {
+    impl<const I: Implementation> DigestMeta for $sha<I>
+    {
+      const BLOCK_LEN: usize = $block_len;
+      const DIGEST_LEN: usize = $digest_len;
+    }
+
     impl<const I: Implementation> Sha for $sha<I> {}
 
     impl<const I: Implementation> const Default for $sha<I>
     {
       fn default() -> Self
       {
-        Self::new()
+        let mut ctx: MaybeUninit<$sha<I>> = MaybeUninit::uninit();
+        unsafe { ctx.assume_init_mut() }.reset();
+        unsafe { ctx.assume_init() }
       }
     }
 
@@ -64,7 +71,7 @@ macro_rules! impl_sha {
       {
         let mut ctx: Self = *self;
         let mut digest: MaybeUninit<[u8; 8]> = MaybeUninit::uninit();
-        ctx.finish_into(unsafe { digest.assume_init_mut() });
+        ctx.finish_to_slice(unsafe { digest.assume_init_mut() });
         u64::from_be_bytes(unsafe { digest.assume_init() })
       }
 
@@ -96,21 +103,8 @@ macro_rules! impl_sha {
       }
     }
 
-    impl<const I: Implementation> DigestInformation for $sha<I>
-    {
-      const BLOCK_LEN: usize = $block_len;
-      const DIGEST_LEN: usize = $digest_len;
-    }
-
     impl<const I: Implementation> const Reset for $sha<I>
     {
-      fn new() -> Self
-      {
-        let mut ctx: MaybeUninit<Self> = MaybeUninit::uninit();
-        unsafe { ctx.assume_init_mut() }.reset();
-        unsafe { ctx.assume_init() }
-      }
-
       fn reset(&mut self)
       {
         self.ctx.set_state($state);
@@ -125,14 +119,12 @@ macro_rules! impl_sha {
       }
     }
 
-    impl<const I: Implementation> Finish for $sha<I>
+    impl<const I: Implementation> FinishInternal for $sha<I>
     {
-      fn finish_into(&mut self, buf: &mut [u8])
+      fn finish_internal(&mut self) -> &[u8]
       {
         self.ctx.finish::<I>();
-        let n = cmp::min($digest_len, buf.len());
-        let digest = &self.ctx.as_state()[0 .. $digest_len];
-        buf[0 .. n].copy_from_slice(&digest[0 .. n]);
+        &self.ctx.as_state()[0 .. $digest_len]
       }
     }
   };
