@@ -178,7 +178,23 @@ where
 
 impl<T> DynDigest for T where T: DigestLen + BlockLen + Reset + Update + FinishBoxed + FinishInternal + FinishToSlice {}
 
+/// Return a context that uses generic implementations of compression functions.
 pub fn generic(algo: DigestAlgo) -> Box<dyn DynDigest>
+{
+  match algo {
+    | DigestAlgo::Sha1 => box Sha1::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha224 => box Sha224::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha256 => box Sha256::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha384 => box Sha384::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha512 => box Sha512::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha512_224 => box Sha512_224::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha512_256 => box Sha512_256::<{ sha::Implementation::Generic }>::default(),
+  }
+}
+
+/// Return a context that uses cpu-optimized implementations of compression functions when
+/// available.
+pub fn cpu_optimized(algo: DigestAlgo) -> Box<dyn DynDigest>
 {
   match algo {
     | DigestAlgo::Sha1 => box Sha1::<{ sha::Implementation::Generic }>::default(),
