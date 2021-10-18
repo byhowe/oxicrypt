@@ -5,11 +5,12 @@
 //! Small example that demonstrates the usage of a SHA function.
 //!
 //! ```
-//! use oxicrypt::digest::Digest;
+//! use oxicrypt::digest::Finish;
+//! use oxicrypt::digest::Update;
 //! use oxicrypt::sha::Implementation;
 //! use oxicrypt::sha::Sha256;
 //!
-//! let mut ctx = Sha256::<{ Implementation::Generic }>::new();
+//! let mut ctx = Sha256::<{ Implementation::Generic }>::default();
 //!
 //! ctx.update(b"Hello, ");
 //! ctx.update(b"world");
@@ -246,6 +247,7 @@ impl_sha! {
 mod tests
 {
   use super::*;
+  use crate::digest::Finish;
   use crate::test_vectors::cavp::*;
 
   macro_rules! add_test {
@@ -253,7 +255,7 @@ mod tests
       #[test]
       fn $fn()
       {
-        let mut ctx = $sha::<{ Implementation::Generic }>::new();
+        let mut ctx = $sha::<{ Implementation::Generic }>::default();
         for (md, msg, _) in $tests {
           let mdb = hex::decode(md).unwrap();
           let msgb = hex::decode(msg).unwrap();
