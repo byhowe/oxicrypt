@@ -1,5 +1,6 @@
 //! HMAC.
 
+#[cfg(any(feature = "alloc", doc))]
 use alloc::boxed::Box;
 use core::fmt::Debug;
 use core::mem::MaybeUninit;
@@ -129,6 +130,7 @@ where
     unsafe { output.assume_init() }
   }
 
+  #[cfg(any(feature = "alloc", doc))]
   pub fn finish_boxed(&mut self) -> Box<[u8]>
   {
     let mut output: Box<[u8]> = unsafe { Box::new_uninit_slice(D::DIGEST_LEN).assume_init() };

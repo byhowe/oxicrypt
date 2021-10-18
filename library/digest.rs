@@ -1,18 +1,16 @@
 //! Traits for working with digest algorithms.
 
+#[cfg(any(feature = "alloc", doc))]
 use alloc::boxed::Box;
 use core::cmp;
 use core::mem::MaybeUninit;
 
+#[cfg(any(feature = "alloc", doc))]
 use crate::sha;
-use crate::sha::Sha1;
-use crate::sha::Sha224;
-use crate::sha::Sha256;
-use crate::sha::Sha384;
-use crate::sha::Sha512;
-use crate::sha::Sha512_224;
-use crate::sha::Sha512_256;
 
+#[cfg(not(any(feature = "alloc", doc)))]
+pub trait Digest = DigestMeta + DigestLen + BlockLen + Reset + Update + Finish + FinishInternal + FinishToSlice;
+#[cfg(any(feature = "alloc", doc))]
 pub trait Digest =
   DigestMeta + DigestLen + BlockLen + Reset + Update + Finish + FinishBoxed + FinishInternal + FinishToSlice;
 
@@ -99,6 +97,7 @@ where
 }
 
 /// Trait for getting the digest value in a [`Box`].
+#[cfg(any(feature = "alloc", doc))]
 pub trait FinishBoxed
 {
   /// Calculate the digest and return it in a [`Box`].
@@ -110,6 +109,7 @@ pub trait FinishBoxed
   fn finish_boxed(&mut self) -> Box<[u8]>;
 }
 
+#[cfg(any(feature = "alloc", doc))]
 impl<T> FinishBoxed for T
 where
   T: FinishInternal,
@@ -173,39 +173,43 @@ pub enum DigestAlgo
   Sha512_256 = 6,
 }
 
+#[cfg(any(feature = "alloc", doc))]
 pub trait DynDigest
 where
   Self: DigestLen + BlockLen + Reset + Update + FinishBoxed + FinishInternal + FinishToSlice,
 {
 }
 
+#[cfg(any(feature = "alloc", doc))]
 impl<T> DynDigest for T where T: DigestLen + BlockLen + Reset + Update + FinishBoxed + FinishInternal + FinishToSlice {}
 
 /// Return a context that uses generic implementations of compression functions.
+#[cfg(any(feature = "alloc", doc))]
 pub fn generic(algo: DigestAlgo) -> Box<dyn DynDigest>
 {
   match algo {
-    | DigestAlgo::Sha1 => box Sha1::<{ sha::Implementation::Generic }>::default(),
-    | DigestAlgo::Sha224 => box Sha224::<{ sha::Implementation::Generic }>::default(),
-    | DigestAlgo::Sha256 => box Sha256::<{ sha::Implementation::Generic }>::default(),
-    | DigestAlgo::Sha384 => box Sha384::<{ sha::Implementation::Generic }>::default(),
-    | DigestAlgo::Sha512 => box Sha512::<{ sha::Implementation::Generic }>::default(),
-    | DigestAlgo::Sha512_224 => box Sha512_224::<{ sha::Implementation::Generic }>::default(),
-    | DigestAlgo::Sha512_256 => box Sha512_256::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha1 => box sha::Sha1::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha224 => box sha::Sha224::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha256 => box sha::Sha256::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha384 => box sha::Sha384::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha512 => box sha::Sha512::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha512_224 => box sha::Sha512_224::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha512_256 => box sha::Sha512_256::<{ sha::Implementation::Generic }>::default(),
   }
 }
 
 /// Return a context that uses cpu-optimized implementations of compression functions when
 /// available.
+#[cfg(any(feature = "alloc", doc))]
 pub fn cpu_optimized(algo: DigestAlgo) -> Box<dyn DynDigest>
 {
   match algo {
-    | DigestAlgo::Sha1 => box Sha1::<{ sha::Implementation::Generic }>::default(),
-    | DigestAlgo::Sha224 => box Sha224::<{ sha::Implementation::Generic }>::default(),
-    | DigestAlgo::Sha256 => box Sha256::<{ sha::Implementation::Generic }>::default(),
-    | DigestAlgo::Sha384 => box Sha384::<{ sha::Implementation::Generic }>::default(),
-    | DigestAlgo::Sha512 => box Sha512::<{ sha::Implementation::Generic }>::default(),
-    | DigestAlgo::Sha512_224 => box Sha512_224::<{ sha::Implementation::Generic }>::default(),
-    | DigestAlgo::Sha512_256 => box Sha512_256::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha1 => box sha::Sha1::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha224 => box sha::Sha224::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha256 => box sha::Sha256::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha384 => box sha::Sha384::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha512 => box sha::Sha512::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha512_224 => box sha::Sha512_224::<{ sha::Implementation::Generic }>::default(),
+    | DigestAlgo::Sha512_256 => box sha::Sha512_256::<{ sha::Implementation::Generic }>::default(),
   }
 }
