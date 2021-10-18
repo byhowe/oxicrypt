@@ -25,7 +25,7 @@ pub mod hazmat;
 // pub mod aes;
 pub mod digest;
 // pub mod hkdf;
-// pub mod hmac;
+pub mod hmac;
 pub mod sha;
 
 #[cfg(test)]

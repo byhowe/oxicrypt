@@ -1,49 +1,36 @@
 //! HMAC.
 
+use alloc::boxed::Box;
 use core::fmt::Debug;
 use core::mem::MaybeUninit;
 
 use crate::digest::Digest;
-use crate::sha;
-use crate::Control;
-use crate::Implementation;
 
 /// HMAC context.
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "c", repr(C))]
-pub struct Hmac<D, const M: u64, const O: usize, const B: usize>
+pub struct Hmac<D>
 where
-  D: Debug + Clone + Copy,
+  D: Digest + Default + Clone + Copy,
+  [u8; D::BLOCK_LEN]: Sized,
 {
-  digest: Digest<D, M, O>,
-  key: [u8; B],
+  digest: D,
+  key: [u8; D::BLOCK_LEN],
   x5c: bool,
 }
 
-/// HMAC-SHA-1
-pub type HmacSha1 = Hmac<sha::Sha1, 0x5ba_1, 20, 64>;
-/// HMAC-SHA-224
-pub type HmacSha224 = Hmac<sha::Sha224, 0x5ba_224, 28, 64>;
-/// HMAC-SHA-256
-pub type HmacSha256 = Hmac<sha::Sha256, 0x5ba_256, 32, 64>;
-/// HMAC-SHA-384
-pub type HmacSha384 = Hmac<sha::Sha384, 0x5ba_384, 48, 128>;
-/// HMAC-SHA-512
-pub type HmacSha512 = Hmac<sha::Sha512, 0x5ba_512, 64, 128>;
-/// HMAC-SHA-512/224
-pub type HmacSha512_224 = Hmac<sha::Sha512_224, 0x5ba_512_224, 28, 128>;
-/// HMAC-SHA-512/256
-pub type HmacSha512_256 = Hmac<sha::Sha512_256, 0x5ba_512_256, 32, 128>;
-
-impl<D, const M: u64, const O: usize, const B: usize> core::hash::Hasher for Hmac<D, M, O, B>
+impl<D> core::hash::Hasher for Hmac<D>
 where
-  D: Debug + Clone + Copy,
+  D: Digest + Default + Clone + Copy,
+  [u8; D::DIGEST_LEN]: Sized,
+  [u8; D::BLOCK_LEN]: Sized,
 {
   fn finish(&self) -> u64
   {
     let mut ctx: Self = *self;
     let mut digest: MaybeUninit<[u8; 8]> = MaybeUninit::uninit();
-    unsafe { digest.assume_init_mut() }.copy_from_slice(&ctx.finish_sliced()[0 .. 8]);
+    // FIXME: What if the digest length is less than 8 bytes long.
+    unsafe { digest.assume_init_mut() }.copy_from_slice(&ctx.finish_internal()[0 .. 8]);
     u64::from_be_bytes(unsafe { digest.assume_init() })
   }
 
@@ -55,9 +42,11 @@ where
 
 #[cfg(any(feature = "std", doc))]
 #[doc(cfg(feature = "std"))]
-impl<D, const M: u64, const O: usize, const B: usize> std::io::Write for Hmac<D, M, O, B>
+impl<D> std::io::Write for Hmac<D>
 where
-  D: Debug + Clone + Copy,
+  D: Digest + Default + Clone + Copy,
+  [u8; D::DIGEST_LEN]: Sized,
+  [u8; D::BLOCK_LEN]: Sized,
 {
   fn write(&mut self, buf: &[u8]) -> std::io::Result<usize>
   {
@@ -77,35 +66,27 @@ where
   }
 }
 
-impl<D, const M: u64, const O: usize, const B: usize> Hmac<D, M, O, B>
+impl<D> Hmac<D>
 where
-  D: Debug + Clone + Copy,
+  D: Digest + Default + Clone + Copy,
+  [u8; D::DIGEST_LEN]: Sized,
+  [u8; D::BLOCK_LEN]: Sized,
 {
   pub fn with_key(key: &[u8]) -> Self
   {
-    Self::with_key_impl(Control::get_global_implementation(), key)
-  }
-
-  pub fn with_key_impl(implementation: Implementation, key: &[u8]) -> Self
-  {
     let mut ctx: MaybeUninit<Self> = MaybeUninit::uninit();
-    unsafe { ctx.assume_init_mut() }.set_key_impl(implementation, key);
+    unsafe { ctx.assume_init_mut() }.set_key(key);
     unsafe { ctx.assume_init() }
   }
 
   pub fn set_key(&mut self, key: &[u8])
   {
-    self.set_key_impl(Control::get_global_implementation(), key);
-  }
-
-  pub fn set_key_impl(&mut self, implementation: Implementation, key: &[u8])
-  {
     self.digest.reset();
 
-    self.key = [0; B];
-    if key.len() > B {
-      self.digest.update_impl(implementation, key);
-      self.digest.finish_into_impl(implementation, &mut self.key);
+    self.key = [0; D::BLOCK_LEN];
+    if key.len() > D::BLOCK_LEN {
+      self.digest.update(key);
+      self.digest.finish_to_slice(&mut self.key);
       self.digest.reset();
     } else {
       self.key[0 .. key.len()].copy_from_slice(key);
@@ -114,23 +95,18 @@ where
     self.xor_key(0x36);
     self.x5c = false;
 
-    self.digest.update_impl(implementation, &self.key);
+    self.digest.update(&self.key);
   }
 
   #[inline(always)]
   fn xor_key(&mut self, bits: u8)
   {
-    for i in 0 .. B {
+    for i in 0 .. D::BLOCK_LEN {
       self.key[i] ^= bits;
     }
   }
 
-  pub fn reset(&mut self)
-  {
-    self.reset_impl(Control::get_global_implementation());
-  }
-
-  pub fn reset_impl(&mut self, implementation: Implementation)
+  pub fn reset_impl(&mut self)
   {
     if self.x5c {
       self.xor_key(0x36 ^ 0x5c);
@@ -138,82 +114,45 @@ where
     }
 
     self.digest.reset();
-    self.digest.update_impl(implementation, &self.key);
+    self.digest.update(&self.key);
   }
 
   pub fn update(&mut self, data: &[u8])
   {
-    self.update_impl(Control::get_global_implementation(), data)
+    self.digest.update(data);
   }
 
-  pub fn update_impl(&mut self, implementation: Implementation, data: &[u8])
+  pub fn finish(&mut self) -> [u8; D::DIGEST_LEN]
   {
-    self.digest.update_impl(implementation, data);
+    let mut output: MaybeUninit<[u8; D::DIGEST_LEN]> = MaybeUninit::uninit();
+    unsafe { output.assume_init_mut() }.copy_from_slice(self.finish_internal());
+    unsafe { output.assume_init() }
   }
 
-  pub fn finish_sliced<'context>(&'context mut self) -> &'context [u8]
+  pub fn finish_boxed(&mut self) -> Box<[u8]>
   {
-    self.finish_sliced_impl(Control::get_global_implementation())
+    let mut output: Box<[u8]> = unsafe { Box::new_uninit_slice(D::DIGEST_LEN).assume_init() };
+    output.copy_from_slice(self.finish_internal());
+    output
   }
 
-  pub fn finish_sliced_impl<'context>(&'context mut self, implementation: Implementation) -> &'context [u8]
+  pub fn finish_to_slice(&mut self, buf: &mut [u8])
   {
-    let digest = self.digest.finish_impl(implementation);
+    let n = core::cmp::min(D::DIGEST_LEN, buf.len());
+    buf[0 .. n].copy_from_slice(&self.finish_internal()[0 .. n]);
+  }
+
+  pub fn finish_internal(&mut self) -> &[u8]
+  {
+    let digest = self.digest.finish();
     self.digest.reset();
 
     self.xor_key(0x36 ^ 0x5c);
     self.x5c = true;
 
-    self.digest.update_impl(implementation, &self.key);
-    self.digest.update_impl(implementation, &digest);
+    self.digest.update(&self.key);
+    self.digest.update(&digest);
 
-    self.digest.finish_sliced_impl(implementation)
-  }
-
-  pub fn finish(&mut self) -> [u8; O]
-  {
-    self.finish_impl(Control::get_global_implementation())
-  }
-
-  pub fn finish_impl(&mut self, implementation: Implementation) -> [u8; O]
-  {
-    let mut output: MaybeUninit<[u8; O]> = MaybeUninit::uninit();
-    unsafe { output.assume_init_mut() }.copy_from_slice(self.finish_sliced_impl(implementation));
-    unsafe { output.assume_init() }
-  }
-
-  pub fn finish_into(&mut self, output: &mut [u8])
-  {
-    self.finish_into_impl(Control::get_global_implementation(), output);
-  }
-
-  pub fn finish_into_impl(&mut self, implementation: Implementation, output: &mut [u8])
-  {
-    let n = core::cmp::min(O, output.len());
-    output[0 .. n].copy_from_slice(&self.finish_sliced_impl(implementation)[0 .. n]);
-  }
-
-  pub fn oneshot(key: &[u8], data: &[u8]) -> [u8; O]
-  {
-    Self::oneshot_impl(Control::get_global_implementation(), key, data)
-  }
-
-  pub fn oneshot_impl(implementation: Implementation, key: &[u8], data: &[u8]) -> [u8; O]
-  {
-    let mut ctx = Self::with_key_impl(implementation, key);
-    ctx.update_impl(implementation, data);
-    ctx.finish_impl(implementation)
-  }
-
-  pub fn oneshot_into(key: &[u8], data: &[u8], output: &mut [u8])
-  {
-    Self::oneshot_into_impl(Control::get_global_implementation(), key, data, output);
-  }
-
-  pub fn oneshot_into_impl(implementation: Implementation, key: &[u8], data: &[u8], output: &mut [u8])
-  {
-    let mut ctx = Self::with_key_impl(implementation, key);
-    ctx.update_impl(implementation, data);
-    ctx.finish_into_impl(implementation, output);
+    self.digest.finish_internal()
   }
 }
