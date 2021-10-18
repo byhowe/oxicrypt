@@ -13,6 +13,9 @@ use crate::sha::Sha512;
 use crate::sha::Sha512_224;
 use crate::sha::Sha512_256;
 
+pub trait Digest =
+  DigestMeta + DigestLen + BlockLen + Reset + Update + Finish + FinishBoxed + FinishInternal + FinishToSlice;
+
 /// Information about the digest algorithm.
 pub trait DigestMeta
 {
