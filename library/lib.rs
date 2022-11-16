@@ -7,7 +7,6 @@
 #![feature(const_maybe_uninit_assume_init)]
 #![feature(const_mut_refs)]
 #![feature(const_ptr_offset)]
-#![feature(const_raw_ptr_deref)]
 #![feature(const_trait_impl)]
 #![feature(doc_cfg)]
 #![feature(generic_const_exprs)]
@@ -20,13 +19,13 @@ extern crate alloc;
 #[cfg(any(feature = "std", doc))]
 extern crate std;
 
-pub mod hazmat;
+// pub mod hazmat;
 
 // pub mod aes;
-pub mod digest;
+// pub mod digest;
 // pub mod hkdf;
-pub mod hmac;
-pub mod sha;
+// pub mod hmac;
+// pub mod sha;
 
 #[cfg(test)]
 pub(crate) mod test_vectors;
