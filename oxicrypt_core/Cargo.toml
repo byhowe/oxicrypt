@@ -13,3 +13,6 @@ workspace = ".."
 [lib]
 name = "oxicrypt_core"
 path = "src/lib.rs"
+
+[dependencies]
+cfg-if = "1.0"
