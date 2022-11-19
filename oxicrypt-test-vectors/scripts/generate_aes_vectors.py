@@ -49,3 +49,12 @@ class aes_vectors:
             ciphertext=bytes(),
         )
         return c
+
+    def __bytes__(self) -> bytes:
+        return (
+            self.key
+            + self.expanded_key
+            + self.inversed_key
+            + self.plaintext
+            + self.ciphertext
+        )
