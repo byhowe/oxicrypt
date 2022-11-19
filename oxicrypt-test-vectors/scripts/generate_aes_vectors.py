@@ -12,6 +12,7 @@ class aes(Enum):
     aes192 = 2
     aes256 = 3
 
+    @property
     def key_length(self) -> int:
         match self:
             case aes.aes128:
@@ -21,6 +22,7 @@ class aes(Enum):
             case aes.aes256:
                 return 32
 
+    @property
     def expanded_key_length(self) -> int:
         match self:
             case aes.aes128:
@@ -44,9 +46,9 @@ class aes_vectors:
         # TODO: find algorithm to compute `expanded_key`, `inversed_key`,
         # and `ciphertext`.
         c = cls(
-            key=os.urandom(v.key_length()),
-            expanded_key=b"\x00" * v.expanded_key_length(),
-            inversed_key=b"\x00" * v.expanded_key_length(),
+            key=os.urandom(v.key_length),
+            expanded_key=b"\x00" * v.expanded_key_length,
+            inversed_key=b"\x00" * v.expanded_key_length,
             plaintext=os.urandom(plaintext_length),
             ciphertext=b"\x00" * plaintext_length,
         )
