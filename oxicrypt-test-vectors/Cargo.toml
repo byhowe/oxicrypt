@@ -1,8 +1,14 @@
 [package]
 name = "oxicrypt-test-vectors"
 version = "0.1.0"
+authors = ["B. Howe <37745048+byhowe@users.noreply.github.com>"]
 edition = "2021"
+description = "Test vectors for Oxicrypt."
+readme = "https://github.com/byhowe/oxicrypt-test-vectors/blob/development/README.md"
+homepage = "https://github.com/byhowe/oxicrypt-test-vectors"
+repository = "https://github.com/byhowe/oxicrypt-test-vectors.git"
+# license
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+[lib]
+name = "oxicrypt_test_vectors"
+path = "src/lib.rs"
