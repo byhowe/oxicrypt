@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from enum import Enum
 import os
+import struct
 
 plaintext_length = 16 * 8
+vectors_len = 128
 
 
 class aes(Enum):
@@ -43,10 +45,10 @@ class aes_vectors:
         # and `ciphertext`.
         c = cls(
             key=os.urandom(v.key_length()),
-            expanded_key=bytes(),
-            inversed_key=bytes(),
+            expanded_key=b"\x00" * v.expanded_key_length(),
+            inversed_key=b"\x00" * v.expanded_key_length(),
             plaintext=os.urandom(plaintext_length),
-            ciphertext=bytes(),
+            ciphertext=b"\x00" * plaintext_length,
         )
         return c
 
@@ -58,3 +60,23 @@ class aes_vectors:
             + self.plaintext
             + self.ciphertext
         )
+
+
+vectors128 = (aes_vectors.generate_random(aes.aes128) for _ in range(vectors_len))
+vectors192 = (aes_vectors.generate_random(aes.aes192) for _ in range(vectors_len))
+vectors256 = (aes_vectors.generate_random(aes.aes256) for _ in range(vectors_len))
+
+with open("aes128_vectors.bin", "wb") as f:
+    f.write(struct.pack(">I", vectors_len))
+    for vectors in vectors128:
+        f.write(bytes(vectors))
+
+with open("aes192_vectors.bin", "wb") as f:
+    f.write(struct.pack(">I", vectors_len))
+    for vectors in vectors192:
+        f.write(bytes(vectors))
+
+with open("aes256_vectors.bin", "wb") as f:
+    f.write(struct.pack(">I", vectors_len))
+    for vectors in vectors256:
+        f.write(bytes(vectors))
