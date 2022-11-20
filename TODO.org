@@ -1,0 +1,4 @@
+#+title: Todo
+
+- [ ] Test AES ARM implementation using Raspberry Pi in `oxicrypt_core`.
+- [ ] Add generic fixslice implementation of AES in `oxicrypt_core`.
