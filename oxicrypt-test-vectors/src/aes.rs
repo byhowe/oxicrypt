@@ -1,7 +1,7 @@
 use crate::BytesReader;
 
 #[cfg(feature = "generate")]
-use {crate::BytesWriter, rand::RngCore, std::os::raw::c_uchar};
+use {crate::BytesWriter, rand::RngCore};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Aes {
@@ -24,15 +24,6 @@ impl Aes {
             Aes::Aes128 => 176,
             Aes::Aes192 => 208,
             Aes::Aes256 => 240,
-        }
-    }
-
-    #[cfg(feature = "generate")]
-    pub const fn expansion_function(self) -> unsafe extern "C" fn(*const c_uchar, *mut c_uchar) {
-        match self {
-            Aes::Aes128 => crate::aesni_intel::AES_128_Key_Expansion,
-            Aes::Aes192 => crate::aesni_intel::AES_192_Key_Expansion,
-            Aes::Aes256 => crate::aesni_intel::AES_256_Key_Expansion,
         }
     }
 }
@@ -101,7 +92,7 @@ where
         rng.fill_bytes(&mut self.key);
         rng.fill_bytes(&mut self.plaintext);
 
-        unsafe { V.expansion_function()(self.key.as_ptr(), self.expanded_key.as_mut_ptr()) }
+        crate::aesni_intel::expand_key::<V>(&self.key, &mut self.expanded_key);
     }
 
     #[cfg(feature = "generate")]
