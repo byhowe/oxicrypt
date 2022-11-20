@@ -26,6 +26,14 @@ impl Aes {
             Aes::Aes256 => 240,
         }
     }
+
+    pub const fn bits(self) -> usize {
+        match self {
+            Aes::Aes128 => 128,
+            Aes::Aes192 => 192,
+            Aes::Aes256 => 256,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -92,7 +100,8 @@ where
         rng.fill_bytes(&mut self.key);
         rng.fill_bytes(&mut self.plaintext);
 
-        crate::aesni_intel::expand_key::<V>(&self.key, &mut self.expanded_key);
+        crate::aesni_intel::set_encrypt_key::<V>(&self.key, &mut self.expanded_key);
+        crate::aesni_intel::set_decrypt_key::<V>(&self.key, &mut self.inversed_key);
     }
 
     #[cfg(feature = "generate")]

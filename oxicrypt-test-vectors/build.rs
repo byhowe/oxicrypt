@@ -13,6 +13,7 @@ fn main() {
         println!("cargo:rerun-if-changed=src/aesni-intel.c");
         let bindings = bindgen::builder()
             .header("src/aesni-intel.h")
+            .derive_default(true)
             .generate()
             .expect("Failed to generate bindings from `aesni-intel.h`");
         let outpath = PathBuf::from(env::var("OUT_DIR").unwrap());

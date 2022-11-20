@@ -1,8 +1,21 @@
 #ifndef _AESNI_INTEL
 #define _AESNI_INTEL
 
-void AES_128_Key_Expansion(const unsigned char *userkey, unsigned char *key);
-void AES_192_Key_Expansion(const unsigned char *userkey, unsigned char *key);
-void AES_256_Key_Expansion(const unsigned char *userkey, unsigned char *key);
+#if !defined(ALIGN16)
+#if defined(__GNUC__)
+#define ALIGN16 __attribute__((aligned(16)))
+#else
+#define ALIGN16 __declspec(align(16))
+#endif
+#endif
+typedef struct KEY_SCHEDULE {
+  ALIGN16 unsigned char KEY[16 * 15];
+  unsigned int nr;
+} AES_KEY;
+
+int AES_set_encrypt_key(const unsigned char *userKey, const int bits,
+                        AES_KEY *key);
+int AES_set_decrypt_key(const unsigned char *userKey, const int bits,
+                        AES_KEY *key);
 
 #endif // _AESNI_INTEL
