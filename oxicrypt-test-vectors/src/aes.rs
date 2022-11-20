@@ -1,4 +1,8 @@
-use crate::BytesReader;
+use std::os::raw::c_uchar;
+
+use rand::RngCore;
+
+use crate::{BytesReader, BytesWriter};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Aes {
@@ -21,6 +25,14 @@ impl Aes {
             Aes::Aes128 => 176,
             Aes::Aes192 => 208,
             Aes::Aes256 => 240,
+        }
+    }
+
+    pub const fn expansion_function(self) -> unsafe extern "C" fn(*const c_uchar, *mut c_uchar) {
+        match self {
+            Aes::Aes128 => crate::aesni_intel::AES_128_Key_Expansion,
+            Aes::Aes192 => crate::aesni_intel::AES_192_Key_Expansion,
+            Aes::Aes256 => crate::aesni_intel::AES_256_Key_Expansion,
         }
     }
 }
@@ -80,6 +92,28 @@ where
             .clone_from_slice(buffer.next_n::<{ 16 * 8 }>());
 
         vectors
+    }
+
+    pub fn generate_random() -> AesVectors<V> {
+        let mut rng = rand::thread_rng();
+        let mut vectors = AesVectors::default();
+
+        rng.fill_bytes(&mut vectors.key);
+        rng.fill_bytes(&mut vectors.plaintext);
+
+        unsafe { V.expansion_function()(vectors.key.as_ptr(), vectors.expanded_key.as_mut_ptr()) }
+
+        vectors
+    }
+
+    pub fn write_to_bytes(&self, raw: &mut [u8]) {
+        let mut buffer = BytesWriter::new(raw);
+
+        buffer.write(&self.key);
+        buffer.write(&self.expanded_key);
+        buffer.write(&self.inversed_key);
+        buffer.write(&self.plaintext);
+        buffer.write(&self.ciphertext);
     }
 
     pub fn plaintext_chunks(&self) -> &[[u8; 8]] {

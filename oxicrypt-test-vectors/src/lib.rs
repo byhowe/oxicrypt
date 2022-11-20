@@ -4,6 +4,7 @@
 #![feature(slice_as_chunks)]
 
 mod aes;
+mod aesni_intel;
 
 pub use aes::Aes;
 pub use aes::AesVectors;
@@ -22,5 +23,21 @@ impl<'a> BytesReader<'a> {
         let slice = &self.buffer[self.index..self.index + N];
         self.index += N;
         slice
+    }
+}
+
+pub(crate) struct BytesWriter<'a> {
+    buffer: &'a mut [u8],
+    index: usize,
+}
+
+impl<'a> BytesWriter<'a> {
+    pub fn new(buffer: &'a mut [u8]) -> Self {
+        Self { buffer, index: 0 }
+    }
+
+    pub fn write(&mut self, data: &[u8]) {
+        self.buffer[self.index..self.index + data.len()].clone_from_slice(data);
+        self.index += data.len();
     }
 }
