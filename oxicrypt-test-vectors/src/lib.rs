@@ -4,6 +4,8 @@
 #![feature(slice_as_chunks)]
 
 mod aes;
+
+#[cfg(feature = "generate")]
 mod aesni_intel;
 
 pub use aes::Aes;
