@@ -95,16 +95,13 @@ where
     }
 
     #[cfg(feature = "generate")]
-    pub fn generate_random() -> AesVectors<V> {
+    pub fn set_random(&mut self) {
         let mut rng = rand::thread_rng();
-        let mut vectors = AesVectors::default();
 
-        rng.fill_bytes(&mut vectors.key);
-        rng.fill_bytes(&mut vectors.plaintext);
+        rng.fill_bytes(&mut self.key);
+        rng.fill_bytes(&mut self.plaintext);
 
-        unsafe { V.expansion_function()(vectors.key.as_ptr(), vectors.expanded_key.as_mut_ptr()) }
-
-        vectors
+        unsafe { V.expansion_function()(self.key.as_ptr(), self.expanded_key.as_mut_ptr()) }
     }
 
     #[cfg(feature = "generate")]
