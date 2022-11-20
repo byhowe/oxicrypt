@@ -10,6 +10,7 @@ mod aesni_intel;
 
 pub use aes::Aes;
 pub use aes::AesVectors;
+pub use aes::AesVectorsIterator;
 
 pub(crate) struct BytesReader<'a> {
     buffer: &'a [u8],

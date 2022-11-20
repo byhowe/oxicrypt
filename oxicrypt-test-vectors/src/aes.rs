@@ -1,7 +1,13 @@
+use std::slice::Chunks;
+
 use crate::BytesReader;
 
 #[cfg(feature = "generate")]
 use {crate::BytesWriter, rand::RngCore};
+
+const AES128_BIN: &[u8] = include_bytes!(env!("OXI_TEST_aes128.bin"));
+const AES192_BIN: &[u8] = include_bytes!(env!("OXI_TEST_aes192.bin"));
+const AES256_BIN: &[u8] = include_bytes!(env!("OXI_TEST_aes256.bin"));
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Aes {
@@ -36,6 +42,14 @@ impl Aes {
 
     pub const fn expanded_key_length(self) -> usize {
         (self.rounds() + 1) * 16
+    }
+
+    const fn bin(self) -> &'static [u8] {
+        match self {
+            Aes::Aes128 => AES128_BIN,
+            Aes::Aes192 => AES192_BIN,
+            Aes::Aes256 => AES256_BIN,
+        }
     }
 }
 
@@ -73,6 +87,10 @@ where
     [(); V.key_length()]:,
     [(); V.expanded_key_length()]:,
 {
+    pub const fn size() -> usize {
+        V.key_length() + V.expanded_key_length() + V.expanded_key_length() + 16 * 8 + 16 * 8
+    }
+
     pub fn read_from_bytes(raw: &[u8]) -> AesVectors<V> {
         let mut vectors = AesVectors::default();
         let mut buffer = BytesReader::new(raw);
@@ -131,5 +149,34 @@ where
     pub fn ciphertext_chunks(&self) -> &[[u8; 8]] {
         let (chunks, _) = self.ciphertext.as_chunks();
         chunks
+    }
+}
+
+pub struct AesVectorsIterator<const V: Aes> {
+    chunks: Chunks<'static, u8>,
+}
+
+impl<const V: Aes> AesVectorsIterator<V>
+where
+    [(); V.key_length()]:,
+    [(); V.expanded_key_length()]:,
+{
+    pub fn new() -> Self {
+        let chunks = (V.bin()[4..]).chunks(AesVectors::<V>::size());
+        Self { chunks }
+    }
+}
+
+impl<const V: Aes> Iterator for AesVectorsIterator<V>
+where
+    [(); V.key_length()]:,
+    [(); V.expanded_key_length()]:,
+{
+    type Item = AesVectors<V>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.chunks
+            .next()
+            .map(|b| AesVectors::<V>::read_from_bytes(b))
     }
 }
