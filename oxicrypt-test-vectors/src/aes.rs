@@ -11,28 +11,28 @@ pub enum Aes {
 }
 
 impl Aes {
-    pub const fn key_length(self) -> usize {
-        match self {
-            Aes::Aes128 => 16,
-            Aes::Aes192 => 24,
-            Aes::Aes256 => 32,
-        }
-    }
-
-    pub const fn expanded_key_length(self) -> usize {
-        match self {
-            Aes::Aes128 => 176,
-            Aes::Aes192 => 208,
-            Aes::Aes256 => 240,
-        }
-    }
-
     pub const fn bits(self) -> usize {
         match self {
             Aes::Aes128 => 128,
             Aes::Aes192 => 192,
             Aes::Aes256 => 256,
         }
+    }
+
+    pub const fn key_length(self) -> usize {
+        self.bits() / 8
+    }
+
+    pub const fn rounds(self) -> usize {
+        match self {
+            Aes::Aes128 => 10,
+            Aes::Aes192 => 12,
+            Aes::Aes256 => 14,
+        }
+    }
+
+    pub const fn expanded_key_length(self) -> usize {
+        (self.rounds() + 1) * 16
     }
 }
 
