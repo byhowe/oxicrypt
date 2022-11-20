@@ -141,12 +141,12 @@ where
         buffer.n_written()
     }
 
-    pub fn plaintext_chunks(&self) -> &[[u8; 8]] {
+    pub fn plaintext_chunks(&self) -> &[[u8; 16]] {
         let (chunks, _) = self.plaintext.as_chunks();
         chunks
     }
 
-    pub fn ciphertext_chunks(&self) -> &[[u8; 8]] {
+    pub fn ciphertext_chunks(&self) -> &[[u8; 16]] {
         let (chunks, _) = self.ciphertext.as_chunks();
         chunks
     }
