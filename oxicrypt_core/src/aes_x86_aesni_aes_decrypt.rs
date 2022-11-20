@@ -9,7 +9,7 @@ use core::arch::x86_64::*;
 #[inline(always)]
 unsafe fn aes_decrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  assert!(N == 10 || N == 12 || N == 14);
+  debug_assert!(N == 10 || N == 12 || N == 14);
 
   let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
   let mut b0: __m128i = _mm_loadu_si128((block as *const __m128i).add(0));
@@ -30,7 +30,7 @@ unsafe fn aes_decrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 #[inline(always)]
 unsafe fn aes_decrypt2<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  assert!(N == 10 || N == 12 || N == 14);
+  debug_assert!(N == 10 || N == 12 || N == 14);
 
   let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
   let mut b0: __m128i = _mm_loadu_si128((block as *const __m128i).add(0));
@@ -56,7 +56,7 @@ unsafe fn aes_decrypt2<const N: usize>(block: *mut u8, key_schedule: *const u8)
 #[inline(always)]
 unsafe fn aes_decrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  assert!(N == 10 || N == 12 || N == 14);
+  debug_assert!(N == 10 || N == 12 || N == 14);
 
   let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
   let mut b0: __m128i = _mm_loadu_si128((block as *const __m128i).add(0));
@@ -92,7 +92,7 @@ unsafe fn aes_decrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
 #[inline(always)]
 unsafe fn aes_decrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  assert!(N == 10 || N == 12 || N == 14);
+  debug_assert!(N == 10 || N == 12 || N == 14);
 
   let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
   let mut b0: __m128i = _mm_loadu_si128((block as *const __m128i).add(0));
@@ -238,33 +238,19 @@ pub unsafe fn aes_x86_aesni_aes256_decrypt8(block: *mut u8, key_schedule: *const
 #[cfg(test)]
 mod tests
 {
+  use oxicrypt_test_vectors::Aes;
+  use oxicrypt_test_vectors::AesVectorsIterator;
+
   use super::*;
-  use crate::test_vectors::AES128;
-  use crate::test_vectors::AES192;
-  use crate::test_vectors::AES256;
 
   #[test]
   fn aes128()
   {
-    for vectors in AES128 {
-      let mut block1 = [vectors.ciphertext[0]];
-      let mut block2 = [vectors.ciphertext[0], vectors.ciphertext[1]];
-      let mut block4 = [
-        vectors.ciphertext[0],
-        vectors.ciphertext[1],
-        vectors.ciphertext[2],
-        vectors.ciphertext[3],
-      ];
-      let mut block8 = [
-        vectors.ciphertext[0],
-        vectors.ciphertext[1],
-        vectors.ciphertext[2],
-        vectors.ciphertext[3],
-        vectors.ciphertext[4],
-        vectors.ciphertext[5],
-        vectors.ciphertext[6],
-        vectors.ciphertext[7],
-      ];
+    for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
+      let mut block1 = vectors.ciphertext_chunks()[0 .. 1].to_vec();
+      let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
+      let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
+      let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
 
       unsafe {
         aes_x86_aesni_aes128_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
@@ -273,55 +259,21 @@ mod tests
         aes_x86_aesni_aes128_decrypt8(block8.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
       }
 
-      assert_eq!(block1, [vectors.plaintext[0]]);
-      assert_eq!(block2, [vectors.plaintext[0], vectors.plaintext[1],]);
-      assert_eq!(
-        block4,
-        [
-          vectors.plaintext[0],
-          vectors.plaintext[1],
-          vectors.plaintext[2],
-          vectors.plaintext[3],
-        ]
-      );
-      assert_eq!(
-        block8,
-        [
-          vectors.plaintext[0],
-          vectors.plaintext[1],
-          vectors.plaintext[2],
-          vectors.plaintext[3],
-          vectors.plaintext[4],
-          vectors.plaintext[5],
-          vectors.plaintext[6],
-          vectors.plaintext[7],
-        ]
-      );
+      assert_eq!(block1, vectors.plaintext_chunks()[0 .. 1]);
+      assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
+      assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
+      assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
     }
   }
 
   #[test]
   fn aes192()
   {
-    for vectors in AES192 {
-      let mut block1 = [vectors.ciphertext[0]];
-      let mut block2 = [vectors.ciphertext[0], vectors.ciphertext[1]];
-      let mut block4 = [
-        vectors.ciphertext[0],
-        vectors.ciphertext[1],
-        vectors.ciphertext[2],
-        vectors.ciphertext[3],
-      ];
-      let mut block8 = [
-        vectors.ciphertext[0],
-        vectors.ciphertext[1],
-        vectors.ciphertext[2],
-        vectors.ciphertext[3],
-        vectors.ciphertext[4],
-        vectors.ciphertext[5],
-        vectors.ciphertext[6],
-        vectors.ciphertext[7],
-      ];
+    for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
+      let mut block1 = vectors.ciphertext_chunks()[0 .. 1].to_vec();
+      let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
+      let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
+      let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
 
       unsafe {
         aes_x86_aesni_aes192_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
@@ -330,55 +282,21 @@ mod tests
         aes_x86_aesni_aes192_decrypt8(block8.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
       }
 
-      assert_eq!(block1, [vectors.plaintext[0]]);
-      assert_eq!(block2, [vectors.plaintext[0], vectors.plaintext[1],]);
-      assert_eq!(
-        block4,
-        [
-          vectors.plaintext[0],
-          vectors.plaintext[1],
-          vectors.plaintext[2],
-          vectors.plaintext[3],
-        ]
-      );
-      assert_eq!(
-        block8,
-        [
-          vectors.plaintext[0],
-          vectors.plaintext[1],
-          vectors.plaintext[2],
-          vectors.plaintext[3],
-          vectors.plaintext[4],
-          vectors.plaintext[5],
-          vectors.plaintext[6],
-          vectors.plaintext[7],
-        ]
-      );
+      assert_eq!(block1, vectors.plaintext_chunks()[0 .. 1]);
+      assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
+      assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
+      assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
     }
   }
 
   #[test]
   fn aes256()
   {
-    for vectors in AES256 {
-      let mut block1 = [vectors.ciphertext[0]];
-      let mut block2 = [vectors.ciphertext[0], vectors.ciphertext[1]];
-      let mut block4 = [
-        vectors.ciphertext[0],
-        vectors.ciphertext[1],
-        vectors.ciphertext[2],
-        vectors.ciphertext[3],
-      ];
-      let mut block8 = [
-        vectors.ciphertext[0],
-        vectors.ciphertext[1],
-        vectors.ciphertext[2],
-        vectors.ciphertext[3],
-        vectors.ciphertext[4],
-        vectors.ciphertext[5],
-        vectors.ciphertext[6],
-        vectors.ciphertext[7],
-      ];
+    for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
+      let mut block1 = vectors.ciphertext_chunks()[0 .. 1].to_vec();
+      let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
+      let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
+      let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
 
       unsafe {
         aes_x86_aesni_aes256_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
@@ -387,30 +305,10 @@ mod tests
         aes_x86_aesni_aes256_decrypt8(block8.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
       }
 
-      assert_eq!(block1, [vectors.plaintext[0]]);
-      assert_eq!(block2, [vectors.plaintext[0], vectors.plaintext[1],]);
-      assert_eq!(
-        block4,
-        [
-          vectors.plaintext[0],
-          vectors.plaintext[1],
-          vectors.plaintext[2],
-          vectors.plaintext[3],
-        ]
-      );
-      assert_eq!(
-        block8,
-        [
-          vectors.plaintext[0],
-          vectors.plaintext[1],
-          vectors.plaintext[2],
-          vectors.plaintext[3],
-          vectors.plaintext[4],
-          vectors.plaintext[5],
-          vectors.plaintext[6],
-          vectors.plaintext[7],
-        ]
-      );
+      assert_eq!(block1, vectors.plaintext_chunks()[0 .. 1]);
+      assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
+      assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
+      assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
     }
   }
 }

@@ -147,15 +147,15 @@ pub unsafe fn aes_x86_aesni_aes256_expand_key(key: *const u8, key_schedule: *mut
 #[cfg(test)]
 mod tests
 {
+  use oxicrypt_test_vectors::Aes;
+  use oxicrypt_test_vectors::AesVectorsIterator;
+
   use super::*;
-  use crate::test_vectors::AES128;
-  use crate::test_vectors::AES192;
-  use crate::test_vectors::AES256;
 
   #[test]
   fn aes128()
   {
-    for vectors in AES128 {
+    for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
       let mut key_schedule = [0; 176];
       unsafe { aes_x86_aesni_aes128_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
       assert_eq!(key_schedule, vectors.expanded_key);
@@ -165,7 +165,7 @@ mod tests
   #[test]
   fn aes192()
   {
-    for vectors in AES192 {
+    for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
       let mut key_schedule = [0; 208];
       unsafe { aes_x86_aesni_aes192_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
       assert_eq!(key_schedule, vectors.expanded_key);
@@ -175,7 +175,7 @@ mod tests
   #[test]
   fn aes256()
   {
-    for vectors in AES256 {
+    for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
       let mut key_schedule = [0; 240];
       unsafe { aes_x86_aesni_aes256_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
       assert_eq!(key_schedule, vectors.expanded_key);

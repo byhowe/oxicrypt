@@ -7,13 +7,11 @@
 
 #![no_std]
 #![feature(doc_cfg)]
+#![feature(generic_const_exprs)]
 
 use cfg_if::cfg_if;
 
-#[cfg(test)]
-pub(crate) mod test_vectors;
-
-mod aes_fixslice_aes_core;
+// mod aes_fixslice_aes_core;
 
 cfg_if! {
   if #[cfg(any(target_arch = "x86", target_arch = "x86_64", doc))] {

@@ -16,3 +16,6 @@ path = "src/lib.rs"
 
 [dependencies]
 cfg-if = "1.0"
+
+[dev-dependencies]
+oxicrypt-test-vectors = { git = "https://github.com/byhowe/oxicrypt-test-vectors.git" }
