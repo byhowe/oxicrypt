@@ -42,4 +42,8 @@ impl<'a> BytesWriter<'a> {
         self.buffer[self.index..self.index + data.len()].clone_from_slice(data);
         self.index += data.len();
     }
+
+    pub fn n_written(&self) -> usize {
+        self.index
+    }
 }

@@ -108,7 +108,7 @@ where
     }
 
     #[cfg(feature = "generate")]
-    pub fn write_to_bytes(&self, raw: &mut [u8]) {
+    pub fn write_to_bytes(&self, raw: &mut [u8]) -> usize {
         let mut buffer = BytesWriter::new(raw);
 
         buffer.write(&self.key);
@@ -116,6 +116,8 @@ where
         buffer.write(&self.inversed_key);
         buffer.write(&self.plaintext);
         buffer.write(&self.ciphertext);
+
+        buffer.n_written()
     }
 
     pub fn plaintext_chunks(&self) -> &[[u8; 8]] {
