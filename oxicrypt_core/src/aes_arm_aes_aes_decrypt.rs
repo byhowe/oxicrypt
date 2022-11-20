@@ -265,3 +265,81 @@ pub unsafe fn aes_arm_aes_aes256_decrypt8(block: *mut u8, key_schedule: *const u
 {
   decrypt8::<14>(block, key_schedule);
 }
+
+#[cfg(test)]
+mod tests
+{
+  use oxicrypt_test_vectors::Aes;
+  use oxicrypt_test_vectors::AesVectorsIterator;
+
+  use super::*;
+
+  #[test]
+  fn aes128()
+  {
+    for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
+      let mut block1 = vectors.ciphertext_chunks()[0 .. 1].to_vec();
+      let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
+      let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
+      let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
+
+      unsafe {
+        aes_arm_aes_aes128_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+        aes_arm_aes_aes128_decrypt2(block2.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+        aes_arm_aes_aes128_decrypt4(block4.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+        aes_arm_aes_aes128_decrypt8(block8.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+      }
+
+      assert_eq!(block1, vectors.plaintext_chunks()[0 .. 1]);
+      assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
+      assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
+      assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
+    }
+  }
+
+  #[test]
+  fn aes192()
+  {
+    for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
+      let mut block1 = vectors.ciphertext_chunks()[0 .. 1].to_vec();
+      let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
+      let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
+      let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
+
+      unsafe {
+        aes_arm_aes_aes192_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+        aes_arm_aes_aes192_decrypt2(block2.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+        aes_arm_aes_aes192_decrypt4(block4.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+        aes_arm_aes_aes192_decrypt8(block8.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+      }
+
+      assert_eq!(block1, vectors.plaintext_chunks()[0 .. 1]);
+      assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
+      assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
+      assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
+    }
+  }
+
+  #[test]
+  fn aes256()
+  {
+    for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
+      let mut block1 = vectors.ciphertext_chunks()[0 .. 1].to_vec();
+      let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
+      let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
+      let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
+
+      unsafe {
+        aes_arm_aes_aes256_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+        aes_arm_aes_aes256_decrypt2(block2.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+        aes_arm_aes_aes256_decrypt4(block4.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+        aes_arm_aes_aes256_decrypt8(block8.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+      }
+
+      assert_eq!(block1, vectors.plaintext_chunks()[0 .. 1]);
+      assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
+      assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
+      assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
+    }
+  }
+}
