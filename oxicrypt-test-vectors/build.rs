@@ -9,6 +9,7 @@ fn main() {
         .compile("aesni-intel");
 
     println!("cargo:rerun-if-changed=src/aesni-intel.h");
+    println!("cargo:rerun-if-changed=src/aesni-intel.c");
     let bindings = bindgen::builder()
         .header("src/aesni-intel.h")
         .generate()
