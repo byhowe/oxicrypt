@@ -4,7 +4,7 @@
 #include <wmmintrin.h>
 #include "aesni-intel.h"
 
-inline __m128i AES_128_ASSIST(__m128i temp1, __m128i temp2) {
+static inline __m128i AES_128_ASSIST(__m128i temp1, __m128i temp2) {
   __m128i temp3;
   temp2 = _mm_shuffle_epi32(temp2, 0xff);
   temp3 = _mm_slli_si128(temp1, 0x4);
@@ -54,7 +54,7 @@ void AES_128_Key_Expansion(const unsigned char *userkey, unsigned char *key) {
   Key_Schedule[10] = temp1;
 }
 
-inline void KEY_192_ASSIST(__m128i *temp1, __m128i *temp2, __m128i *temp3) {
+static inline void KEY_192_ASSIST(__m128i *temp1, __m128i *temp2, __m128i *temp3) {
   __m128i temp4;
   *temp2 = _mm_shuffle_epi32(*temp2, 0x55);
   temp4 = _mm_slli_si128(*temp1, 0x4);
@@ -114,7 +114,7 @@ void AES_192_Key_Expansion(const unsigned char *userkey, unsigned char *key) {
   Key_Schedule[12] = temp1;
 }
 
-inline void KEY_256_ASSIST_1(__m128i *temp1, __m128i *temp2) {
+static inline void KEY_256_ASSIST_1(__m128i *temp1, __m128i *temp2) {
   __m128i temp4;
   *temp2 = _mm_shuffle_epi32(*temp2, 0xff);
   temp4 = _mm_slli_si128(*temp1, 0x4);
@@ -126,7 +126,7 @@ inline void KEY_256_ASSIST_1(__m128i *temp1, __m128i *temp2) {
   *temp1 = _mm_xor_si128(*temp1, *temp2);
 }
 
-inline void KEY_256_ASSIST_2(__m128i *temp1, __m128i *temp3) {
+static inline void KEY_256_ASSIST_2(__m128i *temp1, __m128i *temp3) {
   __m128i temp2, temp4;
   temp4 = _mm_aeskeygenassist_si128(*temp1, 0x0);
   temp2 = _mm_shuffle_epi32(temp4, 0xaa);
