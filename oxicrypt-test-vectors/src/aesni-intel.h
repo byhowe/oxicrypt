@@ -23,10 +23,5 @@ void AES_ECB_encrypt(const unsigned char *in, // pointer to the PLAINTEXT
                      unsigned long length, // text length in bytes
                      const char *key, // pointer to the expanded key schedule
                      int number_of_rounds); // number of AES rounds 10,12 or 14
-void AES_ECB_decrypt(const unsigned char *in, // pointer to the CIPHERTEXT
-                     unsigned char *out, // pointer to the DECRYPTED TEXT buffer
-                     unsigned long length, // text length in bytes
-                     const char *key, // pointer to the expanded key schedule
-                     int number_of_rounds); // number of AES rounds 10,12 or 14
 
 #endif // _AESNI_INTEL

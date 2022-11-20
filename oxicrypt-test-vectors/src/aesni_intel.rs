@@ -23,3 +23,18 @@ pub fn set_decrypt_key<const V: Aes>(key: &[u8], keysched: &mut [u8]) {
     unsafe { AES_set_decrypt_key(key.as_ptr(), V.bits() as _, &mut out) };
     keysched.clone_from_slice(&out.KEY[0..V.expanded_key_length()]);
 }
+
+pub fn encrypt<const V: Aes>(plaintext: &[u8], ciphertext: &mut [u8], keysched: &[u8]) {
+    assert!(plaintext.len() % 16 == 0);
+    assert!(plaintext.len() == ciphertext.len());
+
+    unsafe {
+        AES_ECB_encrypt(
+            plaintext.as_ptr() as _,
+            ciphertext.as_mut_ptr() as _,
+            plaintext.len() as _,
+            keysched.as_ptr() as _,
+            V.rounds() as _,
+        )
+    }
+}
