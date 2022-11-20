@@ -10,6 +10,9 @@ pub enum Aes {
     Aes256,
 }
 
+#[repr(align(16))]
+struct AlignedKeysched([u8; 15 * 16]);
+
 impl Aes {
     pub const fn bits(self) -> usize {
         match self {
@@ -102,6 +105,9 @@ where
 
         crate::aesni_intel::set_encrypt_key::<V>(&self.key, &mut self.expanded_key);
         crate::aesni_intel::set_decrypt_key::<V>(&self.key, &mut self.inversed_key);
+        let mut alignedkeysched = AlignedKeysched([0; 15 * 16]);
+        alignedkeysched.0[0..V.expanded_key_length()].clone_from_slice(&self.expanded_key);
+        crate::aesni_intel::encrypt::<V>(&self.plaintext, &mut self.ciphertext, &alignedkeysched.0);
     }
 
     #[cfg(feature = "generate")]
