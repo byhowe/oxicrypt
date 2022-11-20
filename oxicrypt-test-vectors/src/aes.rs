@@ -1,8 +1,7 @@
-use std::os::raw::c_uchar;
+use crate::BytesReader;
 
-use rand::RngCore;
-
-use crate::{BytesReader, BytesWriter};
+#[cfg(feature = "generate")]
+use {crate::BytesWriter, rand::RngCore, std::os::raw::c_uchar};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Aes {
@@ -28,6 +27,7 @@ impl Aes {
         }
     }
 
+    #[cfg(feature = "generate")]
     pub const fn expansion_function(self) -> unsafe extern "C" fn(*const c_uchar, *mut c_uchar) {
         match self {
             Aes::Aes128 => crate::aesni_intel::AES_128_Key_Expansion,
@@ -94,6 +94,7 @@ where
         vectors
     }
 
+    #[cfg(feature = "generate")]
     pub fn generate_random() -> AesVectors<V> {
         let mut rng = rand::thread_rng();
         let mut vectors = AesVectors::default();
@@ -106,6 +107,7 @@ where
         vectors
     }
 
+    #[cfg(feature = "generate")]
     pub fn write_to_bytes(&self, raw: &mut [u8]) {
         let mut buffer = BytesWriter::new(raw);
 

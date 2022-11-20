@@ -26,11 +26,13 @@ impl<'a> BytesReader<'a> {
     }
 }
 
+#[cfg(feature = "generate")]
 pub(crate) struct BytesWriter<'a> {
     buffer: &'a mut [u8],
     index: usize,
 }
 
+#[cfg(feature = "generate")]
 impl<'a> BytesWriter<'a> {
     pub fn new(buffer: &'a mut [u8]) -> Self {
         Self { buffer, index: 0 }

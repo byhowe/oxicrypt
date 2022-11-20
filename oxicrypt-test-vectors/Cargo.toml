@@ -13,9 +13,17 @@ repository = "https://github.com/byhowe/oxicrypt-test-vectors.git"
 name = "oxicrypt_test_vectors"
 path = "src/lib.rs"
 
+[features]
+generate = ["dep:rand"]
+
 [dependencies]
-rand = { version = "0.8", features = ["std_rng"] }
+rand = { version = "0.8", features = ["std_rng"], optional = true }
 
 [build-dependencies]
 cc = "1.0"
 bindgen = "0.62"
+
+[workspace]
+members = [
+  "generate-aes-vectors",
+]
