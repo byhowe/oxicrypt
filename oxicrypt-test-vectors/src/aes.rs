@@ -16,6 +16,7 @@ pub enum Aes {
     Aes256,
 }
 
+#[cfg(feature = "generate")]
 #[repr(align(16))]
 struct AlignedKeysched([u8; 15 * 16]);
 
@@ -167,6 +168,16 @@ where
     }
 }
 
+impl<const V: Aes> Default for AesVectorsIterator<V>
+where
+    [(); V.key_length()]:,
+    [(); V.expanded_key_length()]:,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<const V: Aes> Iterator for AesVectorsIterator<V>
 where
     [(); V.key_length()]:,
@@ -175,8 +186,6 @@ where
     type Item = AesVectors<V>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.chunks
-            .next()
-            .map(|b| AesVectors::<V>::read_from_bytes(b))
+        self.chunks.next().map(AesVectors::<V>::read_from_bytes)
     }
 }

@@ -2,7 +2,7 @@ use std::{env, fs, path::PathBuf};
 
 fn export_test_vector_paths() {
     let test_vectors = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("test-vectors");
-    for entry in fs::read_dir(&test_vectors).unwrap() {
+    for entry in fs::read_dir(test_vectors).unwrap() {
         let entry = entry.unwrap();
         if entry.file_type().unwrap().is_dir() {
             continue;
