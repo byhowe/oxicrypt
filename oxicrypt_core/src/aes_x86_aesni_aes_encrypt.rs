@@ -9,7 +9,7 @@ use core::arch::x86_64::*;
 #[inline(always)]
 unsafe fn encrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  assert!(N == 10 || N == 12 || N == 14);
+  debug_assert!(N == 10 || N == 12 || N == 14);
 
   let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
   let mut b0: __m128i = _mm_loadu_si128((block as *const __m128i).add(0));
@@ -30,7 +30,7 @@ unsafe fn encrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 #[inline(always)]
 unsafe fn encrypt2<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  assert!(N == 10 || N == 12 || N == 14);
+  debug_assert!(N == 10 || N == 12 || N == 14);
 
   let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
   let mut b0: __m128i = _mm_loadu_si128((block as *const __m128i).add(0));
@@ -56,7 +56,7 @@ unsafe fn encrypt2<const N: usize>(block: *mut u8, key_schedule: *const u8)
 #[inline(always)]
 unsafe fn encrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  assert!(N == 10 || N == 12 || N == 14);
+  debug_assert!(N == 10 || N == 12 || N == 14);
 
   let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
   let mut b0: __m128i = _mm_loadu_si128((block as *const __m128i).add(0));
@@ -92,7 +92,7 @@ unsafe fn encrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
 #[inline(always)]
 unsafe fn encrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  assert!(N == 10 || N == 12 || N == 14);
+  debug_assert!(N == 10 || N == 12 || N == 14);
 
   let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
   let mut b0: __m128i = _mm_loadu_si128((block as *const __m128i).add(0));

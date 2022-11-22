@@ -9,7 +9,7 @@ use core::arch::arm::*;
 #[inline(always)]
 unsafe fn encrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  assert!(N == 10 || N == 12 || N == 14);
+  debug_assert!(N == 10 || N == 12 || N == 14);
 
   let mut k0: uint8x16_t = vld1q_u8(key_schedule.add(0 * 16));
   let mut b0: uint8x16_t = vld1q_u8(block.add(0 * 16));
@@ -32,7 +32,7 @@ unsafe fn encrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 #[inline(always)]
 unsafe fn encrypt2<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  assert!(N == 10 || N == 12 || N == 14);
+  debug_assert!(N == 10 || N == 12 || N == 14);
 
   let mut k0: uint8x16_t = vld1q_u8(key_schedule.add(0 * 16));
   let mut b0: uint8x16_t = vld1q_u8(block.add(0 * 16));
@@ -61,7 +61,7 @@ unsafe fn encrypt2<const N: usize>(block: *mut u8, key_schedule: *const u8)
 #[inline(always)]
 unsafe fn encrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  assert!(N == 10 || N == 12 || N == 14);
+  debug_assert!(N == 10 || N == 12 || N == 14);
 
   let mut k0: uint8x16_t = vld1q_u8(key_schedule.add(0 * 16));
   let mut b0: uint8x16_t = vld1q_u8(block.add(0 * 16));
@@ -102,7 +102,7 @@ unsafe fn encrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
 #[inline(always)]
 unsafe fn encrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  assert!(N == 10 || N == 12 || N == 14);
+  debug_assert!(N == 10 || N == 12 || N == 14);
 
   let mut k0: uint8x16_t = vld1q_u8(key_schedule.add(0 * 16));
   let mut b0: uint8x16_t = vld1q_u8(block.add(0 * 16));
