@@ -9,20 +9,20 @@ use core::arch::x86_64::*;
 #[inline(always)]
 unsafe fn inverse_key<const N: usize>(key_schedule: *mut u8)
 {
-  let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
-  let mut k1: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(N));
-  _mm_storeu_si128((key_schedule as *mut __m128i).add(0), k1);
-  _mm_storeu_si128((key_schedule as *mut __m128i).add(N), k0);
+  let mut k0: __m128i = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(0));
+  let mut k1: __m128i = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(N));
+  _mm_storeu_si128((key_schedule.cast::<__m128i>()).add(0), k1);
+  _mm_storeu_si128((key_schedule.cast::<__m128i>()).add(N), k0);
 
   for i in 1 .. N / 2 {
-    k0 = _mm_aesimc_si128(_mm_loadu_si128((key_schedule as *const __m128i).add(i)));
-    k1 = _mm_aesimc_si128(_mm_loadu_si128((key_schedule as *const __m128i).add(N - i)));
-    _mm_storeu_si128((key_schedule as *mut __m128i).add(i), k1);
-    _mm_storeu_si128((key_schedule as *mut __m128i).add(N - i), k0);
+    k0 = _mm_aesimc_si128(_mm_loadu_si128(key_schedule.cast::<__m128i>().add(i)));
+    k1 = _mm_aesimc_si128(_mm_loadu_si128(key_schedule.cast::<__m128i>().add(N - i)));
+    _mm_storeu_si128((key_schedule.cast::<__m128i>()).add(i), k1);
+    _mm_storeu_si128((key_schedule.cast::<__m128i>()).add(N - i), k0);
   }
 
-  k0 = _mm_aesimc_si128(_mm_loadu_si128((key_schedule as *const __m128i).add(N / 2)));
-  _mm_storeu_si128((key_schedule as *mut __m128i).add(N / 2), k0);
+  k0 = _mm_aesimc_si128(_mm_loadu_si128(key_schedule.cast::<__m128i>().add(N / 2)));
+  _mm_storeu_si128((key_schedule.cast::<__m128i>()).add(N / 2), k0);
 }
 
 #[target_feature(enable = "aes")]

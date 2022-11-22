@@ -11,20 +11,20 @@ unsafe fn aes_decrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
   debug_assert!(N == 10 || N == 12 || N == 14);
 
-  let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
-  let mut b0: __m128i = _mm_loadu_si128((block as *const __m128i).add(0));
+  let mut k0: __m128i = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(0));
+  let mut b0: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(0));
 
   b0 = _mm_xor_si128(b0, k0);
 
   for i in 1 .. N {
-    k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(i));
+    k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(i));
     b0 = _mm_aesdec_si128(b0, k0);
   }
 
-  k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(N));
+  k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(N));
   b0 = _mm_aesdeclast_si128(b0, k0);
 
-  _mm_storeu_si128((block as *mut __m128i).add(0), b0);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(0), b0);
 }
 
 #[inline(always)]
@@ -32,25 +32,25 @@ unsafe fn aes_decrypt2<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
   debug_assert!(N == 10 || N == 12 || N == 14);
 
-  let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
-  let mut b0: __m128i = _mm_loadu_si128((block as *const __m128i).add(0));
-  let mut b1: __m128i = _mm_loadu_si128((block as *const __m128i).add(1));
+  let mut k0: __m128i = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(0));
+  let mut b0: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(0));
+  let mut b1: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(1));
 
   b0 = _mm_xor_si128(b0, k0);
   b1 = _mm_xor_si128(b1, k0);
 
   for i in 1 .. N {
-    k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(i));
+    k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(i));
     b0 = _mm_aesdec_si128(b0, k0);
     b1 = _mm_aesdec_si128(b1, k0);
   }
 
-  k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(N));
+  k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(N));
   b0 = _mm_aesdeclast_si128(b0, k0);
   b1 = _mm_aesdeclast_si128(b1, k0);
 
-  _mm_storeu_si128((block as *mut __m128i).add(0), b0);
-  _mm_storeu_si128((block as *mut __m128i).add(1), b1);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(0), b0);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(1), b1);
 }
 
 #[inline(always)]
@@ -58,11 +58,11 @@ unsafe fn aes_decrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
   debug_assert!(N == 10 || N == 12 || N == 14);
 
-  let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
-  let mut b0: __m128i = _mm_loadu_si128((block as *const __m128i).add(0));
-  let mut b1: __m128i = _mm_loadu_si128((block as *const __m128i).add(1));
-  let mut b2: __m128i = _mm_loadu_si128((block as *const __m128i).add(2));
-  let mut b3: __m128i = _mm_loadu_si128((block as *const __m128i).add(3));
+  let mut k0: __m128i = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(0));
+  let mut b0: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(0));
+  let mut b1: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(1));
+  let mut b2: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(2));
+  let mut b3: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(3));
 
   b0 = _mm_xor_si128(b0, k0);
   b1 = _mm_xor_si128(b1, k0);
@@ -70,23 +70,23 @@ unsafe fn aes_decrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
   b3 = _mm_xor_si128(b3, k0);
 
   for i in 1 .. N {
-    k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(i));
+    k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(i));
     b0 = _mm_aesdec_si128(b0, k0);
     b1 = _mm_aesdec_si128(b1, k0);
     b2 = _mm_aesdec_si128(b2, k0);
     b3 = _mm_aesdec_si128(b3, k0);
   }
 
-  k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(N));
+  k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(N));
   b0 = _mm_aesdeclast_si128(b0, k0);
   b1 = _mm_aesdeclast_si128(b1, k0);
   b2 = _mm_aesdeclast_si128(b2, k0);
   b3 = _mm_aesdeclast_si128(b3, k0);
 
-  _mm_storeu_si128((block as *mut __m128i).add(0), b0);
-  _mm_storeu_si128((block as *mut __m128i).add(1), b1);
-  _mm_storeu_si128((block as *mut __m128i).add(2), b2);
-  _mm_storeu_si128((block as *mut __m128i).add(3), b3);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(0), b0);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(1), b1);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(2), b2);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(3), b3);
 }
 
 #[inline(always)]
@@ -94,15 +94,15 @@ unsafe fn aes_decrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
   debug_assert!(N == 10 || N == 12 || N == 14);
 
-  let mut k0: __m128i = _mm_loadu_si128((key_schedule as *const __m128i).add(0));
-  let mut b0: __m128i = _mm_loadu_si128((block as *const __m128i).add(0));
-  let mut b1: __m128i = _mm_loadu_si128((block as *const __m128i).add(1));
-  let mut b2: __m128i = _mm_loadu_si128((block as *const __m128i).add(2));
-  let mut b3: __m128i = _mm_loadu_si128((block as *const __m128i).add(3));
-  let mut b4: __m128i = _mm_loadu_si128((block as *const __m128i).add(4));
-  let mut b5: __m128i = _mm_loadu_si128((block as *const __m128i).add(5));
-  let mut b6: __m128i = _mm_loadu_si128((block as *const __m128i).add(6));
-  let mut b7: __m128i = _mm_loadu_si128((block as *const __m128i).add(7));
+  let mut k0: __m128i = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(0));
+  let mut b0: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(0));
+  let mut b1: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(1));
+  let mut b2: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(2));
+  let mut b3: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(3));
+  let mut b4: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(4));
+  let mut b5: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(5));
+  let mut b6: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(6));
+  let mut b7: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(7));
 
   b0 = _mm_xor_si128(b0, k0);
   b1 = _mm_xor_si128(b1, k0);
@@ -114,7 +114,7 @@ unsafe fn aes_decrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
   b7 = _mm_xor_si128(b7, k0);
 
   for i in 1 .. N {
-    k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(i));
+    k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(i));
     b0 = _mm_aesdec_si128(b0, k0);
     b1 = _mm_aesdec_si128(b1, k0);
     b2 = _mm_aesdec_si128(b2, k0);
@@ -125,7 +125,7 @@ unsafe fn aes_decrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
     b7 = _mm_aesdec_si128(b7, k0);
   }
 
-  k0 = _mm_loadu_si128((key_schedule as *const __m128i).add(N));
+  k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(N));
   b0 = _mm_aesdeclast_si128(b0, k0);
   b1 = _mm_aesdeclast_si128(b1, k0);
   b2 = _mm_aesdeclast_si128(b2, k0);
@@ -135,14 +135,14 @@ unsafe fn aes_decrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
   b6 = _mm_aesdeclast_si128(b6, k0);
   b7 = _mm_aesdeclast_si128(b7, k0);
 
-  _mm_storeu_si128((block as *mut __m128i).add(0), b0);
-  _mm_storeu_si128((block as *mut __m128i).add(1), b1);
-  _mm_storeu_si128((block as *mut __m128i).add(2), b2);
-  _mm_storeu_si128((block as *mut __m128i).add(3), b3);
-  _mm_storeu_si128((block as *mut __m128i).add(4), b4);
-  _mm_storeu_si128((block as *mut __m128i).add(5), b5);
-  _mm_storeu_si128((block as *mut __m128i).add(6), b6);
-  _mm_storeu_si128((block as *mut __m128i).add(7), b7);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(0), b0);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(1), b1);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(2), b2);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(3), b3);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(4), b4);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(5), b5);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(6), b6);
+  _mm_storeu_si128((block.cast::<__m128i>()).add(7), b7);
 }
 
 // AES128 DECRYPT
