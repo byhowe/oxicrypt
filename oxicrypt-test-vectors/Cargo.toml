@@ -1,0 +1,29 @@
+[package]
+name = "oxicrypt-test-vectors"
+version = "0.1.0"
+authors = ["B. Howe <37745048+byhowe@users.noreply.github.com>"]
+edition = "2021"
+description = "Test vectors for Oxicrypt."
+readme = "https://github.com/byhowe/oxicrypt-test-vectors/blob/development/README.md"
+homepage = "https://github.com/byhowe/oxicrypt-test-vectors"
+repository = "https://github.com/byhowe/oxicrypt-test-vectors.git"
+# license
+
+[lib]
+name = "oxicrypt_test_vectors"
+path = "src/lib.rs"
+
+[[bin]]
+name = "generate_aes"
+path = "generate/generate_aes.rs"
+required-features = ["generate"]
+
+[features]
+generate = ["dep:rand"]
+
+[dependencies]
+rand = { version = "0.8", features = ["std_rng"], optional = true }
+
+[build-dependencies]
+cc = "1.0"
+bindgen = "0.62"
