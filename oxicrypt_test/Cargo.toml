@@ -1,16 +1,16 @@
 [package]
-name = "oxicrypt-test-vectors"
+name = "oxicrypt_test"
 version = "0.1.0"
 authors = ["B. Howe <37745048+byhowe@users.noreply.github.com>"]
 edition = "2021"
 description = "Test vectors for Oxicrypt."
-readme = "https://github.com/byhowe/oxicrypt-test-vectors/blob/development/README.md"
-homepage = "https://github.com/byhowe/oxicrypt-test-vectors"
-repository = "https://github.com/byhowe/oxicrypt-test-vectors.git"
+readme = "https://github.com/byhowe/oxicrypt/blob/development/oxicrypt_test/README.md"
+homepage = "https://github.com/byhowe/oxicrypt"
+repository = "https://github.com/byhowe/oxicrypt.git"
 # license
 
 [lib]
-name = "oxicrypt_test_vectors"
+name = "oxicrypt_test"
 path = "src/lib.rs"
 
 [[bin]]
