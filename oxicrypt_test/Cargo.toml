@@ -8,6 +8,7 @@ readme = "https://github.com/byhowe/oxicrypt/blob/development/oxicrypt_test/READ
 homepage = "https://github.com/byhowe/oxicrypt"
 repository = "https://github.com/byhowe/oxicrypt.git"
 # license
+workspace = ".."
 
 [lib]
 name = "oxicrypt_test"
