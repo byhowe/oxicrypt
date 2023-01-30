@@ -8,26 +8,38 @@
 #![no_std]
 #![feature(doc_cfg)]
 #![feature(generic_const_exprs)]
+#![feature(const_mut_refs)]
 
 use cfg_if::cfg_if;
 
 mod aes_lut_aes_core;
-
-pub use aes_lut_aes_core::aes_lut_aes128_encrypt1;
-pub use aes_lut_aes_core::aes_lut_aes192_encrypt1;
-pub use aes_lut_aes_core::aes_lut_aes256_encrypt1;
+mod sha_generic_sha1_compress;
+mod sha_generic_sha256_compress;
+mod sha_generic_sha512_compress;
+mod sha_initial_states;
 
 pub use aes_lut_aes_core::aes_lut_aes128_decrypt1;
-pub use aes_lut_aes_core::aes_lut_aes192_decrypt1;
-pub use aes_lut_aes_core::aes_lut_aes256_decrypt1;
-
-pub use aes_lut_aes_core::aes_lut_aes128_inverse_key;
-pub use aes_lut_aes_core::aes_lut_aes192_inverse_key;
-pub use aes_lut_aes_core::aes_lut_aes256_inverse_key;
-
+pub use aes_lut_aes_core::aes_lut_aes128_encrypt1;
 pub use aes_lut_aes_core::aes_lut_aes128_expand_key;
+pub use aes_lut_aes_core::aes_lut_aes128_inverse_key;
+pub use aes_lut_aes_core::aes_lut_aes192_decrypt1;
+pub use aes_lut_aes_core::aes_lut_aes192_encrypt1;
 pub use aes_lut_aes_core::aes_lut_aes192_expand_key;
+pub use aes_lut_aes_core::aes_lut_aes192_inverse_key;
+pub use aes_lut_aes_core::aes_lut_aes256_decrypt1;
+pub use aes_lut_aes_core::aes_lut_aes256_encrypt1;
 pub use aes_lut_aes_core::aes_lut_aes256_expand_key;
+pub use aes_lut_aes_core::aes_lut_aes256_inverse_key;
+pub use sha_generic_sha1_compress::sha1_compress_generic;
+pub use sha_generic_sha256_compress::sha256_compress_generic;
+pub use sha_generic_sha512_compress::sha512_compress_generic;
+pub use sha_initial_states::SHA_INITIAL_H1;
+pub use sha_initial_states::SHA_INITIAL_H224;
+pub use sha_initial_states::SHA_INITIAL_H256;
+pub use sha_initial_states::SHA_INITIAL_H384;
+pub use sha_initial_states::SHA_INITIAL_H512;
+pub use sha_initial_states::SHA_INITIAL_H512_224;
+pub use sha_initial_states::SHA_INITIAL_H512_256;
 
 cfg_if! {
   if #[cfg(any(target_arch = "x86", target_arch = "x86_64", doc))] {
