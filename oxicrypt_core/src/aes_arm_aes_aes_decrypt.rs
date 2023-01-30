@@ -269,8 +269,8 @@ pub unsafe fn aes_arm_aes_aes256_decrypt8(block: *mut u8, key_schedule: *const u
 #[cfg(test)]
 mod tests
 {
-  use oxicrypt_test_vectors::Aes;
-  use oxicrypt_test_vectors::AesVectorsIterator;
+  use oxicrypt_test::Aes;
+  use oxicrypt_test::AesVectorsIterator;
 
   use super::*;
 

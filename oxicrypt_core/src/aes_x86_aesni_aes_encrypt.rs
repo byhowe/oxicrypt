@@ -238,8 +238,8 @@ pub unsafe fn aes_x86_aesni_aes256_encrypt8(block: *mut u8, key_schedule: *const
 #[cfg(test)]
 mod tests
 {
-  use oxicrypt_test_vectors::Aes;
-  use oxicrypt_test_vectors::AesVectorsIterator;
+  use oxicrypt_test::Aes;
+  use oxicrypt_test::AesVectorsIterator;
 
   use super::*;
 

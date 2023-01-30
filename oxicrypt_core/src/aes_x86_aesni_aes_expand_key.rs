@@ -147,8 +147,8 @@ pub unsafe fn aes_x86_aesni_aes256_expand_key(key: *const u8, key_schedule: *mut
 #[cfg(test)]
 mod tests
 {
-  use oxicrypt_test_vectors::Aes;
-  use oxicrypt_test_vectors::AesVectorsIterator;
+  use oxicrypt_test::Aes;
+  use oxicrypt_test::AesVectorsIterator;
 
   use super::*;
 

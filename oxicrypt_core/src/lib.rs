@@ -11,10 +11,11 @@
 
 use cfg_if::cfg_if;
 
-// mod aes_fixslice_aes_core;
+mod aes_lut_aes_core;
 
 cfg_if! {
   if #[cfg(any(target_arch = "x86", target_arch = "x86_64", doc))] {
+    // full set of AES-NI powered aes functions
     mod aes_x86_aesni_aes_encrypt;
     mod aes_x86_aesni_aes_decrypt;
     mod aes_x86_aesni_aes_inverse_key;

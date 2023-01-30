@@ -49,8 +49,8 @@ pub unsafe fn aes_x86_aesni_aes256_inverse_key(key_schedule: *mut u8)
 #[cfg(test)]
 mod tests
 {
-  use oxicrypt_test_vectors::Aes;
-  use oxicrypt_test_vectors::AesVectorsIterator;
+  use oxicrypt_test::Aes;
+  use oxicrypt_test::AesVectorsIterator;
 
   use super::*;
 
