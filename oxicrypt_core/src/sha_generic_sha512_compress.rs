@@ -16,10 +16,10 @@ macro_rules! sha2_64_f {
 }
 
 /// Compression function used by the SHA-2 family of functions, namely SHA-384, SHA-512,
-/// SHA-512/224 and SHA-512/256. You shouldn't use this function unless you want to implement the
-/// algorithms by yourself.
+/// SHA-512/224 and SHA-512/256.
 ///
-/// It is implemented in pure Rust.
+/// You shouldn't use this function unless you want to implement the
+/// algorithms by yourself.
 ///
 /// # Safety
 ///
@@ -28,7 +28,7 @@ macro_rules! sha2_64_f {
 /// of 128 (128 bytes).
 #[allow(clippy::many_single_char_names)]
 #[allow(unused_assignments)]
-pub const unsafe fn sha512_compress_generic(state: *mut u64, block: *const u8)
+pub const unsafe fn sha_generic_sha512_compress(state: *mut u64, block: *const u8)
 {
   let mut a: u64 = *state.add(0);
   let mut b: u64 = *state.add(1);

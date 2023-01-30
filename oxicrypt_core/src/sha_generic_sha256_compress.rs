@@ -15,10 +15,10 @@ macro_rules! sha2_32_f {
   }};
 }
 
-/// Compression function used by the SHA-2 family of functions, namely SHA-224 and SHA-256. You
-/// shouldn't use this function unless you want to implement the algorithms by yourself.
+/// Compression function used by the SHA-2 family of functions, namely SHA-224 and SHA-256.
 ///
-/// It is implemented in pure Rust.
+/// You shouldn't use this function unless you want to implement the algorithms
+/// by yourself.
 ///
 /// # Safety
 ///
@@ -27,7 +27,7 @@ macro_rules! sha2_32_f {
 /// of 64 (64 bytes).
 #[allow(clippy::many_single_char_names)]
 #[allow(unused_assignments)]
-pub const unsafe fn sha256_compress_generic(state: *mut u32, block: *const u8)
+pub const unsafe fn sha_generic_sha256_compress(state: *mut u32, block: *const u8)
 {
   let mut a: u32 = *state.add(0);
   let mut b: u32 = *state.add(1);

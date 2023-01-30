@@ -58,10 +58,10 @@ macro_rules! r4 {
   }};
 }
 
-/// Compression function used by the SHA-1 algorithm. You shouldn't use this function unless you
-/// want to implement the algorithm by yourself.
+/// Compression function used by the SHA-1 algorithm.
 ///
-/// It is implemented in pure Rust.
+/// You shouldn't use this function unless you want to implement the algorithm
+/// by yourself.
 ///
 /// # Safety
 ///
@@ -70,7 +70,7 @@ macro_rules! r4 {
 /// of 64 (64 bytes).
 #[allow(clippy::many_single_char_names)]
 #[allow(unused_assignments)]
-pub const unsafe fn sha1_compress_generic(state: *mut u32, block: *const u8)
+pub const unsafe fn sha_generic_sha1_compress(state: *mut u32, block: *const u8)
 {
   let mut a: u32 = *state.add(0);
   let mut b: u32 = *state.add(1);
