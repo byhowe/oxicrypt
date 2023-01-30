@@ -21,10 +21,10 @@ extern crate std;
 // pub mod hazmat;
 
 pub mod aes;
-// pub mod digest;
+pub mod digest;
 // pub mod hkdf;
 // pub mod hmac;
-// pub mod sha;
+pub mod sha;
 
 #[cfg(test)]
 pub(crate) mod test_vectors;

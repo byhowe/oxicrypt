@@ -21,24 +21,23 @@
 
 use core::mem::MaybeUninit;
 
+use oxicrypt_core::sha_generic_sha1_compress;
+use oxicrypt_core::sha_generic_sha256_compress;
+use oxicrypt_core::sha_generic_sha512_compress;
+use oxicrypt_core::SHA_INITIAL_H1 as H1;
+use oxicrypt_core::SHA_INITIAL_H224 as H224;
+use oxicrypt_core::SHA_INITIAL_H256 as H256;
+use oxicrypt_core::SHA_INITIAL_H384 as H384;
+use oxicrypt_core::SHA_INITIAL_H512 as H512;
+use oxicrypt_core::SHA_INITIAL_H512_224 as H512_224;
+use oxicrypt_core::SHA_INITIAL_H512_256 as H512_256;
+
 use crate::digest::DigestMeta;
 use crate::digest::FinishInternal;
 use crate::digest::FinishToSlice;
 use crate::digest::Reset;
 use crate::digest::Sha;
 use crate::digest::Update;
-use crate::hazmat::sha::Context1;
-use crate::hazmat::sha::Context256;
-use crate::hazmat::sha::Context512;
-#[doc(inline)]
-pub use crate::hazmat::sha::Implementation;
-use crate::hazmat::sha::H1;
-use crate::hazmat::sha::H224;
-use crate::hazmat::sha::H256;
-use crate::hazmat::sha::H384;
-use crate::hazmat::sha::H512;
-use crate::hazmat::sha::H512_224;
-use crate::hazmat::sha::H512_256;
 
 use core::mem;
 use core::slice;
@@ -87,7 +86,7 @@ macro_rules! impl_context {
 
       /// Update the state with the given data.
       #[inline(always)]
-      pub fn update<const I: Implementation>(&mut self, mut data: &[u8])
+      pub fn update(&mut self, mut data: &[u8])
       {
         // Loop until all the data is read.
         while !data.is_empty() {
@@ -109,7 +108,7 @@ macro_rules! impl_context {
 
           if self.blocklen == $block_len {
             // SAFETY: We know the inner block is full.
-            unsafe { self.compress::<I>() };
+            unsafe { self.compress() };
             self.blocklen = 0;
             self.len += $block_len;
           }
@@ -120,7 +119,7 @@ macro_rules! impl_context {
       ///
       /// The calculated result can be accessed via [`as_state`](`Self::as_state`).
       #[inline(always)]
-      pub fn finish<const I: Implementation>(&mut self)
+      pub fn finish(&mut self)
       {
         // We can do this without checking for `self.blocklen`, because we know `update` makes sure
         // `self.blocklen` is always less than block length.
@@ -134,14 +133,14 @@ macro_rules! impl_context {
         // zeros and compress the block.
         if self.blocklen > ($block_len - mem::size_of::<$len_int>()) {
           self.block[self.blocklen ..].fill(0);
-          unsafe { self.compress::<I>() };
+          unsafe { self.compress() };
           self.blocklen = 0;
         }
 
         self.block[self.blocklen .. $block_len - mem::size_of::<$len_int>()].fill(0);
         self.len *= 8;
         self.block[$block_len - mem::size_of::<$len_int>() ..].copy_from_slice(&self.len.to_be_bytes());
-        unsafe { self.compress::<I>() };
+        unsafe { self.compress() };
 
         for i in 0 .. $state_len {
           self.h[i] = self.h[i].to_be();
@@ -166,11 +165,9 @@ impl Context1
 {
   #[allow(clippy::missing_safety_doc)]
   #[allow(unused_variables)]
-  unsafe fn compress<const I: Implementation>(&mut self)
+  unsafe fn compress(&mut self)
   {
-    match I {
-      | Implementation::Generic => generic::sha1_compress(self.h.as_mut_ptr(), self.block.as_ptr()),
-    }
+    sha_generic_sha1_compress(self.h.as_mut_ptr(), self.block.as_ptr());
   }
 }
 
@@ -189,11 +186,9 @@ impl Context256
 {
   #[allow(clippy::missing_safety_doc)]
   #[allow(unused_variables)]
-  unsafe fn compress<const I: Implementation>(&mut self)
+  unsafe fn compress(&mut self)
   {
-    match I {
-      | Implementation::Generic => generic::sha256_compress(self.h.as_mut_ptr(), self.block.as_ptr()),
-    }
+    sha_generic_sha256_compress(self.h.as_mut_ptr(), self.block.as_mut_ptr());
   }
 }
 
@@ -212,11 +207,9 @@ impl Context512
 {
   #[allow(clippy::missing_safety_doc)]
   #[allow(unused_variables)]
-  unsafe fn compress<const I: Implementation>(&mut self)
+  unsafe fn compress(&mut self)
   {
-    match I {
-      | Implementation::Generic => generic::sha512_compress(self.h.as_mut_ptr(), self.block.as_ptr()),
-    }
+    sha_generic_sha512_compress(self.h.as_mut_ptr(), self.block.as_ptr());
   }
 }
 
@@ -252,25 +245,25 @@ macro_rules! impl_sha {
     const STATE = $state:expr;
     type Context = $ctx:ident;
   ) => {
-    impl<const I: Implementation> DigestMeta for $sha<I>
+    impl DigestMeta for $sha
     {
       const BLOCK_LEN: usize = $block_len;
       const DIGEST_LEN: usize = $digest_len;
     }
 
-    impl<const I: Implementation> Sha for $sha<I> {}
+    impl Sha for $sha {}
 
-    impl<const I: Implementation> const Default for $sha<I>
+    impl const Default for $sha
     {
       fn default() -> Self
       {
-        let mut ctx: MaybeUninit<$sha<I>> = MaybeUninit::uninit();
+        let mut ctx: MaybeUninit<$sha> = MaybeUninit::uninit();
         unsafe { ctx.assume_init_mut() }.reset();
         unsafe { ctx.assume_init() }
       }
     }
 
-    impl<const I: Implementation> core::hash::Hasher for $sha<I>
+    impl core::hash::Hasher for $sha
     {
       fn finish(&self) -> u64
       {
@@ -288,7 +281,7 @@ macro_rules! impl_sha {
 
     #[cfg(any(feature = "std", doc))]
     #[doc(cfg(feature = "std"))]
-    impl<const I: Implementation> std::io::Write for $sha<I>
+    impl std::io::Write for $sha
     {
       fn write(&mut self, buf: &[u8]) -> std::io::Result<usize>
       {
@@ -308,7 +301,7 @@ macro_rules! impl_sha {
       }
     }
 
-    impl<const I: Implementation> const Reset for $sha<I>
+    impl const Reset for $sha
     {
       fn reset(&mut self)
       {
@@ -316,19 +309,19 @@ macro_rules! impl_sha {
       }
     }
 
-    impl<const I: Implementation> Update for $sha<I>
+    impl Update for $sha
     {
       fn update(&mut self, data: &[u8])
       {
-        self.ctx.update::<I>(data);
+        self.ctx.update(data);
       }
     }
 
-    impl<const I: Implementation> FinishInternal for $sha<I>
+    impl FinishInternal for $sha
     {
       fn finish_internal(&mut self) -> &[u8]
       {
-        self.ctx.finish::<I>();
+        self.ctx.finish();
         &self.ctx.as_state()[0 .. $digest_len]
       }
     }
@@ -338,7 +331,7 @@ macro_rules! impl_sha {
 /// SHA-1 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha1<const I: Implementation>
+pub struct Sha1
 {
   ctx: Context1,
 }
@@ -346,7 +339,7 @@ pub struct Sha1<const I: Implementation>
 /// SHA-224 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha224<const I: Implementation>
+pub struct Sha224
 {
   ctx: Context256,
 }
@@ -354,7 +347,7 @@ pub struct Sha224<const I: Implementation>
 /// SHA-256 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha256<const I: Implementation>
+pub struct Sha256
 {
   ctx: Context256,
 }
@@ -362,7 +355,7 @@ pub struct Sha256<const I: Implementation>
 /// SHA-384 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha384<const I: Implementation>
+pub struct Sha384
 {
   ctx: Context512,
 }
@@ -370,7 +363,7 @@ pub struct Sha384<const I: Implementation>
 /// SHA-512 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha512<const I: Implementation>
+pub struct Sha512
 {
   ctx: Context512,
 }
@@ -378,7 +371,7 @@ pub struct Sha512<const I: Implementation>
 /// SHA-512/224 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha512_224<const I: Implementation>
+pub struct Sha512_224
 {
   ctx: Context512,
 }
@@ -386,7 +379,7 @@ pub struct Sha512_224<const I: Implementation>
 /// SHA-512/256 context.
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
-pub struct Sha512_256<const I: Implementation>
+pub struct Sha512_256
 {
   ctx: Context512,
 }
@@ -445,39 +438,4 @@ impl_sha! {
   const BLOCK_LEN = 128;
   const STATE = H512_256;
   type Context = Context512;
-}
-
-#[cfg(test)]
-mod tests
-{
-  use super::*;
-  use crate::digest::Finish;
-  use crate::test_vectors::cavp::*;
-
-  macro_rules! add_test {
-    ($fn:ident, $sha:ident, $tests:expr) => {
-      #[test]
-      fn $fn()
-      {
-        let mut ctx = $sha::<{ Implementation::Generic }>::default();
-        for (md, msg, _) in $tests {
-          let mdb = hex::decode(md).unwrap();
-          let msgb = hex::decode(msg).unwrap();
-
-          ctx.update(&msgb);
-          let digest = ctx.finish();
-          assert_eq!(mdb, digest);
-          ctx.reset();
-        }
-      }
-    };
-  }
-
-  add_test!(sha1, Sha1, SHA1);
-  add_test!(sha224, Sha224, SHA224);
-  add_test!(sha256, Sha256, SHA256);
-  add_test!(sha384, Sha384, SHA384);
-  add_test!(sha512, Sha512, SHA512);
-  add_test!(sha512_224, Sha512_224, SHA512_224);
-  add_test!(sha512_256, Sha512_256, SHA512_256);
 }
