@@ -13,6 +13,22 @@ use cfg_if::cfg_if;
 
 mod aes_lut_aes_core;
 
+pub use aes_lut_aes_core::aes_lut_aes128_encrypt1;
+pub use aes_lut_aes_core::aes_lut_aes192_encrypt1;
+pub use aes_lut_aes_core::aes_lut_aes256_encrypt1;
+
+pub use aes_lut_aes_core::aes_lut_aes128_decrypt1;
+pub use aes_lut_aes_core::aes_lut_aes192_decrypt1;
+pub use aes_lut_aes_core::aes_lut_aes256_decrypt1;
+
+pub use aes_lut_aes_core::aes_lut_aes128_inverse_key;
+pub use aes_lut_aes_core::aes_lut_aes192_inverse_key;
+pub use aes_lut_aes_core::aes_lut_aes256_inverse_key;
+
+pub use aes_lut_aes_core::aes_lut_aes128_expand_key;
+pub use aes_lut_aes_core::aes_lut_aes192_expand_key;
+pub use aes_lut_aes_core::aes_lut_aes256_expand_key;
+
 cfg_if! {
   if #[cfg(any(target_arch = "x86", target_arch = "x86_64", doc))] {
     // full set of AES-NI powered aes functions
