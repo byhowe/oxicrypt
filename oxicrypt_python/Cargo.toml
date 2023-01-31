@@ -1,0 +1,17 @@
+[package]
+name = "oxicrypt_python"
+version = "0.1.0"
+authors = ["B. Howe <37745048+byhowe@users.noreply.github.com>"]
+edition = "2021"
+repository = "https://github.com/byhowe/oxicrypt.git"
+license = "MIT"
+keywords = ["crypto"]
+workspace = ".."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "oxicrypt"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.17.3", features = ["extension-module"] }

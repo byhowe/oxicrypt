@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "oxicrypt_c",
+  "oxicrypt_python",
   "oxicrypt_core",
   "oxicrypt_test",
 ]
