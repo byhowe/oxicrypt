@@ -85,3 +85,12 @@ pub const SHA_INITIAL_H512_256: [u64; 8] = [
   0x2b0199fc2c85b8aa,
   0x0eb72ddc81c52ca2,
 ];
+
+/// Initial state of the MD5 algorithm.
+#[rustfmt::skip]
+pub const MD5_INITIAL_H: [u32; 4] = [
+  0x67452301,
+  0xefcdab89,
+  0x98badcfe,
+  0x10325476
+];

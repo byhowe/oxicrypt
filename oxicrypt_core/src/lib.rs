@@ -13,10 +13,11 @@
 use cfg_if::cfg_if;
 
 mod aes_lut_aes_core;
+mod digest_initial_states;
+mod md5_generic_md5_compress;
 mod sha_generic_sha1_compress;
 mod sha_generic_sha256_compress;
 mod sha_generic_sha512_compress;
-mod sha_initial_states;
 
 pub use aes_lut_aes_core::aes_lut_aes128_decrypt1;
 pub use aes_lut_aes_core::aes_lut_aes128_encrypt1;
@@ -30,16 +31,18 @@ pub use aes_lut_aes_core::aes_lut_aes256_decrypt1;
 pub use aes_lut_aes_core::aes_lut_aes256_encrypt1;
 pub use aes_lut_aes_core::aes_lut_aes256_expand_key;
 pub use aes_lut_aes_core::aes_lut_aes256_inverse_key;
+pub use digest_initial_states::MD5_INITIAL_H;
+pub use digest_initial_states::SHA_INITIAL_H1;
+pub use digest_initial_states::SHA_INITIAL_H224;
+pub use digest_initial_states::SHA_INITIAL_H256;
+pub use digest_initial_states::SHA_INITIAL_H384;
+pub use digest_initial_states::SHA_INITIAL_H512;
+pub use digest_initial_states::SHA_INITIAL_H512_224;
+pub use digest_initial_states::SHA_INITIAL_H512_256;
+pub use md5_generic_md5_compress::md5_compress_generic;
 pub use sha_generic_sha1_compress::sha_generic_sha1_compress;
 pub use sha_generic_sha256_compress::sha_generic_sha256_compress;
 pub use sha_generic_sha512_compress::sha_generic_sha512_compress;
-pub use sha_initial_states::SHA_INITIAL_H1;
-pub use sha_initial_states::SHA_INITIAL_H224;
-pub use sha_initial_states::SHA_INITIAL_H256;
-pub use sha_initial_states::SHA_INITIAL_H384;
-pub use sha_initial_states::SHA_INITIAL_H512;
-pub use sha_initial_states::SHA_INITIAL_H512_224;
-pub use sha_initial_states::SHA_INITIAL_H512_256;
 
 cfg_if! {
   if #[cfg(any(target_arch = "x86", target_arch = "x86_64", doc))] {

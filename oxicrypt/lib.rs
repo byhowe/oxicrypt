@@ -25,6 +25,7 @@ pub mod digest;
 // pub mod hkdf;
 // pub mod hmac;
 pub mod sha;
+pub mod md5;
 
 #[cfg(test)]
 pub(crate) mod test_vectors;

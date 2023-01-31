@@ -53,6 +53,16 @@ const fn ii<const S: u32>(a: u32, b: u32, c: u32, d: u32, w: u32, rc: u32) -> u3
     .wrapping_add(b)
 }
 
+/// Compression function used by the MD5 algorithm.
+///
+/// You shouldn't use this function unless you want to implement the algorithm
+/// by yourself.
+///
+/// # Safety
+///
+/// The caller must guarantee that the passed variables point to valid memory spaces. `state` must
+/// point to an array with a length of 4 (16 bytes). `block` must point to an array with a length
+/// of 64 (64 bytes).
 #[allow(clippy::many_single_char_names)]
 #[allow(unused_assignments)]
 pub const unsafe fn md5_compress_generic(state: *mut u32, block: *const u8)
@@ -62,22 +72,22 @@ pub const unsafe fn md5_compress_generic(state: *mut u32, block: *const u8)
   let mut c: u32 = *state.add(2);
   let mut d: u32 = *state.add(3);
 
-  let w00: u32 = (*(block as *const u32).add(0)).to_le();
-  let w01: u32 = (*(block as *const u32).add(1)).to_le();
-  let w02: u32 = (*(block as *const u32).add(2)).to_le();
-  let w03: u32 = (*(block as *const u32).add(3)).to_le();
-  let w04: u32 = (*(block as *const u32).add(4)).to_le();
-  let w05: u32 = (*(block as *const u32).add(5)).to_le();
-  let w06: u32 = (*(block as *const u32).add(6)).to_le();
-  let w07: u32 = (*(block as *const u32).add(7)).to_le();
-  let w08: u32 = (*(block as *const u32).add(8)).to_le();
-  let w09: u32 = (*(block as *const u32).add(9)).to_le();
-  let w10: u32 = (*(block as *const u32).add(10)).to_le();
-  let w11: u32 = (*(block as *const u32).add(11)).to_le();
-  let w12: u32 = (*(block as *const u32).add(12)).to_le();
-  let w13: u32 = (*(block as *const u32).add(13)).to_le();
-  let w14: u32 = (*(block as *const u32).add(14)).to_le();
-  let w15: u32 = (*(block as *const u32).add(15)).to_le();
+  let w00: u32 = (*block.cast::<u32>().add(0)).to_le();
+  let w01: u32 = (*block.cast::<u32>().add(1)).to_le();
+  let w02: u32 = (*block.cast::<u32>().add(2)).to_le();
+  let w03: u32 = (*block.cast::<u32>().add(3)).to_le();
+  let w04: u32 = (*block.cast::<u32>().add(4)).to_le();
+  let w05: u32 = (*block.cast::<u32>().add(5)).to_le();
+  let w06: u32 = (*block.cast::<u32>().add(6)).to_le();
+  let w07: u32 = (*block.cast::<u32>().add(7)).to_le();
+  let w08: u32 = (*block.cast::<u32>().add(8)).to_le();
+  let w09: u32 = (*block.cast::<u32>().add(9)).to_le();
+  let w10: u32 = (*block.cast::<u32>().add(10)).to_le();
+  let w11: u32 = (*block.cast::<u32>().add(11)).to_le();
+  let w12: u32 = (*block.cast::<u32>().add(12)).to_le();
+  let w13: u32 = (*block.cast::<u32>().add(13)).to_le();
+  let w14: u32 = (*block.cast::<u32>().add(14)).to_le();
+  let w15: u32 = (*block.cast::<u32>().add(15)).to_le();
 
   // 0 .. 4
   a = ff::<07>(a, b, c, d, w00, 0xd76aa478);
@@ -179,22 +189,4 @@ pub const unsafe fn md5_compress_generic(state: *mut u32, block: *const u8)
   *state.add(1) = (*state.add(1)).wrapping_add(b);
   *state.add(2) = (*state.add(2)).wrapping_add(c);
   *state.add(3) = (*state.add(3)).wrapping_add(d);
-}
-
-#[cfg(test)]
-mod tests
-{
-  use super::*;
-  use crate::test_vectors::*;
-
-  #[test]
-  fn test()
-  {
-    let mut state = [0; 4];
-    MD5_COMPRESS.iter().for_each(|t| {
-      state = t.0;
-      unsafe { md5_compress_generic(state.as_mut_ptr(), t.2.as_ptr()) };
-      assert_eq!(t.1, state);
-    });
-  }
 }
