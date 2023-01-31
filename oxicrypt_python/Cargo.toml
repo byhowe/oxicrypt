@@ -15,3 +15,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.17.3", features = ["extension-module"] }
+oxicrypt_core = { path="../oxicrypt_core" }
+oxicrypt = { path=".." }

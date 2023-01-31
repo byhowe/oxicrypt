@@ -11,6 +11,10 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
+[tool.maturin]
+bindings = "pyo3"
+strip = true
+
 [tool.mypy]
 files = ["oxicrypt"]
 namespace_packages = true
