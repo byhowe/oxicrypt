@@ -65,7 +65,7 @@ const fn ii<const S: u32>(a: u32, b: u32, c: u32, d: u32, w: u32, rc: u32) -> u3
 /// of 64 (64 bytes).
 #[allow(clippy::many_single_char_names)]
 #[allow(unused_assignments)]
-pub const unsafe fn md5_compress_generic(state: *mut u32, block: *const u8)
+pub const unsafe fn md5_generic_md5_compress(state: *mut u32, block: *const u8)
 {
   let mut a: u32 = *state.add(0);
   let mut b: u32 = *state.add(1);

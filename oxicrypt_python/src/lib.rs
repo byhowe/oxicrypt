@@ -5,6 +5,7 @@ mod aes_arm_aes;
 mod aes_lut;
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 mod aes_x86_aesni;
+mod digest_compress;
 
 /// Version of the library.
 #[pyfunction]
@@ -26,6 +27,8 @@ fn oxicrypt(py: Python, m: &PyModule) -> PyResult<()>
   aes_x86_aesni::register(py, core)?;
   #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
   aes_arm_aes::register(py, core)?;
+
+  digest_compress::register(py, core)?;
   m.add_submodule(core)?;
 
   Ok(())

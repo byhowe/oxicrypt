@@ -19,27 +19,9 @@ mod sha_generic_sha1_compress;
 mod sha_generic_sha256_compress;
 mod sha_generic_sha512_compress;
 
-pub use aes_lut_aes_core::aes_lut_aes128_decrypt1;
-pub use aes_lut_aes_core::aes_lut_aes128_encrypt1;
-pub use aes_lut_aes_core::aes_lut_aes128_expand_key;
-pub use aes_lut_aes_core::aes_lut_aes128_inverse_key;
-pub use aes_lut_aes_core::aes_lut_aes192_decrypt1;
-pub use aes_lut_aes_core::aes_lut_aes192_encrypt1;
-pub use aes_lut_aes_core::aes_lut_aes192_expand_key;
-pub use aes_lut_aes_core::aes_lut_aes192_inverse_key;
-pub use aes_lut_aes_core::aes_lut_aes256_decrypt1;
-pub use aes_lut_aes_core::aes_lut_aes256_encrypt1;
-pub use aes_lut_aes_core::aes_lut_aes256_expand_key;
-pub use aes_lut_aes_core::aes_lut_aes256_inverse_key;
-pub use digest_initial_states::MD5_INITIAL_H;
-pub use digest_initial_states::SHA_INITIAL_H1;
-pub use digest_initial_states::SHA_INITIAL_H224;
-pub use digest_initial_states::SHA_INITIAL_H256;
-pub use digest_initial_states::SHA_INITIAL_H384;
-pub use digest_initial_states::SHA_INITIAL_H512;
-pub use digest_initial_states::SHA_INITIAL_H512_224;
-pub use digest_initial_states::SHA_INITIAL_H512_256;
-pub use md5_generic_md5_compress::md5_compress_generic;
+pub use aes_lut_aes_core::*;
+pub use digest_initial_states::*;
+pub use md5_generic_md5_compress::md5_generic_md5_compress;
 pub use sha_generic_sha1_compress::sha_generic_sha1_compress;
 pub use sha_generic_sha256_compress::sha_generic_sha256_compress;
 pub use sha_generic_sha512_compress::sha_generic_sha512_compress;
@@ -52,39 +34,10 @@ cfg_if! {
     mod aes_x86_aesni_aes_inverse_key;
     mod aes_x86_aesni_aes_expand_key;
 
-    pub use aes_x86_aesni_aes_encrypt::aes_x86_aesni_aes128_encrypt1;
-    pub use aes_x86_aesni_aes_encrypt::aes_x86_aesni_aes128_encrypt2;
-    pub use aes_x86_aesni_aes_encrypt::aes_x86_aesni_aes128_encrypt4;
-    pub use aes_x86_aesni_aes_encrypt::aes_x86_aesni_aes128_encrypt8;
-    pub use aes_x86_aesni_aes_encrypt::aes_x86_aesni_aes192_encrypt1;
-    pub use aes_x86_aesni_aes_encrypt::aes_x86_aesni_aes192_encrypt2;
-    pub use aes_x86_aesni_aes_encrypt::aes_x86_aesni_aes192_encrypt4;
-    pub use aes_x86_aesni_aes_encrypt::aes_x86_aesni_aes192_encrypt8;
-    pub use aes_x86_aesni_aes_encrypt::aes_x86_aesni_aes256_encrypt1;
-    pub use aes_x86_aesni_aes_encrypt::aes_x86_aesni_aes256_encrypt2;
-    pub use aes_x86_aesni_aes_encrypt::aes_x86_aesni_aes256_encrypt4;
-    pub use aes_x86_aesni_aes_encrypt::aes_x86_aesni_aes256_encrypt8;
-
-    pub use aes_x86_aesni_aes_decrypt::aes_x86_aesni_aes128_decrypt1;
-    pub use aes_x86_aesni_aes_decrypt::aes_x86_aesni_aes128_decrypt2;
-    pub use aes_x86_aesni_aes_decrypt::aes_x86_aesni_aes128_decrypt4;
-    pub use aes_x86_aesni_aes_decrypt::aes_x86_aesni_aes128_decrypt8;
-    pub use aes_x86_aesni_aes_decrypt::aes_x86_aesni_aes192_decrypt1;
-    pub use aes_x86_aesni_aes_decrypt::aes_x86_aesni_aes192_decrypt2;
-    pub use aes_x86_aesni_aes_decrypt::aes_x86_aesni_aes192_decrypt4;
-    pub use aes_x86_aesni_aes_decrypt::aes_x86_aesni_aes192_decrypt8;
-    pub use aes_x86_aesni_aes_decrypt::aes_x86_aesni_aes256_decrypt1;
-    pub use aes_x86_aesni_aes_decrypt::aes_x86_aesni_aes256_decrypt2;
-    pub use aes_x86_aesni_aes_decrypt::aes_x86_aesni_aes256_decrypt4;
-    pub use aes_x86_aesni_aes_decrypt::aes_x86_aesni_aes256_decrypt8;
-
-    pub use aes_x86_aesni_aes_inverse_key::aes_x86_aesni_aes128_inverse_key;
-    pub use aes_x86_aesni_aes_inverse_key::aes_x86_aesni_aes192_inverse_key;
-    pub use aes_x86_aesni_aes_inverse_key::aes_x86_aesni_aes256_inverse_key;
-
-    pub use aes_x86_aesni_aes_expand_key::aes_x86_aesni_aes128_expand_key;
-    pub use aes_x86_aesni_aes_expand_key::aes_x86_aesni_aes192_expand_key;
-    pub use aes_x86_aesni_aes_expand_key::aes_x86_aesni_aes256_expand_key;
+    pub use aes_x86_aesni_aes_encrypt::*;
+    pub use aes_x86_aesni_aes_decrypt::*;
+    pub use aes_x86_aesni_aes_inverse_key::*;
+    pub use aes_x86_aesni_aes_expand_key::*;
   }
 }
 
@@ -95,38 +48,9 @@ cfg_if! {
     // mod aes_arm_aes_aes_inverse_key;
     // mod aes_arm_aes_aes_expand_key;
 
-    pub use aes_arm_aes_aes_encrypt::aes_arm_aes_aes128_encrypt1;
-    pub use aes_arm_aes_aes_encrypt::aes_arm_aes_aes128_encrypt2;
-    pub use aes_arm_aes_aes_encrypt::aes_arm_aes_aes128_encrypt4;
-    pub use aes_arm_aes_aes_encrypt::aes_arm_aes_aes128_encrypt8;
-    pub use aes_arm_aes_aes_encrypt::aes_arm_aes_aes192_encrypt1;
-    pub use aes_arm_aes_aes_encrypt::aes_arm_aes_aes192_encrypt2;
-    pub use aes_arm_aes_aes_encrypt::aes_arm_aes_aes192_encrypt4;
-    pub use aes_arm_aes_aes_encrypt::aes_arm_aes_aes192_encrypt8;
-    pub use aes_arm_aes_aes_encrypt::aes_arm_aes_aes256_encrypt1;
-    pub use aes_arm_aes_aes_encrypt::aes_arm_aes_aes256_encrypt2;
-    pub use aes_arm_aes_aes_encrypt::aes_arm_aes_aes256_encrypt4;
-    pub use aes_arm_aes_aes_encrypt::aes_arm_aes_aes256_encrypt8;
-
-    pub use aes_arm_aes_aes_decrypt::aes_arm_aes_aes128_decrypt1;
-    pub use aes_arm_aes_aes_decrypt::aes_arm_aes_aes128_decrypt2;
-    pub use aes_arm_aes_aes_decrypt::aes_arm_aes_aes128_decrypt4;
-    pub use aes_arm_aes_aes_decrypt::aes_arm_aes_aes128_decrypt8;
-    pub use aes_arm_aes_aes_decrypt::aes_arm_aes_aes192_decrypt1;
-    pub use aes_arm_aes_aes_decrypt::aes_arm_aes_aes192_decrypt2;
-    pub use aes_arm_aes_aes_decrypt::aes_arm_aes_aes192_decrypt4;
-    pub use aes_arm_aes_aes_decrypt::aes_arm_aes_aes192_decrypt8;
-    pub use aes_arm_aes_aes_decrypt::aes_arm_aes_aes256_decrypt1;
-    pub use aes_arm_aes_aes_decrypt::aes_arm_aes_aes256_decrypt2;
-    pub use aes_arm_aes_aes_decrypt::aes_arm_aes_aes256_decrypt4;
-    pub use aes_arm_aes_aes_decrypt::aes_arm_aes_aes256_decrypt8;
-
-    // pub use aes_arm_aes_aes_inverse_key::aes_arm_aes_aes128_inverse_key;
-    // pub use aes_arm_aes_aes_inverse_key::aes_arm_aes_aes192_inverse_key;
-    // pub use aes_arm_aes_aes_inverse_key::aes_arm_aes_aes256_inverse_key;
-
-    // pub use aes_arm_aes_aes_expand_key::aes_arm_aes_aes128_expand_key;
-    // pub use aes_arm_aes_aes_expand_key::aes_arm_aes_aes192_expand_key;
-    // pub use aes_arm_aes_aes_expand_key::aes_arm_aes_aes256_expand_key;
+    pub use aes_arm_aes_aes_encrypt::*;
+    pub use aes_arm_aes_aes_decrypt::*;
+    // pub use aes_arm_aes_aes_inverse_key::*;
+    // pub use aes_arm_aes_aes_expand_key::*;
   }
 }
