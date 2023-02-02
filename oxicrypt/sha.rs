@@ -1,441 +1,289 @@
-//! High level SHA API.
+//! SHA Algorithms
 //!
 //! # Examples
 //!
 //! Small example that demonstrates the usage of a SHA function.
 //!
-//! ```
-//! use oxicrypt::digest::Finish;
-//! use oxicrypt::digest::Update;
-//! use oxicrypt::sha::Implementation;
-//! use oxicrypt::sha::Sha256;
-//!
-//! let mut ctx = Sha256::<{ Implementation::Generic }>::default();
+//! ```rust
+//! # use oxicrypt::digest::*;
+//! # use oxicrypt::sha::*;
+//! let mut ctx = Sha256::default();
 //!
 //! ctx.update(b"Hello, ");
 //! ctx.update(b"world");
 //!
 //! let digest = ctx.finish();
-//! println!("SHA-256 digest of \"Hello, world\" is {}.", hex::encode(&digest));
-//! ```
+//! println!(
+//!   "SHA-256 digest of \"Hello, world\" is {}.",
+//!   hex::encode(&digest)
+//! );
+//! ````
 
+use core::mem;
 use core::mem::MaybeUninit;
+use core::slice;
 
 use oxicrypt_core::sha_generic_sha1_compress;
 use oxicrypt_core::sha_generic_sha256_compress;
 use oxicrypt_core::sha_generic_sha512_compress;
-use oxicrypt_core::SHA_INITIAL_H1 as H1;
-use oxicrypt_core::SHA_INITIAL_H224 as H224;
-use oxicrypt_core::SHA_INITIAL_H256 as H256;
-use oxicrypt_core::SHA_INITIAL_H384 as H384;
-use oxicrypt_core::SHA_INITIAL_H512 as H512;
-use oxicrypt_core::SHA_INITIAL_H512_224 as H512_224;
-use oxicrypt_core::SHA_INITIAL_H512_256 as H512_256;
 
+use crate::digest::DigestInternal;
 use crate::digest::DigestMeta;
-use crate::digest::FinishInternal;
-use crate::digest::FinishToSlice;
 use crate::digest::Reset;
-use crate::digest::Sha;
-use crate::digest::Update;
-
-use core::mem;
-use core::slice;
-
-macro_rules! impl_context {
-  (
-    struct $context:ident;
-    const BLOCK_LEN = $block_len:expr;
-    const STATE_LEN = $state_len:expr;
-    type STATE_INT = $state_int:ident;
-    type LEN_INT = $len_int:ident;
-  ) => {
-    impl $context
-    {
-      /// Create a new context with the given state.
-      #[inline(always)]
-      pub const fn with_state(state: [$state_int; $state_len]) -> Self
-      {
-        let mut ctx: MaybeUninit<Self> = MaybeUninit::uninit();
-        unsafe { ctx.assume_init_mut() }.set_state(state);
-        unsafe { ctx.assume_init() }
-      }
-
-      /// Reset the context using the given state.
-      #[inline(always)]
-      pub const fn set_state(&mut self, state: [$state_int; $state_len])
-      {
-        self.h = state;
-        self.blocklen = 0;
-        self.len = 0;
-      }
-
-      /// Consume the context and return the inner state.
-      #[inline(always)]
-      pub const fn into_state(self) -> [$state_int; $state_len]
-      {
-        self.h
-      }
-
-      /// Return a slice to the inner state.
-      #[inline(always)]
-      pub fn as_state(&self) -> &[u8]
-      {
-        unsafe { slice::from_raw_parts(self.h.as_ptr().cast::<u8>(), $state_len * mem::size_of::<$state_int>()) }
-      }
-
-      /// Update the state with the given data.
-      #[inline(always)]
-      pub fn update(&mut self, mut data: &[u8])
-      {
-        // Loop until all the data is read.
-        while !data.is_empty() {
-          let emptyspace = $block_len - self.blocklen;
-          // If there is enough empty space in the inner block, then we can just copy `data` into
-          // `self.block`.
-          if emptyspace >= data.len() {
-            let newblocklen = self.blocklen + data.len();
-            self.block[self.blocklen .. newblocklen].copy_from_slice(data);
-            self.blocklen = newblocklen;
-            // We need to set the length of `data` to 0 so we can exit out of the loop.
-            data = &data[0 .. 0];
-          } else {
-            self.block[self.blocklen .. $block_len].copy_from_slice(&data[0 .. emptyspace]);
-            // We filled `self.block` completely.
-            self.blocklen = $block_len;
-            data = &data[emptyspace ..];
-          }
-
-          if self.blocklen == $block_len {
-            // SAFETY: We know the inner block is full.
-            unsafe { self.compress() };
-            self.blocklen = 0;
-            self.len += $block_len;
-          }
-        }
-      }
-
-      /// Calculates the digest value and store the result in the inner state.
-      ///
-      /// The calculated result can be accessed via [`as_state`](`Self::as_state`).
-      #[inline(always)]
-      pub fn finish(&mut self)
-      {
-        // We can do this without checking for `self.blocklen`, because we know `update` makes sure
-        // `self.blocklen` is always less than block length.
-        self.block[self.blocklen] = 0b10000000;
-        // Increment the inner length counter to account for the latest block length.
-        self.len += self.blocklen as $len_int;
-        // Account for the byte we added.
-        self.blocklen += 1;
-
-        // If there is not enough space to write the inner length counter, fill the remaining space with
-        // zeros and compress the block.
-        if self.blocklen > ($block_len - mem::size_of::<$len_int>()) {
-          self.block[self.blocklen ..].fill(0);
-          unsafe { self.compress() };
-          self.blocklen = 0;
-        }
-
-        self.block[self.blocklen .. $block_len - mem::size_of::<$len_int>()].fill(0);
-        self.len *= 8;
-        self.block[$block_len - mem::size_of::<$len_int>() ..].copy_from_slice(&self.len.to_be_bytes());
-        unsafe { self.compress() };
-
-        for i in 0 .. $state_len {
-          self.h[i] = self.h[i].to_be();
-        }
-      }
-    }
-  };
-}
-
-/// Unsafe SHA-1 context.
-#[derive(Debug, Clone, Copy)]
-#[cfg_attr(feature = "c", repr(C))]
-pub struct Context1
-{
-  h: [u32; 5],
-  block: [u8; 64],
-  blocklen: usize,
-  len: u64,
-}
-
-impl Context1
-{
-  #[allow(clippy::missing_safety_doc)]
-  #[allow(unused_variables)]
-  unsafe fn compress(&mut self)
-  {
-    sha_generic_sha1_compress(self.h.as_mut_ptr(), self.block.as_ptr());
-  }
-}
-
-/// Unsafe SHA-256 context.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "c", repr(C))]
-pub struct Context256
-{
-  h: [u32; 8],
-  block: [u8; 64],
-  blocklen: usize,
-  len: u64,
-}
-
-impl Context256
-{
-  #[allow(clippy::missing_safety_doc)]
-  #[allow(unused_variables)]
-  unsafe fn compress(&mut self)
-  {
-    sha_generic_sha256_compress(self.h.as_mut_ptr(), self.block.as_mut_ptr());
-  }
-}
-
-/// Unsafe SHA-512 context.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "c", repr(C))]
-pub struct Context512
-{
-  h: [u64; 8],
-  block: [u8; 128],
-  blocklen: usize,
-  len: u128,
-}
-
-impl Context512
-{
-  #[allow(clippy::missing_safety_doc)]
-  #[allow(unused_variables)]
-  unsafe fn compress(&mut self)
-  {
-    sha_generic_sha512_compress(self.h.as_mut_ptr(), self.block.as_ptr());
-  }
-}
-
-impl_context! {
-  struct Context1;
-  const BLOCK_LEN = 64;
-  const STATE_LEN = 5;
-  type STATE_INT = u32;
-  type LEN_INT = u64;
-}
-
-impl_context! {
-  struct Context256;
-  const BLOCK_LEN = 64;
-  const STATE_LEN = 8;
-  type STATE_INT = u32;
-  type LEN_INT = u64;
-}
-
-impl_context! {
-  struct Context512;
-  const BLOCK_LEN = 128;
-  const STATE_LEN = 8;
-  type STATE_INT = u64;
-  type LEN_INT = u128;
-}
 
 macro_rules! impl_sha {
   (
-    struct $sha:ident;
-    const DIGEST_LEN = $digest_len:expr;
+    struct $alg_name:ident;
+    fn compress = $compress:ident;
+    type BitCounter = $counter_int:ident;
+    const STATE: [$state_int:ident; $statew:expr] = $initial_state:expr;
     const BLOCK_LEN = $block_len:expr;
-    const STATE = $state:expr;
-    type Context = $ctx:ident;
+    const DIGEST_LEN = $digest_len:expr;
   ) => {
-    impl DigestMeta for $sha
+    #[derive(Debug, Clone, Copy)]
+    pub struct $alg_name
     {
-      const BLOCK_LEN: usize = $block_len;
-      const DIGEST_LEN: usize = $digest_len;
+      h: [$state_int; $statew],
+      block: [u8; $block_len],
+      index: usize,
+      block_count: usize,
     }
 
-    impl Sha for $sha {}
-
-    impl const Default for $sha
+    impl $alg_name
     {
-      fn default() -> Self
+      pub const fn new() -> Self
       {
-        let mut ctx: MaybeUninit<$sha> = MaybeUninit::uninit();
+        let mut ctx: MaybeUninit<Self> = MaybeUninit::uninit();
         unsafe { ctx.assume_init_mut() }.reset();
         unsafe { ctx.assume_init() }
       }
     }
 
-    impl core::hash::Hasher for $sha
+    impl DigestMeta for $alg_name
     {
-      fn finish(&self) -> u64
-      {
-        let mut ctx: Self = *self;
-        let mut digest: MaybeUninit<[u8; 8]> = MaybeUninit::uninit();
-        ctx.finish_to_slice(unsafe { digest.assume_init_mut() });
-        u64::from_be_bytes(unsafe { digest.assume_init() })
-      }
+      const BLOCK_LEN: usize = $block_len;
+      const DIGEST_LEN: usize = $digest_len;
+    }
 
-      fn write(&mut self, bytes: &[u8])
+    impl const Default for $alg_name
+    {
+      fn default() -> Self
       {
-        self.update(bytes);
+        Self::new()
       }
     }
 
-    #[cfg(any(feature = "std", doc))]
-    #[doc(cfg(feature = "std"))]
-    impl std::io::Write for $sha
+    impl const Reset for $alg_name
     {
-      fn write(&mut self, buf: &[u8]) -> std::io::Result<usize>
-      {
-        self.update(buf);
-        Ok(buf.len())
-      }
-
-      fn write_all(&mut self, buf: &[u8]) -> std::io::Result<()>
-      {
-        self.update(buf);
-        Ok(())
-      }
-
-      fn flush(&mut self) -> std::io::Result<()>
-      {
-        Ok(())
-      }
-    }
-
-    impl const Reset for $sha
-    {
+      #[inline(always)]
       fn reset(&mut self)
       {
-        self.ctx.set_state($state);
+        self.h = $initial_state;
+        self.index = 0;
+        self.block_count = 0;
       }
     }
 
-    impl Update for $sha
+    impl DigestInternal for $alg_name
     {
-      fn update(&mut self, data: &[u8])
-      {
-        self.ctx.update(data);
-      }
-    }
+      const LENGTH_COUNTER_W: usize = mem::size_of::<$counter_int>();
 
-    impl FinishInternal for $sha
-    {
-      fn finish_internal(&mut self) -> &[u8]
+      unsafe fn compress(&mut self)
       {
-        self.ctx.finish();
-        &self.ctx.as_state()[0 .. $digest_len]
+        $compress(self.h.as_mut_ptr(), self.block.as_ptr());
+      }
+
+      fn block(&mut self) -> &mut [u8]
+      {
+        &mut self.block
+      }
+
+      fn get_index(&self) -> usize
+      {
+        self.index
+      }
+
+      fn set_index(&mut self, index: usize)
+      {
+        self.index = index;
+      }
+
+      fn increase_block_count(&mut self)
+      {
+        self.block_count += 1;
+      }
+
+      fn get_block_count(&self) -> usize
+      {
+        self.block_count
+      }
+
+      fn write_bits(&mut self, bits: usize)
+      {
+        self.block[Self::BLOCK_LEN - Self::LENGTH_COUNTER_W ..].copy_from_slice(&$counter_int::to_be_bytes(bits as _));
+      }
+
+      fn finish_state(&mut self)
+      {
+        self.h.iter_mut().for_each(|h0| *h0 = h0.to_be());
+      }
+
+      fn state_as_bytes(&self) -> &[u8]
+      {
+        let data = self.h.as_ptr().cast::<u8>();
+        unsafe { slice::from_raw_parts(data, mem::size_of_val(&self.h)) }
       }
     }
   };
 }
 
-/// SHA-1 context.
-#[derive(Debug, Clone, Copy)]
-#[repr(transparent)]
-pub struct Sha1
-{
-  ctx: Context1,
-}
-
-/// SHA-224 context.
-#[derive(Debug, Clone, Copy)]
-#[repr(transparent)]
-pub struct Sha224
-{
-  ctx: Context256,
-}
-
-/// SHA-256 context.
-#[derive(Debug, Clone, Copy)]
-#[repr(transparent)]
-pub struct Sha256
-{
-  ctx: Context256,
-}
-
-/// SHA-384 context.
-#[derive(Debug, Clone, Copy)]
-#[repr(transparent)]
-pub struct Sha384
-{
-  ctx: Context512,
-}
-
-/// SHA-512 context.
-#[derive(Debug, Clone, Copy)]
-#[repr(transparent)]
-pub struct Sha512
-{
-  ctx: Context512,
-}
-
-/// SHA-512/224 context.
-#[derive(Debug, Clone, Copy)]
-#[repr(transparent)]
-pub struct Sha512_224
-{
-  ctx: Context512,
-}
-
-/// SHA-512/256 context.
-#[derive(Debug, Clone, Copy)]
-#[repr(transparent)]
-pub struct Sha512_256
-{
-  ctx: Context512,
-}
-
 impl_sha! {
   struct Sha1;
-  const DIGEST_LEN = 20;
+  fn compress = sha_generic_sha1_compress;
+  type BitCounter = u64;
+  const STATE: [u32; 5] = SHA_INITIAL_H1;
   const BLOCK_LEN = 64;
-  const STATE = H1;
-  type Context = Context1;
+  const DIGEST_LEN = 20;
 }
 
 impl_sha! {
   struct Sha224;
-  const DIGEST_LEN = 28;
+  fn compress = sha_generic_sha256_compress;
+  type BitCounter = u64;
+  const STATE: [u32; 8] = SHA_INITIAL_H224;
   const BLOCK_LEN = 64;
-  const STATE = H224;
-  type Context = Context256;
+  const DIGEST_LEN = 28;
 }
 
 impl_sha! {
   struct Sha256;
-  const DIGEST_LEN = 32;
+  fn compress = sha_generic_sha256_compress;
+  type BitCounter = u64;
+  const STATE: [u32; 8] = SHA_INITIAL_H256;
   const BLOCK_LEN = 64;
-  const STATE = H256;
-  type Context = Context256;
+  const DIGEST_LEN = 32;
 }
 
 impl_sha! {
   struct Sha384;
-  const DIGEST_LEN = 48;
+  fn compress = sha_generic_sha512_compress;
+  type BitCounter = u128;
+  const STATE: [u64; 8] = SHA_INITIAL_H384;
   const BLOCK_LEN = 128;
-  const STATE = H384;
-  type Context = Context512;
+  const DIGEST_LEN = 48;
 }
 
 impl_sha! {
   struct Sha512;
-  const DIGEST_LEN = 64;
+  fn compress = sha_generic_sha512_compress;
+  type BitCounter = u128;
+  const STATE: [u64; 8] = SHA_INITIAL_H512;
   const BLOCK_LEN = 128;
-  const STATE = H512;
-  type Context = Context512;
+  const DIGEST_LEN = 64;
 }
 
 impl_sha! {
   struct Sha512_224;
-  const DIGEST_LEN = 28;
+  fn compress = sha_generic_sha512_compress;
+  type BitCounter = u128;
+  const STATE: [u64; 8] = SHA_INITIAL_H512_224;
   const BLOCK_LEN = 128;
-  const STATE = H512_224;
-  type Context = Context512;
+  const DIGEST_LEN = 28;
 }
 
 impl_sha! {
   struct Sha512_256;
-  const DIGEST_LEN = 32;
+  fn compress = sha_generic_sha512_compress;
+  type BitCounter = u128;
+  const STATE: [u64; 8] = SHA_INITIAL_H512_256;
   const BLOCK_LEN = 128;
-  const STATE = H512_256;
-  type Context = Context512;
+  const DIGEST_LEN = 32;
 }
+
+// Initial state for the SHA-1 algorithm.
+#[rustfmt::skip]
+const SHA_INITIAL_H1: [u32; 5] = [
+  0x67452301,
+  0xefcdab89,
+  0x98badcfe,
+  0x10325476,
+  0xc3d2e1f0,
+];
+
+/// Initial state for the SHA-224 algorithm.
+#[rustfmt::skip]
+const SHA_INITIAL_H224: [u32; 8] = [
+  0xc1059ed8,
+  0x367cd507,
+  0x3070dd17,
+  0xf70e5939,
+  0xffc00b31,
+  0x68581511,
+  0x64f98fa7,
+  0xbefa4fa4,
+];
+
+/// Initial state for the SHA-256 algorithm.
+#[rustfmt::skip]
+const SHA_INITIAL_H256: [u32; 8] = [
+  0x6a09e667,
+  0xbb67ae85,
+  0x3c6ef372,
+  0xa54ff53a,
+  0x510e527f,
+  0x9b05688c,
+  0x1f83d9ab,
+  0x5be0cd19,
+];
+
+/// Initial state for the SHA-384 algorithm.
+#[rustfmt::skip]
+const SHA_INITIAL_H384: [u64; 8] = [
+  0xcbbb9d5dc1059ed8,
+  0x629a292a367cd507,
+  0x9159015a3070dd17,
+  0x152fecd8f70e5939,
+  0x67332667ffc00b31,
+  0x8eb44a8768581511,
+  0xdb0c2e0d64f98fa7,
+  0x47b5481dbefa4fa4,
+];
+
+/// Initial state for the SHA-512 algorithm.
+#[rustfmt::skip]
+const SHA_INITIAL_H512: [u64; 8] = [
+  0x6a09e667f3bcc908,
+  0xbb67ae8584caa73b,
+  0x3c6ef372fe94f82b,
+  0xa54ff53a5f1d36f1,
+  0x510e527fade682d1,
+  0x9b05688c2b3e6c1f,
+  0x1f83d9abfb41bd6b,
+  0x5be0cd19137e2179,
+];
+
+/// Initial state for the SHA-512/224 algorithm.
+#[rustfmt::skip]
+const SHA_INITIAL_H512_224: [u64; 8] = [
+  0x8c3d37c819544da2,
+  0x73e1996689dcd4d6,
+  0x1dfab7ae32ff9c82,
+  0x679dd514582f9fcf,
+  0x0f6d2b697bd44da8,
+  0x77e36f7304c48942,
+  0x3f9d85a86a1d36c8,
+  0x1112e6ad91d692a1,
+];
+
+/// Initial state for the SHA-512/256 algorithm.
+#[rustfmt::skip]
+const SHA_INITIAL_H512_256: [u64; 8] = [
+  0x22312194fc2bf72c,
+  0x9f555fa3c84c64c2,
+  0x2393b86b6f53b151,
+  0x963877195940eabd,
+  0x96283ee2a88effe3,
+  0xbe5e1e2553863992,
+  0x2b0199fc2c85b8aa,
+  0x0eb72ddc81c52ca2,
+];

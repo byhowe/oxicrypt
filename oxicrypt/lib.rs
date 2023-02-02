@@ -13,6 +13,9 @@
 #![feature(slice_as_chunks)]
 #![cfg_attr(feature = "alloc", feature(new_uninit))]
 
+#![allow(clippy::identity_op)]
+#![allow(clippy::zero_prefixed_literal)]
+
 #[cfg(any(feature = "alloc", doc))]
 extern crate alloc;
 #[cfg(any(feature = "std", doc))]

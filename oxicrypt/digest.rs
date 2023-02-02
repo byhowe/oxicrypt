@@ -6,10 +6,9 @@ use core::cmp;
 use core::mem::MaybeUninit;
 
 #[cfg(not(any(feature = "alloc", doc)))]
-pub trait Digest = DigestMeta + DigestLen + BlockLen + Reset + Update + Finish + FinishInternal + FinishToSlice;
+pub trait Digest = DigestMeta + Reset + Update + Finish + FinishInternal + FinishToSlice;
 #[cfg(any(feature = "alloc", doc))]
-pub trait Digest =
-  DigestMeta + DigestLen + BlockLen + Reset + Update + Finish + FinishBoxed + FinishInternal + FinishToSlice;
+pub trait Digest = DigestMeta + Reset + Update + Finish + FinishBoxed + FinishInternal + FinishToSlice;
 
 /// Information about the digest algorithm.
 pub trait DigestMeta
@@ -19,40 +18,6 @@ pub trait DigestMeta
 
   /// Block length used by the algorithm.
   const BLOCK_LEN: usize;
-}
-
-/// Trait for accessing digest length of an algorithm.
-#[const_trait]
-pub trait DigestLen
-{
-  fn digest_len(&self) -> usize;
-}
-
-/// Trait for accessing inner block length of an algorithm.
-#[const_trait]
-pub trait BlockLen
-{
-  fn block_len(&self) -> usize;
-}
-
-impl<T> const DigestLen for T
-where
-  T: DigestMeta,
-{
-  fn digest_len(&self) -> usize
-  {
-    Self::DIGEST_LEN
-  }
-}
-
-impl<T> const BlockLen for T
-where
-  T: DigestMeta,
-{
-  fn block_len(&self) -> usize
-  {
-    Self::BLOCK_LEN
-  }
 }
 
 /// Trait for resetting the context to its original state.
@@ -155,30 +120,104 @@ pub trait FinishInternal
   fn finish_internal(&mut self) -> &[u8];
 }
 
-/// Marker trait for SHA objects.
-pub trait Sha
+/// Auxilary trait for implementing the `Update` trait and the `Finish` traits. Most hashing
+/// algorithms follow a similar pattern. This trait allows for us to automize the implementation.
+pub(crate) trait DigestInternal
 {
+  /// The number of bytes required for the length counter.
+  const LENGTH_COUNTER_W: usize;
+
+  /// Compress the block into state. This is usually an unsafe operation under the hood. The caller
+  /// must check that the block is full before processing.
+  unsafe fn compress(&mut self);
+  /// Get a mutable reference to the inner block.
+  fn block(&mut self) -> &mut [u8];
+  /// Get the index that the block is at.
+  fn get_index(&self) -> usize;
+  /// Set the index that the block is at.
+  fn set_index(&mut self, index: usize);
+  /// Increase the block count by 1.
+  fn increase_block_count(&mut self);
+  /// Get the block count.
+  fn get_block_count(&self) -> usize;
+  /// Write the bits counter to the block.
+  fn write_bits(&mut self, bits: usize);
+  /// Reorder the bytes in the state according to the endian.
+  fn finish_state(&mut self);
+  /// Get the untruncated state as bytes.
+  fn state_as_bytes(&self) -> &[u8];
 }
 
-/// Available digest algorithms.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum DigestAlgo
-{
-  Sha1 = 0,
-  Sha224 = 1,
-  Sha256 = 2,
-  Sha384 = 3,
-  Sha512 = 4,
-  Sha512_224 = 5,
-  Sha512_256 = 6,
-}
-
-#[cfg(any(feature = "alloc", doc))]
-pub trait DynDigest
+impl<T> Update for T
 where
-  Self: DigestLen + BlockLen + Reset + Update + FinishBoxed + FinishInternal + FinishToSlice,
+  T: DigestInternal + DigestMeta,
 {
+  fn update(&mut self, mut data: &[u8])
+  {
+    // Loop until all the data is processed.
+    while !data.is_empty() {
+      let index = self.get_index();
+      let emptyspace = T::BLOCK_LEN - index;
+      // If there is enough space in the block, then we can just copy `data` into `self.block`.
+      if emptyspace >= data.len() {
+        let newindex = index + data.len();
+        self.block()[index .. newindex].copy_from_slice(data);
+        self.set_index(newindex);
+        // All of the data is read at this point. We need to set the length of `data` to 0 so we can exit
+        // out of the loop.
+        data = &data[0 .. 0];
+      } else {
+        self.block()[index .. T::BLOCK_LEN].copy_from_slice(&data[0 .. emptyspace]);
+        // We filled `self.block` completely.
+        self.set_index(T::BLOCK_LEN);
+        data = &data[emptyspace ..];
+      }
+
+      if self.get_index() == T::BLOCK_LEN {
+        // SAFETY: We know the inner block is full since we have checked for it.
+        unsafe { self.compress() };
+        self.set_index(0);
+        self.increase_block_count();
+      }
+    }
+  }
 }
 
-#[cfg(any(feature = "alloc", doc))]
-impl<T> DynDigest for T where T: DigestLen + BlockLen + Reset + Update + FinishBoxed + FinishInternal + FinishToSlice {}
+impl<T> FinishInternal for T
+where
+  T: DigestInternal + DigestMeta,
+{
+  fn finish_internal(&mut self) -> &[u8]
+  {
+    let index = self.get_index();
+    // `len` represents the total number of bytes that have been processed by the algorithm. Later, we
+    // will multiply it by 8 to get the number of bits which will be included at the end of the last
+    // block.
+    let len = self.get_block_count() * T::BLOCK_LEN + index;
+    // We need to pad `self.block` with a "1" bit followed by "0" bits according to the specifications
+    // of the algorithm. 0x80 byte represents 0b10000000. We can append this byte without checking if
+    // the there is enough space, because a call to update would have reset the block if there weren't
+    // enough space for at least one byte.
+    self.block()[index] = 0x80;
+    self.set_index(index + 1);
+
+    // If there is not enough space to write the length counter, fill the remaining space in the block
+    // with zeros and compress it.
+    let index = self.get_index();
+    if index > T::BLOCK_LEN - T::LENGTH_COUNTER_W {
+      self.block()[index ..].fill(0);
+      unsafe { self.compress() };
+      self.set_index(0);
+    }
+
+    // Write the bits counter.
+    let index = self.get_index();
+    self.block()[index .. T::BLOCK_LEN - T::LENGTH_COUNTER_W].fill(0);
+    let bits = len * 8;
+    self.write_bits(bits);
+    unsafe { self.compress() };
+
+    self.finish_state();
+    &self.state_as_bytes()[..T::DIGEST_LEN]
+  }
+}

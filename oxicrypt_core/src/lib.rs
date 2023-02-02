@@ -10,17 +10,18 @@
 #![feature(generic_const_exprs)]
 #![feature(const_mut_refs)]
 
+#![allow(clippy::identity_op)]
+#![allow(clippy::zero_prefixed_literal)]
+
 use cfg_if::cfg_if;
 
 mod aes_lut_aes_core;
-mod digest_initial_states;
 mod md5_generic_md5_compress;
 mod sha_generic_sha1_compress;
 mod sha_generic_sha256_compress;
 mod sha_generic_sha512_compress;
 
 pub use aes_lut_aes_core::*;
-pub use digest_initial_states::*;
 pub use md5_generic_md5_compress::md5_generic_md5_compress;
 pub use sha_generic_sha1_compress::sha_generic_sha1_compress;
 pub use sha_generic_sha256_compress::sha_generic_sha256_compress;
