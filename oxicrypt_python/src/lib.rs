@@ -1,4 +1,6 @@
+use ::oxicrypt::digest::DigestMeta;
 use ::oxicrypt::digest::FinishInternal;
+use ::oxicrypt::digest::OneshotToSlice;
 use ::oxicrypt::digest::Update;
 use ::oxicrypt::md5::Md5;
 use ::oxicrypt::sha::Sha1;
@@ -20,19 +22,21 @@ fn version() -> &'static str
 }
 
 #[pyfunction]
-fn sha1_oneshot(py: Python, data: &PyBytes) -> PyObject
+fn sha1_oneshot<'py>(py: Python<'py>, data: &PyBytes) -> PyResult<&'py PyBytes>
 {
-  let mut ctx = Sha1::default();
-  ctx.update(data.as_bytes());
-  PyBytes::new(py, ctx.finish_internal()).into()
+  PyBytes::new_with(py, Sha1::DIGEST_LEN, |buf: &mut [u8]| {
+    Sha1::oneshot_to_slice(data.as_bytes(), buf);
+    Ok(())
+  })
 }
 
 #[pyfunction]
-fn md5_oneshot(py: Python, data: &PyBytes) -> PyObject
+fn md5_oneshot<'py>(py: Python<'py>, data: &PyBytes) -> PyResult<&'py PyBytes>
 {
-  let mut ctx = Md5::default();
-  ctx.update(data.as_bytes());
-  PyBytes::new(py, ctx.finish_internal()).into()
+  PyBytes::new_with(py, Md5::DIGEST_LEN, |buf: &mut [u8]| {
+    Md5::oneshot_to_slice(data.as_bytes(), buf);
+    Ok(())
+  })
 }
 
 /// A Python module implemented in Rust.

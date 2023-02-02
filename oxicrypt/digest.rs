@@ -120,6 +120,61 @@ pub trait FinishInternal
   fn finish_internal(&mut self) -> &[u8];
 }
 
+pub trait Oneshot
+where
+  Self: DigestMeta,
+{
+  fn oneshot(data: &[u8]) -> [u8; Self::DIGEST_LEN];
+}
+
+#[cfg(any(feature = "alloc", doc))]
+pub trait OneshotBoxed
+{
+  fn oneshot_boxed(data: &[u8]) -> Box<[u8]>;
+}
+
+pub trait OneshotToSlice
+{
+  fn oneshot_to_slice(data: &[u8], buf: &mut [u8]);
+}
+
+impl<T> Oneshot for T
+where
+  T: Default + Update + Finish,
+{
+  fn oneshot(data: &[u8]) -> [u8; Self::DIGEST_LEN]
+  {
+    let mut ctx = T::default();
+    ctx.update(data);
+    ctx.finish()
+  }
+}
+
+#[cfg(any(feature = "alloc", doc))]
+impl<T> OneshotBoxed for T
+where
+  T: Default + Update + FinishBoxed,
+{
+  fn oneshot_boxed(data: &[u8]) -> Box<[u8]>
+  {
+    let mut ctx = T::default();
+    ctx.update(data);
+    ctx.finish_boxed()
+  }
+}
+
+impl<T> OneshotToSlice for T
+where
+  T: Default + Update + FinishToSlice,
+{
+  fn oneshot_to_slice(data: &[u8], buf: &mut [u8])
+  {
+    let mut ctx = T::default();
+    ctx.update(data);
+    ctx.finish_to_slice(buf);
+  }
+}
+
 /// Auxilary trait for implementing the `Update` trait and the `Finish` traits. Most hashing
 /// algorithms follow a similar pattern. This trait allows for us to automize the implementation.
 pub(crate) trait DigestInternal
@@ -218,6 +273,6 @@ where
     unsafe { self.compress() };
 
     self.finish_state();
-    &self.state_as_bytes()[..T::DIGEST_LEN]
+    &self.state_as_bytes()[.. T::DIGEST_LEN]
   }
 }
