@@ -25,14 +25,15 @@ use core::slice;
 
 use oxicrypt_core::md5_generic_md5_compress;
 
-use crate::digest::DigestInternal;
 use crate::digest::DigestMeta;
+use crate::digest::FinishInternal;
 use crate::digest::Reset;
 use crate::digest::Update;
 use crate::merkle_damgard;
 
 const BLOCK_SIZE: usize = 64;
 const DIGEST_SIZE: usize = 16;
+const BIT_COUNT_LEN: usize = mem::size_of::<Counter>();
 type Counter = u64;
 
 #[derive(Debug, Clone, Copy)]
@@ -52,6 +53,12 @@ impl Md5
     let mut ctx: MaybeUninit<Self> = MaybeUninit::uninit();
     unsafe { ctx.assume_init_mut() }.reset();
     unsafe { ctx.assume_init() }
+  }
+
+  #[inline(always)]
+  unsafe fn compress(h: *mut u32, block: *const u8)
+  {
+    md5_generic_md5_compress(h, block);
   }
 }
 
@@ -92,59 +99,36 @@ impl Update for Md5
       &mut self.block,
       &mut self.index,
       &mut self.block_count,
-      || unsafe { md5_generic_md5_compress(h_ptr, block_ptr) },
+      || unsafe { Self::compress(h_ptr, block_ptr) },
     );
   }
 }
 
-impl DigestInternal for Md5
+impl FinishInternal for Md5
 {
-  const LENGTH_COUNTER_W: usize = mem::size_of::<Counter>();
-
-  unsafe fn compress(&mut self)
+  fn finish_internal(&mut self) -> &[u8]
   {
-    md5_generic_md5_compress(self.h.as_mut_ptr(), self.block.as_ptr());
-  }
+    // pointers to state and block
+    let h_ptr = self.h.as_mut_ptr();
+    let block_ptr = self.block.as_mut_ptr();
 
-  fn block(&mut self) -> &mut [u8]
-  {
-    &mut self.block
-  }
+    // total number of bits processed
+    let len = (self.block_count * Self::BLOCK_LEN + self.index) * 8;
 
-  fn get_index(&self) -> usize
-  {
-    self.index
-  }
+    // pad with the bit pattern 1 0*
+    merkle_damgard::pad::<Self, _>(&mut self.block, &mut self.index, BIT_COUNT_LEN, || unsafe {
+      Self::compress(h_ptr, block_ptr)
+    });
 
-  fn set_index(&mut self, index: usize)
-  {
-    self.index = index;
-  }
+    // write the bit counter
+    self.block[Self::BLOCK_LEN - BIT_COUNT_LEN ..].copy_from_slice(&Counter::to_le_bytes(len as _));
 
-  fn increase_block_count(&mut self)
-  {
-    self.block_count += 1;
-  }
+    // compress the final block
+    unsafe { Self::compress(h_ptr, block_ptr) };
 
-  fn get_block_count(&self) -> usize
-  {
-    self.block_count
-  }
-
-  fn write_bits(&mut self, bits: usize)
-  {
-    self.block[Self::BLOCK_LEN - Self::LENGTH_COUNTER_W ..].copy_from_slice(&Counter::to_le_bytes(bits as _));
-  }
-
-  fn finish_state(&mut self)
-  {
+    // check endiannes
     self.h.iter_mut().for_each(|h0| *h0 = h0.to_le());
-  }
-
-  fn state_as_bytes(&self) -> &[u8]
-  {
-    let data = self.h.as_ptr().cast::<u8>();
-    unsafe { slice::from_raw_parts(data, mem::size_of_val(&self.h)) }
+    unsafe { slice::from_raw_parts(h_ptr.cast(), Self::DIGEST_LEN) }
   }
 }
 
