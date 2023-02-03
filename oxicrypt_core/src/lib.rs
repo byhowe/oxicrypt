@@ -1,15 +1,15 @@
 //! # The Oxicrypt Core Library
 //!
-//! The Oxicrypt Core Library is a collection of low level cryptography functions that can be used
-//! to build a cryptography library. It is the foundation for the the Oxicrypt Cryptography Library
-//! which exposes a higher level and a safer API that is built on top of `oxicrypt_core`. This
+//! The Oxicrypt Core Library is a collection of low level cryptography
+//! functions that can be used to build a cryptography library. It is the
+//! foundation for the the Oxicrypt Cryptography Library which exposes a higher
+//! level and a safer API that is built on top of `oxicrypt_core`. This
 //! library should not be used on its own as it icludes unsafe functions.
 
 #![no_std]
 #![feature(doc_cfg)]
 #![feature(generic_const_exprs)]
 #![feature(const_mut_refs)]
-
 #![allow(clippy::identity_op)]
 #![allow(clippy::zero_prefixed_literal)]
 

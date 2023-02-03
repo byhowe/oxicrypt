@@ -28,5 +28,4 @@ pub mod md5;
 pub mod merkle_damgard;
 pub mod sha;
 
-#[cfg(test)]
-pub(crate) mod test_vectors;
+#[cfg(test)] pub(crate) mod test_vectors;

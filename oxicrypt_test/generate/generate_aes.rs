@@ -1,13 +1,16 @@
 #![feature(box_syntax)]
 
+use std::fs::File;
 use std::io::Write;
-use std::{fs::File, path::PathBuf};
+use std::path::PathBuf;
 
-use oxicrypt_test_vectors::{Aes, AesVectors};
+use oxicrypt_test_vectors::Aes;
+use oxicrypt_test_vectors::AesVectors;
 
 const VECTORS_LEN: u32 = 128;
 
-fn main() {
+fn main()
+{
     let outpath = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("test-vectors");
 
     let mut buffer = [0; 2048];

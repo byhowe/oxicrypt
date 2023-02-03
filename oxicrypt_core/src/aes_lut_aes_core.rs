@@ -168,38 +168,38 @@ const RCON: [u8; 10] = [
 #[inline(always)]
 unsafe fn add_round_key(b0: *mut u8, k0: *const u8)
 {
-  // since the round key is 128bits, on 64bit platform, we divide the array into
-  // two 64bit integers and xor them. doing it this way is more efficient than
-  // xoring each byte one by one.
-  #[cfg(target_pointer_width = "64")]
-  for i in 0 .. 2 {
-    *b0.cast::<u64>().add(i) ^= *k0.cast::<u64>().add(i);
-  }
+    // since the round key is 128bits, on 64bit platform, we divide the array into
+    // two 64bit integers and xor them. doing it this way is more efficient than
+    // xoring each byte one by one.
+    #[cfg(target_pointer_width = "64")]
+    for i in 0..2 {
+        *b0.cast::<u64>().add(i) ^= *k0.cast::<u64>().add(i);
+    }
 
-  // according to
-  // https://doc.rust-lang.org/reference/conditional-compilation.html#target_pointer_width,
-  // the only possible values for target_pointer_width are 16, 32, and 64. we
-  // cover all of them just in case.
-  #[cfg(target_pointer_width = "32")]
-  for i in 0 .. 4 {
-    *b0.cast::<u32>().add(i) ^= *k0.cast::<u32>().add(i);
-  }
+    // according to
+    // https://doc.rust-lang.org/reference/conditional-compilation.html#target_pointer_width,
+    // the only possible values for target_pointer_width are 16, 32, and 64. we
+    // cover all of them just in case.
+    #[cfg(target_pointer_width = "32")]
+    for i in 0..4 {
+        *b0.cast::<u32>().add(i) ^= *k0.cast::<u32>().add(i);
+    }
 
-  #[cfg(target_pointer_width = "16")]
-  for i in 0 .. 8 {
-    *b0.cast::<u16>().add(i) ^= *k0.cast::<u16>().add(i);
-  }
+    #[cfg(target_pointer_width = "16")]
+    for i in 0..8 {
+        *b0.cast::<u16>().add(i) ^= *k0.cast::<u16>().add(i);
+    }
 
-  // technically, we should not need this since the target_pointer_width cannot
-  // be anything else, just in case. remove if unnecessary in the future.
-  #[cfg(not(any(
-    target_pointer_width = "64",
-    target_pointer_width = "32",
-    target_pointer_width = "16"
-  )))]
-  for i in 0 .. 16 {
-    *b0.cast::<u8>().add(i) ^= *k0.cast::<u8>().add(i);
-  }
+    // technically, we should not need this since the target_pointer_width cannot
+    // be anything else, just in case. remove if unnecessary in the future.
+    #[cfg(not(any(
+        target_pointer_width = "64",
+        target_pointer_width = "32",
+        target_pointer_width = "16"
+    )))]
+    for i in 0..16 {
+        *b0.cast::<u8>().add(i) ^= *k0.cast::<u8>().add(i);
+    }
 }
 
 /// The internal state is viewed as a 4x4 matrix. In Rijndael, shifting rows is
@@ -207,499 +207,518 @@ unsafe fn add_round_key(b0: *mut u8, k0: *const u8)
 #[inline(always)]
 unsafe fn shift_rows(block: *mut u8)
 {
-  let a = *block.add(1);
-  let b = *block.add(5);
-  let c = *block.add(9);
-  let d = *block.add(13);
-  *block.add(1) = b;
-  *block.add(5) = c;
-  *block.add(9) = d;
-  *block.add(13) = a;
+    let a = *block.add(1);
+    let b = *block.add(5);
+    let c = *block.add(9);
+    let d = *block.add(13);
+    *block.add(1) = b;
+    *block.add(5) = c;
+    *block.add(9) = d;
+    *block.add(13) = a;
 
-  let a = *block.add(2);
-  let b = *block.add(6);
-  let c = *block.add(10);
-  let d = *block.add(14);
-  *block.add(2) = c;
-  *block.add(6) = d;
-  *block.add(10) = a;
-  *block.add(14) = b;
+    let a = *block.add(2);
+    let b = *block.add(6);
+    let c = *block.add(10);
+    let d = *block.add(14);
+    *block.add(2) = c;
+    *block.add(6) = d;
+    *block.add(10) = a;
+    *block.add(14) = b;
 
-  let a = *block.add(3);
-  let b = *block.add(7);
-  let c = *block.add(11);
-  let d = *block.add(15);
-  *block.add(3) = d;
-  *block.add(7) = a;
-  *block.add(11) = b;
-  *block.add(15) = c;
+    let a = *block.add(3);
+    let b = *block.add(7);
+    let c = *block.add(11);
+    let d = *block.add(15);
+    *block.add(3) = d;
+    *block.add(7) = a;
+    *block.add(11) = b;
+    *block.add(15) = c;
 }
 
 #[inline(always)]
 unsafe fn inverse_shift_rows(block: *mut u8)
 {
-  let a = *block.add(1);
-  let b = *block.add(5);
-  let c = *block.add(9);
-  let d = *block.add(13);
-  *block.add(1) = d;
-  *block.add(5) = a;
-  *block.add(9) = b;
-  *block.add(13) = c;
+    let a = *block.add(1);
+    let b = *block.add(5);
+    let c = *block.add(9);
+    let d = *block.add(13);
+    *block.add(1) = d;
+    *block.add(5) = a;
+    *block.add(9) = b;
+    *block.add(13) = c;
 
-  let a = *block.add(2);
-  let b = *block.add(6);
-  let c = *block.add(10);
-  let d = *block.add(14);
-  *block.add(2) = c;
-  *block.add(6) = d;
-  *block.add(10) = a;
-  *block.add(14) = b;
+    let a = *block.add(2);
+    let b = *block.add(6);
+    let c = *block.add(10);
+    let d = *block.add(14);
+    *block.add(2) = c;
+    *block.add(6) = d;
+    *block.add(10) = a;
+    *block.add(14) = b;
 
-  let a = *block.add(3);
-  let b = *block.add(7);
-  let c = *block.add(11);
-  let d = *block.add(15);
-  *block.add(3) = b;
-  *block.add(7) = c;
-  *block.add(11) = d;
-  *block.add(15) = a;
+    let a = *block.add(3);
+    let b = *block.add(7);
+    let c = *block.add(11);
+    let d = *block.add(15);
+    *block.add(3) = b;
+    *block.add(7) = c;
+    *block.add(11) = d;
+    *block.add(15) = a;
 }
 
 #[inline(always)]
 unsafe fn sub_bytes(block: *mut u8)
 {
-  for i in 0 .. 16 {
-    *block.add(i) = SBOX[(*block.add(i)) as usize];
-  }
+    for i in 0..16 {
+        *block.add(i) = SBOX[(*block.add(i)) as usize];
+    }
 }
 
 #[inline(always)]
 unsafe fn inverse_sub_bytes(block: *mut u8)
 {
-  for i in 0 .. 16 {
-    *block.add(i) = INV_SBOX[*block.add(i) as usize];
-  }
+    for i in 0..16 {
+        *block.add(i) = INV_SBOX[*block.add(i) as usize];
+    }
 }
 
 #[inline(always)]
 unsafe fn mix_columns(block: *mut u8)
 {
-  for i in 0 .. 4 {
-    let mut cache: [u8; 4] = [0; 4];
-    cache[0] = MUL2[(*block.add(i * 4 + 0)) as usize]
-      ^ MUL3[(*block.add(i * 4 + 1)) as usize]
-      ^ *block.add(i * 4 + 2)
-      ^ *block.add(i * 4 + 3);
-    cache[1] = *block.add(i * 4 + 0)
-      ^ MUL2[(*block.add(i * 4 + 1)) as usize]
-      ^ MUL3[(*block.add(i * 4 + 2)) as usize]
-      ^ *block.add(i * 4 + 3);
-    cache[2] = *block.add(i * 4 + 0)
-      ^ *block.add(i * 4 + 1)
-      ^ MUL2[(*block.add(i * 4 + 2)) as usize]
-      ^ MUL3[(*block.add(i * 4 + 3)) as usize];
-    cache[3] = MUL3[(*block.add(i * 4 + 0)) as usize]
-      ^ *block.add(i * 4 + 1)
-      ^ *block.add(i * 4 + 2)
-      ^ MUL2[(*block.add(i * 4 + 3)) as usize];
-    core::intrinsics::copy_nonoverlapping(cache.as_ptr(), block.add(i * 4), 4);
-  }
+    for i in 0..4 {
+        let mut cache: [u8; 4] = [0; 4];
+        cache[0] = MUL2[(*block.add(i * 4 + 0)) as usize]
+            ^ MUL3[(*block.add(i * 4 + 1)) as usize]
+            ^ *block.add(i * 4 + 2)
+            ^ *block.add(i * 4 + 3);
+        cache[1] = *block.add(i * 4 + 0)
+            ^ MUL2[(*block.add(i * 4 + 1)) as usize]
+            ^ MUL3[(*block.add(i * 4 + 2)) as usize]
+            ^ *block.add(i * 4 + 3);
+        cache[2] = *block.add(i * 4 + 0)
+            ^ *block.add(i * 4 + 1)
+            ^ MUL2[(*block.add(i * 4 + 2)) as usize]
+            ^ MUL3[(*block.add(i * 4 + 3)) as usize];
+        cache[3] = MUL3[(*block.add(i * 4 + 0)) as usize]
+            ^ *block.add(i * 4 + 1)
+            ^ *block.add(i * 4 + 2)
+            ^ MUL2[(*block.add(i * 4 + 3)) as usize];
+        core::intrinsics::copy_nonoverlapping(cache.as_ptr(), block.add(i * 4), 4);
+    }
 }
 
 #[inline(always)]
 unsafe fn inverse_mix_columns(block: *mut u8)
 {
-  for i in 0 .. 4 {
-    let mut cache: [u8; 4] = [0; 4];
-    cache[0] = MUL14[(*block.add(i * 4 + 0)) as usize]
-      ^ MUL11[(*block.add(i * 4 + 1)) as usize]
-      ^ MUL13[(*block.add(i * 4 + 2)) as usize]
-      ^ MUL9[(*block.add(i * 4 + 3)) as usize];
-    cache[1] = MUL9[(*block.add(i * 4 + 0)) as usize]
-      ^ MUL14[(*block.add(i * 4 + 1)) as usize]
-      ^ MUL11[(*block.add(i * 4 + 2)) as usize]
-      ^ MUL13[(*block.add(i * 4 + 3)) as usize];
-    cache[2] = MUL13[(*block.add(i * 4 + 0)) as usize]
-      ^ MUL9[(*block.add(i * 4 + 1)) as usize]
-      ^ MUL14[(*block.add(i * 4 + 2)) as usize]
-      ^ MUL11[(*block.add(i * 4 + 3)) as usize];
-    cache[3] = MUL11[(*block.add(i * 4 + 0)) as usize]
-      ^ MUL13[(*block.add(i * 4 + 1)) as usize]
-      ^ MUL9[(*block.add(i * 4 + 2)) as usize]
-      ^ MUL14[(*block.add(i * 4 + 3)) as usize];
-    core::intrinsics::copy_nonoverlapping(cache.as_ptr(), block.add(i * 4), 4);
-  }
+    for i in 0..4 {
+        let mut cache: [u8; 4] = [0; 4];
+        cache[0] = MUL14[(*block.add(i * 4 + 0)) as usize]
+            ^ MUL11[(*block.add(i * 4 + 1)) as usize]
+            ^ MUL13[(*block.add(i * 4 + 2)) as usize]
+            ^ MUL9[(*block.add(i * 4 + 3)) as usize];
+        cache[1] = MUL9[(*block.add(i * 4 + 0)) as usize]
+            ^ MUL14[(*block.add(i * 4 + 1)) as usize]
+            ^ MUL11[(*block.add(i * 4 + 2)) as usize]
+            ^ MUL13[(*block.add(i * 4 + 3)) as usize];
+        cache[2] = MUL13[(*block.add(i * 4 + 0)) as usize]
+            ^ MUL9[(*block.add(i * 4 + 1)) as usize]
+            ^ MUL14[(*block.add(i * 4 + 2)) as usize]
+            ^ MUL11[(*block.add(i * 4 + 3)) as usize];
+        cache[3] = MUL11[(*block.add(i * 4 + 0)) as usize]
+            ^ MUL13[(*block.add(i * 4 + 1)) as usize]
+            ^ MUL9[(*block.add(i * 4 + 2)) as usize]
+            ^ MUL14[(*block.add(i * 4 + 3)) as usize];
+        core::intrinsics::copy_nonoverlapping(cache.as_ptr(), block.add(i * 4), 4);
+    }
 }
 
 #[inline(always)]
 unsafe fn expand_key<const N: usize>(key: *const u8, key_schedule: *mut u8)
 {
-  let nk = N - 6;
-  core::intrinsics::copy_nonoverlapping(key, key_schedule, nk * 4);
+    let nk = N - 6;
+    core::intrinsics::copy_nonoverlapping(key, key_schedule, nk * 4);
 
-  for i in nk .. (N + 1) * 4 {
-    let k = (i - 1) * 4;
-    let mut t = [
-      *key_schedule.add(k + 0),
-      *key_schedule.add(k + 1),
-      *key_schedule.add(k + 2),
-      *key_schedule.add(k + 3),
-    ];
+    for i in nk..(N + 1) * 4 {
+        let k = (i - 1) * 4;
+        let mut t = [
+            *key_schedule.add(k + 0),
+            *key_schedule.add(k + 1),
+            *key_schedule.add(k + 2),
+            *key_schedule.add(k + 3),
+        ];
 
-    if i % nk == 0 {
-      let t0 = t[0];
-      t[0] = SBOX[t[1] as usize];
-      t[1] = SBOX[t[2] as usize];
-      t[2] = SBOX[t[3] as usize];
-      t[3] = SBOX[t0 as usize];
+        if i % nk == 0 {
+            let t0 = t[0];
+            t[0] = SBOX[t[1] as usize];
+            t[1] = SBOX[t[2] as usize];
+            t[2] = SBOX[t[3] as usize];
+            t[3] = SBOX[t0 as usize];
 
-      t[0] ^= RCON[i / nk - 1];
+            t[0] ^= RCON[i / nk - 1];
+        }
+
+        if N == 14 && i % nk == 4 {
+            t[0] = SBOX[t[0] as usize];
+            t[1] = SBOX[t[1] as usize];
+            t[2] = SBOX[t[2] as usize];
+            t[3] = SBOX[t[3] as usize];
+        }
+
+        *key_schedule.add(i * 4 + 0) = *key_schedule.add((i - nk) * 4 + 0) ^ t[0];
+        *key_schedule.add(i * 4 + 1) = *key_schedule.add((i - nk) * 4 + 1) ^ t[1];
+        *key_schedule.add(i * 4 + 2) = *key_schedule.add((i - nk) * 4 + 2) ^ t[2];
+        *key_schedule.add(i * 4 + 3) = *key_schedule.add((i - nk) * 4 + 3) ^ t[3];
     }
-
-    if N == 14 && i % nk == 4 {
-      t[0] = SBOX[t[0] as usize];
-      t[1] = SBOX[t[1] as usize];
-      t[2] = SBOX[t[2] as usize];
-      t[3] = SBOX[t[3] as usize];
-    }
-
-    *key_schedule.add(i * 4 + 0) = *key_schedule.add((i - nk) * 4 + 0) ^ t[0];
-    *key_schedule.add(i * 4 + 1) = *key_schedule.add((i - nk) * 4 + 1) ^ t[1];
-    *key_schedule.add(i * 4 + 2) = *key_schedule.add((i - nk) * 4 + 2) ^ t[2];
-    *key_schedule.add(i * 4 + 3) = *key_schedule.add((i - nk) * 4 + 3) ^ t[3];
-  }
 }
 
 #[inline(always)]
 unsafe fn aes_inverse_key<const N: usize>(key_schedule: *mut u8)
 {
-  let mut k0: [u8; 16] = *key_schedule.cast::<[u8; 16]>().add(0);
-  let mut k1: [u8; 16] = *key_schedule.cast::<[u8; 16]>().add(N);
-  *key_schedule.cast::<[u8; 16]>().add(0) = k1;
-  *key_schedule.cast::<[u8; 16]>().add(N) = k0;
+    let mut k0: [u8; 16] = *key_schedule.cast::<[u8; 16]>().add(0);
+    let mut k1: [u8; 16] = *key_schedule.cast::<[u8; 16]>().add(N);
+    *key_schedule.cast::<[u8; 16]>().add(0) = k1;
+    *key_schedule.cast::<[u8; 16]>().add(N) = k0;
 
-  // Compiler is able to unroll this loop.
-  for i in 1 .. N / 2 {
-    k0 = *key_schedule.cast::<[u8; 16]>().add(i);
-    k1 = *key_schedule.cast::<[u8; 16]>().add(N - i);
+    // Compiler is able to unroll this loop.
+    for i in 1..N / 2 {
+        k0 = *key_schedule.cast::<[u8; 16]>().add(i);
+        k1 = *key_schedule.cast::<[u8; 16]>().add(N - i);
+        inverse_mix_columns(k0.as_mut_ptr());
+        inverse_mix_columns(k1.as_mut_ptr());
+        *key_schedule.cast::<[u8; 16]>().add(i) = k1;
+        *key_schedule.cast::<[u8; 16]>().add(N - i) = k0;
+    }
+
+    k0 = *key_schedule.cast::<[u8; 16]>().add(N / 2);
     inverse_mix_columns(k0.as_mut_ptr());
-    inverse_mix_columns(k1.as_mut_ptr());
-    *key_schedule.cast::<[u8; 16]>().add(i) = k1;
-    *key_schedule.cast::<[u8; 16]>().add(N - i) = k0;
-  }
-
-  k0 = *key_schedule.cast::<[u8; 16]>().add(N / 2);
-  inverse_mix_columns(k0.as_mut_ptr());
-  *key_schedule.cast::<[u8; 16]>().add(N / 2) = k0;
+    *key_schedule.cast::<[u8; 16]>().add(N / 2) = k0;
 }
 
 #[inline(always)]
 unsafe fn aes_encrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  add_round_key(block, key_schedule.add(0)); // whitening round (round 0)
+    add_round_key(block, key_schedule.add(0)); // whitening round (round 0)
 
-  // Compiler is able to unroll this loop.
-  for i in 1 .. N {
-    shift_rows(block);
+    // Compiler is able to unroll this loop.
+    for i in 1..N {
+        shift_rows(block);
+        sub_bytes(block);
+        mix_columns(block);
+        add_round_key(block, key_schedule.add(i * 16));
+    }
+
     sub_bytes(block);
-    mix_columns(block);
-    add_round_key(block, key_schedule.add(i * 16));
-  }
-
-  sub_bytes(block);
-  shift_rows(block);
-  add_round_key(block, key_schedule.add(N * 16));
+    shift_rows(block);
+    add_round_key(block, key_schedule.add(N * 16));
 }
 
 #[inline(always)]
 unsafe fn aes_decrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 {
-  add_round_key(block, key_schedule.add(0)); // whitening round (round 0)
+    add_round_key(block, key_schedule.add(0)); // whitening round (round 0)
 
-  // Compiler is able to unroll this loop.
-  for i in 1 .. N {
-    inverse_shift_rows(block);
+    // Compiler is able to unroll this loop.
+    for i in 1..N {
+        inverse_shift_rows(block);
+        inverse_sub_bytes(block);
+        inverse_mix_columns(block);
+        add_round_key(block, key_schedule.add(i * 16));
+    }
+
     inverse_sub_bytes(block);
-    inverse_mix_columns(block);
-    add_round_key(block, key_schedule.add(i * 16));
-  }
-
-  inverse_sub_bytes(block);
-  inverse_shift_rows(block);
-  add_round_key(block, key_schedule.add(N * 16));
+    inverse_shift_rows(block);
+    add_round_key(block, key_schedule.add(N * 16));
 }
 
 // AES EXPAND KEY
 
 pub unsafe fn aes_lut_aes128_expand_key(key: *const u8, key_schedule: *mut u8)
 {
-  expand_key::<10>(key, key_schedule);
+    expand_key::<10>(key, key_schedule);
 }
 
 pub unsafe fn aes_lut_aes192_expand_key(key: *const u8, key_schedule: *mut u8)
 {
-  expand_key::<12>(key, key_schedule);
+    expand_key::<12>(key, key_schedule);
 }
 
 pub unsafe fn aes_lut_aes256_expand_key(key: *const u8, key_schedule: *mut u8)
 {
-  expand_key::<14>(key, key_schedule);
+    expand_key::<14>(key, key_schedule);
 }
 
 // AES INVERSE KEY
 
 pub unsafe fn aes_lut_aes128_inverse_key(key_schedule: *mut u8)
 {
-  aes_inverse_key::<10>(key_schedule);
+    aes_inverse_key::<10>(key_schedule);
 }
 
 pub unsafe fn aes_lut_aes192_inverse_key(key_schedule: *mut u8)
 {
-  aes_inverse_key::<12>(key_schedule);
+    aes_inverse_key::<12>(key_schedule);
 }
 
 pub unsafe fn aes_lut_aes256_inverse_key(key_schedule: *mut u8)
 {
-  aes_inverse_key::<14>(key_schedule);
+    aes_inverse_key::<14>(key_schedule);
 }
 
 // AES ENCRYPT
 
 pub unsafe fn aes_lut_aes128_encrypt1(block: *mut u8, key_schedule: *const u8)
 {
-  aes_encrypt1::<10>(block, key_schedule);
+    aes_encrypt1::<10>(block, key_schedule);
 }
 
 pub unsafe fn aes_lut_aes192_encrypt1(block: *mut u8, key_schedule: *const u8)
 {
-  aes_encrypt1::<12>(block, key_schedule);
+    aes_encrypt1::<12>(block, key_schedule);
 }
 
 pub unsafe fn aes_lut_aes256_encrypt1(block: *mut u8, key_schedule: *const u8)
 {
-  aes_encrypt1::<14>(block, key_schedule);
+    aes_encrypt1::<14>(block, key_schedule);
 }
 
 // AES DECRYPT
 
 pub unsafe fn aes_lut_aes128_decrypt1(block: *mut u8, key_schedule: *const u8)
 {
-  aes_decrypt1::<10>(block, key_schedule);
+    aes_decrypt1::<10>(block, key_schedule);
 }
 
 pub unsafe fn aes_lut_aes192_decrypt1(block: *mut u8, key_schedule: *const u8)
 {
-  aes_decrypt1::<12>(block, key_schedule);
+    aes_decrypt1::<12>(block, key_schedule);
 }
 
 pub unsafe fn aes_lut_aes256_decrypt1(block: *mut u8, key_schedule: *const u8)
 {
-  aes_decrypt1::<14>(block, key_schedule);
+    aes_decrypt1::<14>(block, key_schedule);
 }
 
 #[cfg(test)]
-mod tests {
-  use oxicrypt_test::Aes;
-  use oxicrypt_test::AesVectorsIterator;
+mod tests
+{
+    use oxicrypt_test::Aes;
+    use oxicrypt_test::AesVectorsIterator;
 
-  use super::*;
+    use super::*;
 
-  #[test]
-  fn aes128_key_expand()
-  {
-    for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
-      let mut key_schedule = [0; 176];
-      unsafe { aes_lut_aes128_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
-      assert_eq!(key_schedule, vectors.expanded_key);
+    #[test]
+    fn aes128_key_expand()
+    {
+        for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
+            let mut key_schedule = [0; 176];
+            unsafe { aes_lut_aes128_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
+            assert_eq!(key_schedule, vectors.expanded_key);
+        }
     }
-  }
 
-  #[test]
-  fn aes192_key_expand()
-  {
-    for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
-      let mut key_schedule = [0; 208];
-      unsafe { aes_lut_aes192_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
-      assert_eq!(key_schedule, vectors.expanded_key);
+    #[test]
+    fn aes192_key_expand()
+    {
+        for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
+            let mut key_schedule = [0; 208];
+            unsafe { aes_lut_aes192_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
+            assert_eq!(key_schedule, vectors.expanded_key);
+        }
     }
-  }
 
-  #[test]
-  fn aes256_key_expand()
-  {
-    for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
-      let mut key_schedule = [0; 240];
-      unsafe { aes_lut_aes256_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
-      assert_eq!(key_schedule, vectors.expanded_key);
+    #[test]
+    fn aes256_key_expand()
+    {
+        for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
+            let mut key_schedule = [0; 240];
+            unsafe { aes_lut_aes256_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
+            assert_eq!(key_schedule, vectors.expanded_key);
+        }
     }
-  }
 
-  #[test]
-  fn aes128_inverse_key()
-  {
-    for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
-      let mut key_schedule = vectors.expanded_key;
-      unsafe { aes_lut_aes128_inverse_key(key_schedule.as_mut_ptr()) };
-      assert_eq!(key_schedule, vectors.inversed_key);
+    #[test]
+    fn aes128_inverse_key()
+    {
+        for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
+            let mut key_schedule = vectors.expanded_key;
+            unsafe { aes_lut_aes128_inverse_key(key_schedule.as_mut_ptr()) };
+            assert_eq!(key_schedule, vectors.inversed_key);
+        }
     }
-  }
 
-  #[test]
-  fn aes192_inverse_key()
-  {
-    for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
-      let mut key_schedule = vectors.expanded_key;
-      unsafe { aes_lut_aes192_inverse_key(key_schedule.as_mut_ptr()) };
-      assert_eq!(key_schedule, vectors.inversed_key);
+    #[test]
+    fn aes192_inverse_key()
+    {
+        for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
+            let mut key_schedule = vectors.expanded_key;
+            unsafe { aes_lut_aes192_inverse_key(key_schedule.as_mut_ptr()) };
+            assert_eq!(key_schedule, vectors.inversed_key);
+        }
     }
-  }
 
-  #[test]
-  fn aes256_inverse_key()
-  {
-    for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
-      let mut key_schedule = vectors.expanded_key;
-      unsafe { aes_lut_aes256_inverse_key(key_schedule.as_mut_ptr()) };
-      assert_eq!(key_schedule, vectors.inversed_key);
+    #[test]
+    fn aes256_inverse_key()
+    {
+        for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
+            let mut key_schedule = vectors.expanded_key;
+            unsafe { aes_lut_aes256_inverse_key(key_schedule.as_mut_ptr()) };
+            assert_eq!(key_schedule, vectors.inversed_key);
+        }
     }
-  }
 
-  #[test]
-  fn aes128_encrypt()
-  {
-    for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
-      let mut block1 = vectors.plaintext_chunks()[0 .. 1].to_vec();
-      //let mut block2 = vectors.plaintext_chunks()[0 .. 2].to_vec();
-      //let mut block4 = vectors.plaintext_chunks()[0 .. 4].to_vec();
-      //let mut block8 = vectors.plaintext_chunks()[0 .. 8].to_vec();
+    #[test]
+    fn aes128_encrypt()
+    {
+        for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
+            let mut block1 = vectors.plaintext_chunks()[0..1].to_vec();
+            // let mut block2 = vectors.plaintext_chunks()[0 .. 2].to_vec();
+            // let mut block4 = vectors.plaintext_chunks()[0 .. 4].to_vec();
+            // let mut block8 = vectors.plaintext_chunks()[0 .. 8].to_vec();
 
-      unsafe {
-        aes_lut_aes128_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-        //aes_lut_aes128_encrypt2(block2.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-        //aes_lut_aes128_encrypt4(block4.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-        //aes_lut_aes128_encrypt8(block8.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-      }
+            unsafe {
+                aes_lut_aes128_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                // aes_lut_aes128_encrypt2(block2.as_mut_ptr() as _,
+                // vectors.expanded_key.as_ptr());
+                // aes_lut_aes128_encrypt4(block4.as_mut_ptr() as _,
+                // vectors.expanded_key.as_ptr());
+                // aes_lut_aes128_encrypt8(block8.as_mut_ptr() as _,
+                // vectors.expanded_key.as_ptr());
+            }
 
-      assert_eq!(block1, vectors.ciphertext_chunks()[0 .. 1]);
-      //assert_eq!(block2, vectors.ciphertext_chunks()[0 .. 2]);
-      //assert_eq!(block4, vectors.ciphertext_chunks()[0 .. 4]);
-      //assert_eq!(block8, vectors.ciphertext_chunks()[0 .. 8]);
+            assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);
+            // assert_eq!(block2, vectors.ciphertext_chunks()[0 .. 2]);
+            // assert_eq!(block4, vectors.ciphertext_chunks()[0 .. 4]);
+            // assert_eq!(block8, vectors.ciphertext_chunks()[0 .. 8]);
+        }
     }
-  }
 
-  #[test]
-  fn aes192_encrypt()
-  {
-    for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
-      let mut block1 = vectors.plaintext_chunks()[0 .. 1].to_vec();
-      //let mut block2 = vectors.plaintext_chunks()[0 .. 2].to_vec();
-      //let mut block4 = vectors.plaintext_chunks()[0 .. 4].to_vec();
-      //let mut block8 = vectors.plaintext_chunks()[0 .. 8].to_vec();
+    #[test]
+    fn aes192_encrypt()
+    {
+        for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
+            let mut block1 = vectors.plaintext_chunks()[0..1].to_vec();
+            // let mut block2 = vectors.plaintext_chunks()[0 .. 2].to_vec();
+            // let mut block4 = vectors.plaintext_chunks()[0 .. 4].to_vec();
+            // let mut block8 = vectors.plaintext_chunks()[0 .. 8].to_vec();
 
-      unsafe {
-        aes_lut_aes192_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-        //aes_lut_aes192_encrypt2(block2.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-        //aes_lut_aes192_encrypt4(block4.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-        //aes_lut_aes192_encrypt8(block8.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-      }
+            unsafe {
+                aes_lut_aes192_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                // aes_lut_aes192_encrypt2(block2.as_mut_ptr() as _,
+                // vectors.expanded_key.as_ptr());
+                // aes_lut_aes192_encrypt4(block4.as_mut_ptr() as _,
+                // vectors.expanded_key.as_ptr());
+                // aes_lut_aes192_encrypt8(block8.as_mut_ptr() as _,
+                // vectors.expanded_key.as_ptr());
+            }
 
-      assert_eq!(block1, vectors.ciphertext_chunks()[0 .. 1]);
-      //assert_eq!(block2, vectors.ciphertext_chunks()[0 .. 2]);
-      //assert_eq!(block4, vectors.ciphertext_chunks()[0 .. 4]);
-      //assert_eq!(block8, vectors.ciphertext_chunks()[0 .. 8]);
+            assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);
+            // assert_eq!(block2, vectors.ciphertext_chunks()[0 .. 2]);
+            // assert_eq!(block4, vectors.ciphertext_chunks()[0 .. 4]);
+            // assert_eq!(block8, vectors.ciphertext_chunks()[0 .. 8]);
+        }
     }
-  }
 
-  #[test]
-  fn aes256_encrypt()
-  {
-    for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
-      let mut block1 = vectors.plaintext_chunks()[0 .. 1].to_vec();
-      //let mut block2 = vectors.plaintext_chunks()[0 .. 2].to_vec();
-      //let mut block4 = vectors.plaintext_chunks()[0 .. 4].to_vec();
-      //let mut block8 = vectors.plaintext_chunks()[0 .. 8].to_vec();
+    #[test]
+    fn aes256_encrypt()
+    {
+        for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
+            let mut block1 = vectors.plaintext_chunks()[0..1].to_vec();
+            // let mut block2 = vectors.plaintext_chunks()[0 .. 2].to_vec();
+            // let mut block4 = vectors.plaintext_chunks()[0 .. 4].to_vec();
+            // let mut block8 = vectors.plaintext_chunks()[0 .. 8].to_vec();
 
-      unsafe {
-        aes_lut_aes256_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-        //aes_lut_aes256_encrypt2(block2.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-        //aes_lut_aes256_encrypt4(block4.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-        //aes_lut_aes256_encrypt8(block8.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-      }
+            unsafe {
+                aes_lut_aes256_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                // aes_lut_aes256_encrypt2(block2.as_mut_ptr() as _,
+                // vectors.expanded_key.as_ptr());
+                // aes_lut_aes256_encrypt4(block4.as_mut_ptr() as _,
+                // vectors.expanded_key.as_ptr());
+                // aes_lut_aes256_encrypt8(block8.as_mut_ptr() as _,
+                // vectors.expanded_key.as_ptr());
+            }
 
-      assert_eq!(block1, vectors.ciphertext_chunks()[0 .. 1]);
-      //assert_eq!(block2, vectors.ciphertext_chunks()[0 .. 2]);
-      //assert_eq!(block4, vectors.ciphertext_chunks()[0 .. 4]);
-      //assert_eq!(block8, vectors.ciphertext_chunks()[0 .. 8]);
+            assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);
+            // assert_eq!(block2, vectors.ciphertext_chunks()[0 .. 2]);
+            // assert_eq!(block4, vectors.ciphertext_chunks()[0 .. 4]);
+            // assert_eq!(block8, vectors.ciphertext_chunks()[0 .. 8]);
+        }
     }
-  }
 
-  #[test]
-  fn aes128_decrypt()
-  {
-    for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
-      let mut block1 = vectors.ciphertext_chunks()[0 .. 1].to_vec();
-      //let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
-      //let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
-      //let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
+    #[test]
+    fn aes128_decrypt()
+    {
+        for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
+            let mut block1 = vectors.ciphertext_chunks()[0..1].to_vec();
+            // let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
+            // let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
+            // let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
 
-      unsafe {
-        aes_lut_aes128_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-        //aes_lut_aes128_decrypt2(block2.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-        //aes_lut_aes128_decrypt4(block4.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-        //aes_lut_aes128_decrypt8(block8.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-      }
+            unsafe {
+                aes_lut_aes128_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+                // aes_lut_aes128_decrypt2(block2.as_mut_ptr() as _,
+                // vectors.inversed_key.as_ptr());
+                // aes_lut_aes128_decrypt4(block4.as_mut_ptr() as _,
+                // vectors.inversed_key.as_ptr());
+                // aes_lut_aes128_decrypt8(block8.as_mut_ptr() as _,
+                // vectors.inversed_key.as_ptr());
+            }
 
-      assert_eq!(block1, vectors.plaintext_chunks()[0 .. 1]);
-      //assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
-      //assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
-      //assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
+            assert_eq!(block1, vectors.plaintext_chunks()[0..1]);
+            // assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
+            // assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
+            // assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
+        }
     }
-  }
 
-  #[test]
-  fn aes192_decrypt()
-  {
-    for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
-      let mut block1 = vectors.ciphertext_chunks()[0 .. 1].to_vec();
-      //let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
-      //let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
-      //let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
+    #[test]
+    fn aes192_decrypt()
+    {
+        for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
+            let mut block1 = vectors.ciphertext_chunks()[0..1].to_vec();
+            // let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
+            // let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
+            // let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
 
-      unsafe {
-        aes_lut_aes192_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-        //aes_lut_aes192_decrypt2(block2.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-        //aes_lut_aes192_decrypt4(block4.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-        //aes_lut_aes192_decrypt8(block8.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-      }
+            unsafe {
+                aes_lut_aes192_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+                // aes_lut_aes192_decrypt2(block2.as_mut_ptr() as _,
+                // vectors.inversed_key.as_ptr());
+                // aes_lut_aes192_decrypt4(block4.as_mut_ptr() as _,
+                // vectors.inversed_key.as_ptr());
+                // aes_lut_aes192_decrypt8(block8.as_mut_ptr() as _,
+                // vectors.inversed_key.as_ptr());
+            }
 
-      assert_eq!(block1, vectors.plaintext_chunks()[0 .. 1]);
-      //assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
-      //assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
-      //assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
+            assert_eq!(block1, vectors.plaintext_chunks()[0..1]);
+            // assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
+            // assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
+            // assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
+        }
     }
-  }
 
-  #[test]
-  fn aes256_decrypt()
-  {
-    for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
-      let mut block1 = vectors.ciphertext_chunks()[0 .. 1].to_vec();
-      //let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
-      //let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
-      //let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
+    #[test]
+    fn aes256_decrypt()
+    {
+        for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
+            let mut block1 = vectors.ciphertext_chunks()[0..1].to_vec();
+            // let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
+            // let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
+            // let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
 
-      unsafe {
-        aes_lut_aes256_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-        //aes_lut_aes256_decrypt2(block2.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-        //aes_lut_aes256_decrypt4(block4.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-        //aes_lut_aes256_decrypt8(block8.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-      }
+            unsafe {
+                aes_lut_aes256_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+                // aes_lut_aes256_decrypt2(block2.as_mut_ptr() as _,
+                // vectors.inversed_key.as_ptr());
+                // aes_lut_aes256_decrypt4(block4.as_mut_ptr() as _,
+                // vectors.inversed_key.as_ptr());
+                // aes_lut_aes256_decrypt8(block8.as_mut_ptr() as _,
+                // vectors.inversed_key.as_ptr());
+            }
 
-      assert_eq!(block1, vectors.plaintext_chunks()[0 .. 1]);
-      //assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
-      //assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
-      //assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
+            assert_eq!(block1, vectors.plaintext_chunks()[0..1]);
+            // assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
+            // assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
+            // assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
+        }
     }
-  }
 }

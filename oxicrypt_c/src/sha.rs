@@ -18,19 +18,19 @@ use crate::oxi_implementation_t;
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha1_compress_generic(state: *mut u32, block: *const u8)
 {
-  sha::generic::sha1_compress(state, block);
+    sha::generic::sha1_compress(state, block);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha256_compress_generic(state: *mut u32, block: *const u8)
 {
-  sha::generic::sha256_compress(state, block);
+    sha::generic::sha256_compress(state, block);
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn oxi_sha512_compress_generic(state: *mut u64, block: *const u8)
 {
-  sha::generic::sha512_compress(state, block);
+    sha::generic::sha512_compress(state, block);
 }
 
 // SHA engines.
@@ -62,7 +62,7 @@ type oxi_sha512_256_t = Sha512_256;
 // SHA functions.
 
 macro_rules! impl_sha {
-  (
+    (
     type $sha:ident;
     fn reset = $reset:ident;
     fn update = $update:ident;
@@ -74,87 +74,95 @@ macro_rules! impl_sha {
     fn oneshot = $oneshot:ident;
     fn oneshot_impl = $oneshot_impl:ident;
   ) => {
-    #[no_mangle]
-    pub unsafe extern "C" fn $reset(ctx: *mut $sha)
-    {
-      let ctx: &mut $sha = &mut *ctx;
-      ctx.reset();
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $reset(ctx: *mut $sha)
+        {
+            let ctx: &mut $sha = &mut *ctx;
+            ctx.reset();
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $update(ctx: *mut $sha, data: *const u8, datalen: usize)
-    {
-      let ctx: &mut $sha = &mut *ctx;
-      ctx.update(slice::from_raw_parts(data, datalen));
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $update(ctx: *mut $sha, data: *const u8, datalen: usize)
+        {
+            let ctx: &mut $sha = &mut *ctx;
+            ctx.update(slice::from_raw_parts(data, datalen));
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $update_impl(
-      ctx: *mut $sha,
-      implementation: oxi_implementation_t,
-      data: *const u8,
-      datalen: usize,
-    )
-    {
-      let ctx: &mut $sha = &mut *ctx;
-      ctx.update_impl(implementation, slice::from_raw_parts(data, datalen));
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $update_impl(
+            ctx: *mut $sha,
+            implementation: oxi_implementation_t,
+            data: *const u8,
+            datalen: usize,
+        )
+        {
+            let ctx: &mut $sha = &mut *ctx;
+            ctx.update_impl(implementation, slice::from_raw_parts(data, datalen));
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $finish_sliced(ctx: *mut $sha) -> *const u8
-    {
-      let ctx: &mut $sha = &mut *ctx;
-      ctx.finish_sliced().as_ptr()
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $finish_sliced(ctx: *mut $sha) -> *const u8
+        {
+            let ctx: &mut $sha = &mut *ctx;
+            ctx.finish_sliced().as_ptr()
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $finish_sliced_impl(ctx: *mut $sha, implementation: oxi_implementation_t) -> *const u8
-    {
-      let ctx: &mut $sha = &mut *ctx;
-      ctx.finish_sliced_impl(implementation).as_ptr()
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $finish_sliced_impl(
+            ctx: *mut $sha,
+            implementation: oxi_implementation_t,
+        ) -> *const u8
+        {
+            let ctx: &mut $sha = &mut *ctx;
+            ctx.finish_sliced_impl(implementation).as_ptr()
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $finish(ctx: *mut $sha, out: *mut u8, outlen: usize)
-    {
-      let ctx: &mut $sha = &mut *ctx;
-      ctx.finish_into(slice::from_raw_parts_mut(out, outlen));
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $finish(ctx: *mut $sha, out: *mut u8, outlen: usize)
+        {
+            let ctx: &mut $sha = &mut *ctx;
+            ctx.finish_into(slice::from_raw_parts_mut(out, outlen));
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $finish_impl(
-      ctx: *mut $sha,
-      implementation: oxi_implementation_t,
-      out: *mut u8,
-      outlen: usize,
-    )
-    {
-      let ctx: &mut $sha = &mut *ctx;
-      ctx.finish_into_impl(implementation, slice::from_raw_parts_mut(out, outlen));
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $finish_impl(
+            ctx: *mut $sha,
+            implementation: oxi_implementation_t,
+            out: *mut u8,
+            outlen: usize,
+        )
+        {
+            let ctx: &mut $sha = &mut *ctx;
+            ctx.finish_into_impl(implementation, slice::from_raw_parts_mut(out, outlen));
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $oneshot(data: *const u8, datalen: usize, out: *mut u8, outlen: usize)
-    {
-      let mut ctx = $sha::new();
-      ctx.update(slice::from_raw_parts(data, datalen));
-      ctx.finish_into(slice::from_raw_parts_mut(out, outlen));
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $oneshot(
+            data: *const u8,
+            datalen: usize,
+            out: *mut u8,
+            outlen: usize,
+        )
+        {
+            let mut ctx = $sha::new();
+            ctx.update(slice::from_raw_parts(data, datalen));
+            ctx.finish_into(slice::from_raw_parts_mut(out, outlen));
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $oneshot_impl(
-      implementation: oxi_implementation_t,
-      data: *const u8,
-      datalen: usize,
-      out: *mut u8,
-      outlen: usize,
-    )
-    {
-      let mut ctx = $sha::new();
-      ctx.update_impl(implementation, slice::from_raw_parts(data, datalen));
-      ctx.finish_into_impl(implementation, slice::from_raw_parts_mut(out, outlen));
-    }
-  };
+        #[no_mangle]
+        pub unsafe extern "C" fn $oneshot_impl(
+            implementation: oxi_implementation_t,
+            data: *const u8,
+            datalen: usize,
+            out: *mut u8,
+            outlen: usize,
+        )
+        {
+            let mut ctx = $sha::new();
+            ctx.update_impl(implementation, slice::from_raw_parts(data, datalen));
+            ctx.finish_into_impl(implementation, slice::from_raw_parts_mut(out, outlen));
+        }
+    };
 }
 
 impl_sha! {

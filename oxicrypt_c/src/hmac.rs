@@ -32,7 +32,7 @@ pub type oxi_hmac_sha512_256_t = HmacSha512_256;
 // HMAC functions.
 
 macro_rules! impl_hmac {
-  (
+    (
     type $hmac:ident;
     fn set_key = $set_key:ident;
     fn set_key_impl = $set_key_impl:ident;
@@ -47,127 +47,130 @@ macro_rules! impl_hmac {
     fn oneshot = $oneshot:ident;
     fn oneshot_impl = $oneshot_impl:ident;
   ) => {
-    #[no_mangle]
-    pub unsafe extern "C" fn $set_key(ctx: *mut $hmac, key: *const u8, keylen: usize)
-    {
-      let ctx: &mut $hmac = &mut *ctx;
-      ctx.set_key(slice::from_raw_parts(key, keylen));
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $set_key(ctx: *mut $hmac, key: *const u8, keylen: usize)
+        {
+            let ctx: &mut $hmac = &mut *ctx;
+            ctx.set_key(slice::from_raw_parts(key, keylen));
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $set_key_impl(
-      ctx: *mut $hmac,
-      implementation: oxi_implementation_t,
-      key: *const u8,
-      keylen: usize,
-    )
-    {
-      let ctx: &mut $hmac = &mut *ctx;
-      ctx.set_key_impl(implementation, slice::from_raw_parts(key, keylen));
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $set_key_impl(
+            ctx: *mut $hmac,
+            implementation: oxi_implementation_t,
+            key: *const u8,
+            keylen: usize,
+        )
+        {
+            let ctx: &mut $hmac = &mut *ctx;
+            ctx.set_key_impl(implementation, slice::from_raw_parts(key, keylen));
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $reset(ctx: *mut $hmac)
-    {
-      let ctx: &mut $hmac = &mut *ctx;
-      ctx.reset();
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $reset(ctx: *mut $hmac)
+        {
+            let ctx: &mut $hmac = &mut *ctx;
+            ctx.reset();
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $reset_impl(ctx: *mut $hmac, implementation: oxi_implementation_t)
-    {
-      let ctx: &mut $hmac = &mut *ctx;
-      ctx.reset_impl(implementation);
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $reset_impl(ctx: *mut $hmac, implementation: oxi_implementation_t)
+        {
+            let ctx: &mut $hmac = &mut *ctx;
+            ctx.reset_impl(implementation);
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $update(ctx: *mut $hmac, data: *const u8, datalen: usize)
-    {
-      let ctx: &mut $hmac = &mut *ctx;
-      ctx.update(slice::from_raw_parts(data, datalen));
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $update(ctx: *mut $hmac, data: *const u8, datalen: usize)
+        {
+            let ctx: &mut $hmac = &mut *ctx;
+            ctx.update(slice::from_raw_parts(data, datalen));
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $update_impl(
-      ctx: *mut $hmac,
-      implementation: oxi_implementation_t,
-      data: *const u8,
-      datalen: usize,
-    )
-    {
-      let ctx: &mut $hmac = &mut *ctx;
-      ctx.update_impl(implementation, slice::from_raw_parts(data, datalen));
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $update_impl(
+            ctx: *mut $hmac,
+            implementation: oxi_implementation_t,
+            data: *const u8,
+            datalen: usize,
+        )
+        {
+            let ctx: &mut $hmac = &mut *ctx;
+            ctx.update_impl(implementation, slice::from_raw_parts(data, datalen));
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $finish_sliced(ctx: *mut $hmac) -> *const u8
-    {
-      let ctx: &mut $hmac = &mut *ctx;
-      ctx.finish_sliced().as_ptr()
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $finish_sliced(ctx: *mut $hmac) -> *const u8
+        {
+            let ctx: &mut $hmac = &mut *ctx;
+            ctx.finish_sliced().as_ptr()
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $finish_sliced_impl(ctx: *mut $hmac, implementation: oxi_implementation_t) -> *const u8
-    {
-      let ctx: &mut $hmac = &mut *ctx;
-      ctx.finish_sliced_impl(implementation).as_ptr()
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $finish_sliced_impl(
+            ctx: *mut $hmac,
+            implementation: oxi_implementation_t,
+        ) -> *const u8
+        {
+            let ctx: &mut $hmac = &mut *ctx;
+            ctx.finish_sliced_impl(implementation).as_ptr()
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $finish(ctx: *mut $hmac, out: *mut u8, outlen: usize)
-    {
-      let ctx: &mut $hmac = &mut *ctx;
-      ctx.finish_into(slice::from_raw_parts_mut(out, outlen));
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $finish(ctx: *mut $hmac, out: *mut u8, outlen: usize)
+        {
+            let ctx: &mut $hmac = &mut *ctx;
+            ctx.finish_into(slice::from_raw_parts_mut(out, outlen));
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $finish_impl(
-      ctx: *mut $hmac,
-      implementation: oxi_implementation_t,
-      out: *mut u8,
-      outlen: usize,
-    )
-    {
-      let ctx: &mut $hmac = &mut *ctx;
-      ctx.finish_into_impl(implementation, slice::from_raw_parts_mut(out, outlen));
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $finish_impl(
+            ctx: *mut $hmac,
+            implementation: oxi_implementation_t,
+            out: *mut u8,
+            outlen: usize,
+        )
+        {
+            let ctx: &mut $hmac = &mut *ctx;
+            ctx.finish_into_impl(implementation, slice::from_raw_parts_mut(out, outlen));
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $oneshot(
-      key: *const u8,
-      keylen: usize,
-      data: *const u8,
-      datalen: usize,
-      out: *mut u8,
-      outlen: usize,
-    )
-    {
-      $hmac::oneshot_into(
-        slice::from_raw_parts(key, keylen),
-        slice::from_raw_parts(data, datalen),
-        slice::from_raw_parts_mut(out, outlen),
-      );
-    }
+        #[no_mangle]
+        pub unsafe extern "C" fn $oneshot(
+            key: *const u8,
+            keylen: usize,
+            data: *const u8,
+            datalen: usize,
+            out: *mut u8,
+            outlen: usize,
+        )
+        {
+            $hmac::oneshot_into(
+                slice::from_raw_parts(key, keylen),
+                slice::from_raw_parts(data, datalen),
+                slice::from_raw_parts_mut(out, outlen),
+            );
+        }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn $oneshot_impl(
-      implementation: oxi_implementation_t,
-      key: *const u8,
-      keylen: usize,
-      data: *const u8,
-      datalen: usize,
-      out: *mut u8,
-      outlen: usize,
-    )
-    {
-      $hmac::oneshot_into_impl(
-        implementation,
-        slice::from_raw_parts(key, keylen),
-        slice::from_raw_parts(data, datalen),
-        slice::from_raw_parts_mut(out, outlen),
-      );
-    }
-  };
+        #[no_mangle]
+        pub unsafe extern "C" fn $oneshot_impl(
+            implementation: oxi_implementation_t,
+            key: *const u8,
+            keylen: usize,
+            data: *const u8,
+            datalen: usize,
+            out: *mut u8,
+            outlen: usize,
+        )
+        {
+            $hmac::oneshot_into_impl(
+                implementation,
+                slice::from_raw_parts(key, keylen),
+                slice::from_raw_parts(data, datalen),
+                slice::from_raw_parts_mut(out, outlen),
+            );
+        }
+    };
 }
 
 impl_hmac! {

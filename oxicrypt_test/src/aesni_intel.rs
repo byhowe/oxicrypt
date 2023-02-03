@@ -6,7 +6,8 @@ include!(concat!(env!("OUT_DIR"), "/aesni_intel_bindings.rs"));
 
 use crate::Aes;
 
-pub fn set_encrypt_key<const V: Aes>(key: &[u8], keysched: &mut [u8]) {
+pub fn set_encrypt_key<const V: Aes>(key: &[u8], keysched: &mut [u8])
+{
     assert!(key.len() == V.key_length());
     assert!(keysched.len() == V.expanded_key_length());
 
@@ -15,7 +16,8 @@ pub fn set_encrypt_key<const V: Aes>(key: &[u8], keysched: &mut [u8]) {
     keysched.clone_from_slice(&out.KEY[0..V.expanded_key_length()]);
 }
 
-pub fn set_decrypt_key<const V: Aes>(key: &[u8], keysched: &mut [u8]) {
+pub fn set_decrypt_key<const V: Aes>(key: &[u8], keysched: &mut [u8])
+{
     assert!(key.len() == V.key_length());
     assert!(keysched.len() == V.expanded_key_length());
 
@@ -24,7 +26,8 @@ pub fn set_decrypt_key<const V: Aes>(key: &[u8], keysched: &mut [u8]) {
     keysched.clone_from_slice(&out.KEY[0..V.expanded_key_length()]);
 }
 
-pub fn encrypt<const V: Aes>(plaintext: &[u8], ciphertext: &mut [u8], keysched: &[u8]) {
+pub fn encrypt<const V: Aes>(plaintext: &[u8], ciphertext: &mut [u8], keysched: &[u8])
+{
     assert!(plaintext.len() % 16 == 0);
     assert!(plaintext.len() == ciphertext.len());
 
