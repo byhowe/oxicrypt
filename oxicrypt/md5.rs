@@ -28,6 +28,8 @@ use oxicrypt_core::md5_generic_md5_compress;
 use crate::digest::DigestInternal;
 use crate::digest::DigestMeta;
 use crate::digest::Reset;
+use crate::digest::Update;
+use crate::merkle_damgard;
 
 const BLOCK_SIZE: usize = 64;
 const DIGEST_SIZE: usize = 16;
@@ -44,6 +46,7 @@ pub struct Md5
 
 impl Md5
 {
+  #[inline(always)]
   pub const fn new() -> Self
   {
     let mut ctx: MaybeUninit<Self> = MaybeUninit::uninit();
@@ -60,6 +63,7 @@ impl DigestMeta for Md5
 
 impl const Default for Md5
 {
+  #[inline(always)]
   fn default() -> Self
   {
     Self::new()
@@ -74,6 +78,22 @@ impl const Reset for Md5
     self.h = MD5_INITIAL_H;
     self.index = 0;
     self.block_count = 0;
+  }
+}
+
+impl Update for Md5
+{
+  fn update(&mut self, data: &[u8])
+  {
+    let h_ptr = self.h.as_mut_ptr();
+    let block_ptr = self.block.as_ptr();
+    merkle_damgard::update::<Self, _>(
+      data,
+      &mut self.block,
+      &mut self.index,
+      &mut self.block_count,
+      || unsafe { md5_generic_md5_compress(h_ptr, block_ptr) },
+    );
   }
 }
 

@@ -12,7 +12,6 @@
 #![feature(stdsimd)]
 #![feature(slice_as_chunks)]
 #![cfg_attr(feature = "alloc", feature(new_uninit))]
-
 #![allow(clippy::identity_op)]
 #![allow(clippy::zero_prefixed_literal)]
 
@@ -21,14 +20,13 @@ extern crate alloc;
 #[cfg(any(feature = "std", doc))]
 extern crate std;
 
-// pub mod hazmat;
-
 pub mod aes;
 pub mod digest;
 // pub mod hkdf;
 // pub mod hmac;
-pub mod sha;
 pub mod md5;
+pub mod merkle_damgard;
+pub mod sha;
 
 #[cfg(test)]
 pub(crate) mod test_vectors;

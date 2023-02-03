@@ -30,6 +30,8 @@ use oxicrypt_core::sha_generic_sha512_compress;
 use crate::digest::DigestInternal;
 use crate::digest::DigestMeta;
 use crate::digest::Reset;
+use crate::digest::Update;
+use crate::merkle_damgard;
 
 macro_rules! impl_sha {
   (
@@ -51,6 +53,7 @@ macro_rules! impl_sha {
 
     impl $alg_name
     {
+      #[inline(always)]
       pub const fn new() -> Self
       {
         let mut ctx: MaybeUninit<Self> = MaybeUninit::uninit();
@@ -67,6 +70,7 @@ macro_rules! impl_sha {
 
     impl const Default for $alg_name
     {
+      #[inline(always)]
       fn default() -> Self
       {
         Self::new()
@@ -81,6 +85,22 @@ macro_rules! impl_sha {
         self.h = $initial_state;
         self.index = 0;
         self.block_count = 0;
+      }
+    }
+
+    impl Update for $alg_name
+    {
+      fn update(&mut self, data: &[u8])
+      {
+        let h_ptr = self.h.as_mut_ptr();
+        let block_ptr = self.block.as_ptr();
+        merkle_damgard::update::<Self, _>(
+          data,
+          &mut self.block,
+          &mut self.index,
+          &mut self.block_count,
+          || unsafe { $compress(h_ptr, block_ptr) },
+        );
       }
     }
 

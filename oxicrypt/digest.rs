@@ -203,41 +203,6 @@ pub(crate) trait DigestInternal
   fn state_as_bytes(&self) -> &[u8];
 }
 
-impl<T> Update for T
-where
-  T: DigestInternal + DigestMeta,
-{
-  fn update(&mut self, mut data: &[u8])
-  {
-    // Loop until all the data is processed.
-    while !data.is_empty() {
-      let index = self.get_index();
-      let emptyspace = T::BLOCK_LEN - index;
-      // If there is enough space in the block, then we can just copy `data` into `self.block`.
-      if emptyspace >= data.len() {
-        let newindex = index + data.len();
-        self.block()[index .. newindex].copy_from_slice(data);
-        self.set_index(newindex);
-        // All of the data is read at this point. We need to set the length of `data` to 0 so we can exit
-        // out of the loop.
-        data = &data[0 .. 0];
-      } else {
-        self.block()[index .. T::BLOCK_LEN].copy_from_slice(&data[0 .. emptyspace]);
-        // We filled `self.block` completely.
-        self.set_index(T::BLOCK_LEN);
-        data = &data[emptyspace ..];
-      }
-
-      if self.get_index() == T::BLOCK_LEN {
-        // SAFETY: We know the inner block is full since we have checked for it.
-        unsafe { self.compress() };
-        self.set_index(0);
-        self.increase_block_count();
-      }
-    }
-  }
-}
-
 impl<T> FinishInternal for T
 where
   T: DigestInternal + DigestMeta,
