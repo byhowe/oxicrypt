@@ -8,7 +8,6 @@
 
 #![no_std]
 #![feature(doc_cfg)]
-#![feature(generic_const_exprs)]
 #![feature(const_mut_refs)]
 #![allow(clippy::identity_op)]
 #![allow(clippy::zero_prefixed_literal)]
