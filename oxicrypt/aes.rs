@@ -7,6 +7,41 @@ use Variant::*;
 
 use crate::runtime::Feature;
 
+mod sealed
+{
+    pub trait Sealed {}
+}
+use sealed::Sealed;
+
+/// Specifies the number of bits (e.g 128, 192, 256) used by the AES algorithm.
+pub struct Bits<const BITS: usize>;
+
+impl<const BITS: usize> Bits<BITS>
+{
+    pub const fn variant() -> Variant
+    {
+        match BITS {
+            | 128 => Variant::Aes128,
+            | 192 => Variant::Aes192,
+            | 256 => Variant::Aes256,
+
+            // does not matter what this is since it is not a supported bit count.
+            | _ => Variant::Aes128,
+        }
+    }
+}
+
+/// Statically guarantees that the number of bits is marked as supported.
+///
+/// This trait is *sealed*: the list of implementors below is total.
+pub trait SupportedBits: Sealed {}
+
+impl<const BITS: usize> Sealed for Bits<BITS> {}
+
+impl SupportedBits for Bits<128> {}
+impl SupportedBits for Bits<192> {}
+impl SupportedBits for Bits<256> {}
+
 /// AES comes in three variants. This enum is used to represent which one to
 /// use.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -61,32 +96,36 @@ impl Variant
 /// must be careful when using it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "c", repr(C))]
-pub struct Key<const V: Variant>
+pub struct Key<const BITS: usize>
 where
-    [(); V.key_sched_len()]:,
+    [(); Bits::<BITS>::variant().key_sched_len()]:,
+    Bits<BITS>: SupportedBits,
 {
-    k: [u8; V.key_sched_len()],
+    k: [u8; Bits::<BITS>::variant().key_sched_len()],
 }
 
 /// AES-128 key schedule.
-pub type Key128 = Key<{ Aes128 }>;
+pub type Key128 = Key<128>;
 /// AES-192 key schedule.
-pub type Key192 = Key<{ Aes192 }>;
+pub type Key192 = Key<192>;
 /// AES-256 key schedule.
-pub type Key256 = Key<{ Aes256 }>;
+pub type Key256 = Key<256>;
 
-impl<const V: Variant> Key<V>
+impl<const BITS: usize> Key<BITS>
 where
-    [(); V.key_sched_len()]:,
+    [(); Bits::<BITS>::variant().key_sched_len()]:,
+    Bits<BITS>: SupportedBits,
 {
     /// AES block size in bytes.
     pub const BLOCK_LEN: usize = 16;
     /// Key size in bytes.
-    pub const KEY_LEN: usize = V.key_len();
+    pub const KEY_LEN: usize = Self::VARIANT.key_len();
     /// Inner key schedule size in bytes.
-    pub const KEY_SCHEDULE_LEN: usize = V.key_sched_len();
+    pub const KEY_SCHEDULE_LEN: usize = Self::VARIANT.key_sched_len();
     /// Number of rounds.
-    pub const ROUNDS: usize = V.rounds();
+    pub const ROUNDS: usize = Self::VARIANT.rounds();
+    /// AES variant.
+    const VARIANT: Variant = Bits::<BITS>::variant();
 
     /// Returns the inner key schedule as a byte slice.
     pub const fn as_bytes(&self) -> &[u8] { &self.k }
@@ -215,7 +254,7 @@ where
     {
         if Feature::Aesni.is_available() {
             #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-            match V {
+            match Self::VARIANT {
                 | Aes128 => unsafe {
                     aes_x86_aesni_aes128_expand_key(key.as_ptr(), self.as_mut_ptr())
                 },
@@ -227,7 +266,7 @@ where
                 },
             }
         } else {
-            match V {
+            match Self::VARIANT {
                 | Aes128 => unsafe { aes_lut_aes128_expand_key(key.as_ptr(), self.as_mut_ptr()) },
                 | Aes192 => unsafe { aes_lut_aes192_expand_key(key.as_ptr(), self.as_mut_ptr()) },
                 | Aes256 => unsafe { aes_lut_aes256_expand_key(key.as_ptr(), self.as_mut_ptr()) },
@@ -280,13 +319,13 @@ where
     {
         if Feature::Aesni.is_available() {
             #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-            match V {
+            match Self::VARIANT {
                 | Aes128 => unsafe { aes_x86_aesni_aes128_inverse_key(self.as_mut_ptr()) },
                 | Aes192 => unsafe { aes_x86_aesni_aes192_inverse_key(self.as_mut_ptr()) },
                 | Aes256 => unsafe { aes_x86_aesni_aes256_inverse_key(self.as_mut_ptr()) },
             }
         } else {
-            match V {
+            match Self::VARIANT {
                 | Aes128 => unsafe { aes_lut_aes128_inverse_key(self.as_mut_ptr()) },
                 | Aes192 => unsafe { aes_lut_aes192_inverse_key(self.as_mut_ptr()) },
                 | Aes256 => unsafe { aes_lut_aes256_inverse_key(self.as_mut_ptr()) },
@@ -340,7 +379,7 @@ where
                 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
                 match block.len() / 16 {
                     | n if n >= 8 => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_x86_aesni_aes128_encrypt8(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -351,7 +390,7 @@ where
                         block = &mut block[8 * 16..];
                     },
                     | n if n >= 4 => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_x86_aesni_aes128_encrypt4(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -362,7 +401,7 @@ where
                         block = &mut block[4 * 16..];
                     },
                     | n if n >= 2 => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_x86_aesni_aes128_encrypt2(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -373,7 +412,7 @@ where
                         block = &mut block[2 * 16..];
                     },
                     | _ => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_x86_aesni_aes128_encrypt1(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -390,7 +429,7 @@ where
                 #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
                 match block.len() / 16 {
                     | n if n >= 8 => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_arm_aes_aes128_encrypt8(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -401,7 +440,7 @@ where
                         block = &mut block[8 * 16..];
                     },
                     | n if n >= 4 => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_arm_aes_aes128_encrypt4(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -412,7 +451,7 @@ where
                         block = &mut block[4 * 16..];
                     },
                     | n if n >= 2 => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_arm_aes_aes128_encrypt2(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -423,7 +462,7 @@ where
                         block = &mut block[2 * 16..];
                     },
                     | _ => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_arm_aes_aes128_encrypt1(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -437,7 +476,7 @@ where
             }
         } else {
             for block in block.as_chunks_unchecked_mut::<16>() {
-                match V {
+                match Self::VARIANT {
                     | Aes128 => aes_lut_aes128_encrypt1(block.as_mut_ptr(), self.as_ptr()),
                     | Aes192 => aes_lut_aes192_encrypt1(block.as_mut_ptr(), self.as_ptr()),
                     | Aes256 => aes_lut_aes256_encrypt1(block.as_mut_ptr(), self.as_ptr()),
@@ -458,7 +497,7 @@ where
                 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
                 match block.len() / 16 {
                     | n if n >= 8 => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_x86_aesni_aes128_decrypt8(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -469,7 +508,7 @@ where
                         block = &mut block[8 * 16..];
                     },
                     | n if n >= 4 => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_x86_aesni_aes128_decrypt4(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -480,7 +519,7 @@ where
                         block = &mut block[4 * 16..];
                     },
                     | n if n >= 2 => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_x86_aesni_aes128_decrypt2(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -491,7 +530,7 @@ where
                         block = &mut block[2 * 16..];
                     },
                     | _ => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_x86_aesni_aes128_decrypt1(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -508,7 +547,7 @@ where
                 #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
                 match block.len() / 16 {
                     | n if n >= 8 => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_arm_aes_aes128_decrypt8(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -519,7 +558,7 @@ where
                         block = &mut block[8 * 16..];
                     },
                     | n if n >= 4 => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_arm_aes_aes128_decrypt4(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -530,7 +569,7 @@ where
                         block = &mut block[4 * 16..];
                     },
                     | n if n >= 2 => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_arm_aes_aes128_decrypt2(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -541,7 +580,7 @@ where
                         block = &mut block[2 * 16..];
                     },
                     | _ => {
-                        match V {
+                        match Self::VARIANT {
                             | Aes128 =>
                                 aes_arm_aes_aes128_decrypt1(block.as_mut_ptr(), self.as_ptr()),
                             | Aes192 =>
@@ -555,7 +594,7 @@ where
             }
         } else {
             for block in block.as_chunks_unchecked_mut::<16>() {
-                match V {
+                match Self::VARIANT {
                     | Aes128 => aes_lut_aes128_decrypt1(block.as_mut_ptr(), self.as_ptr()),
                     | Aes192 => aes_lut_aes192_decrypt1(block.as_mut_ptr(), self.as_ptr()),
                     | Aes256 => aes_lut_aes256_decrypt1(block.as_mut_ptr(), self.as_ptr()),
@@ -565,9 +604,10 @@ where
     }
 }
 
-impl<const V: Variant> AsRef<[u8]> for Key<V>
+impl<const BITS: usize> AsRef<[u8]> for Key<BITS>
 where
-    [(); V.key_sched_len()]:,
+    [(); Bits::<BITS>::variant().key_sched_len()]:,
+    Bits<BITS>: SupportedBits,
 {
     fn as_ref(&self) -> &[u8] { self.as_bytes() }
 }
