@@ -571,24 +571,12 @@ mod tests
     {
         for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
             let mut block1 = vectors.plaintext_chunks()[0..1].to_vec();
-            // let mut block2 = vectors.plaintext_chunks()[0 .. 2].to_vec();
-            // let mut block4 = vectors.plaintext_chunks()[0 .. 4].to_vec();
-            // let mut block8 = vectors.plaintext_chunks()[0 .. 8].to_vec();
 
             unsafe {
                 aes_lut_aes128_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-                // aes_lut_aes128_encrypt2(block2.as_mut_ptr() as _,
-                // vectors.expanded_key.as_ptr());
-                // aes_lut_aes128_encrypt4(block4.as_mut_ptr() as _,
-                // vectors.expanded_key.as_ptr());
-                // aes_lut_aes128_encrypt8(block8.as_mut_ptr() as _,
-                // vectors.expanded_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);
-            // assert_eq!(block2, vectors.ciphertext_chunks()[0 .. 2]);
-            // assert_eq!(block4, vectors.ciphertext_chunks()[0 .. 4]);
-            // assert_eq!(block8, vectors.ciphertext_chunks()[0 .. 8]);
         }
     }
 
@@ -597,24 +585,12 @@ mod tests
     {
         for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
             let mut block1 = vectors.plaintext_chunks()[0..1].to_vec();
-            // let mut block2 = vectors.plaintext_chunks()[0 .. 2].to_vec();
-            // let mut block4 = vectors.plaintext_chunks()[0 .. 4].to_vec();
-            // let mut block8 = vectors.plaintext_chunks()[0 .. 8].to_vec();
 
             unsafe {
                 aes_lut_aes192_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-                // aes_lut_aes192_encrypt2(block2.as_mut_ptr() as _,
-                // vectors.expanded_key.as_ptr());
-                // aes_lut_aes192_encrypt4(block4.as_mut_ptr() as _,
-                // vectors.expanded_key.as_ptr());
-                // aes_lut_aes192_encrypt8(block8.as_mut_ptr() as _,
-                // vectors.expanded_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);
-            // assert_eq!(block2, vectors.ciphertext_chunks()[0 .. 2]);
-            // assert_eq!(block4, vectors.ciphertext_chunks()[0 .. 4]);
-            // assert_eq!(block8, vectors.ciphertext_chunks()[0 .. 8]);
         }
     }
 
@@ -623,24 +599,12 @@ mod tests
     {
         for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
             let mut block1 = vectors.plaintext_chunks()[0..1].to_vec();
-            // let mut block2 = vectors.plaintext_chunks()[0 .. 2].to_vec();
-            // let mut block4 = vectors.plaintext_chunks()[0 .. 4].to_vec();
-            // let mut block8 = vectors.plaintext_chunks()[0 .. 8].to_vec();
 
             unsafe {
                 aes_lut_aes256_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
-                // aes_lut_aes256_encrypt2(block2.as_mut_ptr() as _,
-                // vectors.expanded_key.as_ptr());
-                // aes_lut_aes256_encrypt4(block4.as_mut_ptr() as _,
-                // vectors.expanded_key.as_ptr());
-                // aes_lut_aes256_encrypt8(block8.as_mut_ptr() as _,
-                // vectors.expanded_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);
-            // assert_eq!(block2, vectors.ciphertext_chunks()[0 .. 2]);
-            // assert_eq!(block4, vectors.ciphertext_chunks()[0 .. 4]);
-            // assert_eq!(block8, vectors.ciphertext_chunks()[0 .. 8]);
         }
     }
 
@@ -649,24 +613,12 @@ mod tests
     {
         for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
             let mut block1 = vectors.ciphertext_chunks()[0..1].to_vec();
-            // let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
-            // let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
-            // let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
 
             unsafe {
                 aes_lut_aes128_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-                // aes_lut_aes128_decrypt2(block2.as_mut_ptr() as _,
-                // vectors.inversed_key.as_ptr());
-                // aes_lut_aes128_decrypt4(block4.as_mut_ptr() as _,
-                // vectors.inversed_key.as_ptr());
-                // aes_lut_aes128_decrypt8(block8.as_mut_ptr() as _,
-                // vectors.inversed_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.plaintext_chunks()[0..1]);
-            // assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
-            // assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
-            // assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
         }
     }
 
@@ -675,24 +627,12 @@ mod tests
     {
         for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
             let mut block1 = vectors.ciphertext_chunks()[0..1].to_vec();
-            // let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
-            // let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
-            // let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
 
             unsafe {
                 aes_lut_aes192_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-                // aes_lut_aes192_decrypt2(block2.as_mut_ptr() as _,
-                // vectors.inversed_key.as_ptr());
-                // aes_lut_aes192_decrypt4(block4.as_mut_ptr() as _,
-                // vectors.inversed_key.as_ptr());
-                // aes_lut_aes192_decrypt8(block8.as_mut_ptr() as _,
-                // vectors.inversed_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.plaintext_chunks()[0..1]);
-            // assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
-            // assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
-            // assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
         }
     }
 
@@ -701,24 +641,12 @@ mod tests
     {
         for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
             let mut block1 = vectors.ciphertext_chunks()[0..1].to_vec();
-            // let mut block2 = vectors.ciphertext_chunks()[0 .. 2].to_vec();
-            // let mut block4 = vectors.ciphertext_chunks()[0 .. 4].to_vec();
-            // let mut block8 = vectors.ciphertext_chunks()[0 .. 8].to_vec();
 
             unsafe {
                 aes_lut_aes256_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
-                // aes_lut_aes256_decrypt2(block2.as_mut_ptr() as _,
-                // vectors.inversed_key.as_ptr());
-                // aes_lut_aes256_decrypt4(block4.as_mut_ptr() as _,
-                // vectors.inversed_key.as_ptr());
-                // aes_lut_aes256_decrypt8(block8.as_mut_ptr() as _,
-                // vectors.inversed_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.plaintext_chunks()[0..1]);
-            // assert_eq!(block2, vectors.plaintext_chunks()[0 .. 2]);
-            // assert_eq!(block4, vectors.plaintext_chunks()[0 .. 4]);
-            // assert_eq!(block8, vectors.plaintext_chunks()[0 .. 8]);
         }
     }
 }
