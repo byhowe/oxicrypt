@@ -1,3 +1,5 @@
+#![feature(generic_const_exprs)]
+
 use pyo3::prelude::*;
 
 #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]

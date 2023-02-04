@@ -137,6 +137,41 @@ macro_rules! impl_sha {
                 unsafe { slice::from_raw_parts(h_ptr.cast(), Self::DIGEST_LEN) }
             }
         }
+
+        impl core::hash::Hasher for $alg_name
+        {
+            fn finish(&self) -> u64
+            {
+                // The state is copied here, since we need a mutable reference but cant with the
+                // borrow.
+                let mut ctx: Self = *self;
+                let mut digest: MaybeUninit<[u8; 8]> = MaybeUninit::uninit();
+                // FIXME: What if the digest length is less than 8 bytes long.
+                unsafe { digest.assume_init_mut() }.copy_from_slice(&ctx.finish_internal()[0..8]);
+                u64::from_be_bytes(unsafe { digest.assume_init() })
+            }
+
+            fn write(&mut self, bytes: &[u8]) { self.update(bytes); }
+        }
+
+        #[cfg(any(feature = "std", doc))]
+        #[doc(cfg(feature = "std"))]
+        impl std::io::Write for $alg_name
+        {
+            fn write(&mut self, buf: &[u8]) -> std::io::Result<usize>
+            {
+                self.update(buf);
+                Ok(buf.len())
+            }
+
+            fn write_all(&mut self, buf: &[u8]) -> std::io::Result<()>
+            {
+                self.update(buf);
+                Ok(())
+            }
+
+            fn flush(&mut self) -> std::io::Result<()> { Ok(()) }
+        }
     };
 }
 

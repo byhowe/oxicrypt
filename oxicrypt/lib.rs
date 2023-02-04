@@ -23,7 +23,7 @@ extern crate std;
 pub mod aes;
 pub mod digest;
 // pub mod hkdf;
-// pub mod hmac;
+pub mod hmac;
 pub mod md5;
 pub mod merkle_damgard;
 pub mod sha;
