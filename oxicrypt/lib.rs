@@ -4,6 +4,7 @@
 #![feature(const_maybe_uninit_assume_init)]
 #![feature(const_mut_refs)]
 #![feature(const_trait_impl)]
+#![feature(core_intrinsics)]
 #![feature(doc_cfg)]
 #![feature(generic_const_exprs)]
 #![feature(stmt_expr_attributes)]
@@ -23,9 +24,8 @@ pub mod aes;
 pub mod digest;
 // pub mod hkdf;
 pub mod hmac;
-pub mod md5;
 pub mod merkle_damgard;
-pub mod sha;
 pub mod runtime;
+pub mod num;
 
 #[cfg(test)] pub(crate) mod test_vectors;

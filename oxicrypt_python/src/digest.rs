@@ -1,7 +1,6 @@
 use oxicrypt::digest::*;
 use oxicrypt::hmac::*;
-use oxicrypt::md5::*;
-use oxicrypt::sha::*;
+use oxicrypt::merkle_damgard::*;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
 

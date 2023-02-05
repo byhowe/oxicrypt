@@ -27,6 +27,7 @@ pub trait Digest = DigestMeta
     + OneshotToSlice;
 
 /// Information about the digest algorithm.
+#[const_trait]
 pub trait DigestMeta
 {
     /// Digest length used by the algorithm.
@@ -193,4 +194,60 @@ where
         ctx.update(data);
         ctx.finish_to_slice(buf);
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Output<T, const DIGEST_LEN: usize>
+where
+    T: Digest,
+{
+    inner: T,
+}
+
+impl<T, const DIGEST_LEN: usize> Output<T, DIGEST_LEN>
+where
+    T: Digest + ~const Default,
+{
+    pub const fn new() -> Self
+    {
+        Self {
+            inner: T::default(),
+        }
+    }
+}
+
+impl<T, const DIGEST_LEN: usize> const DigestMeta for Output<T, DIGEST_LEN>
+where
+    T: Digest,
+{
+    const BLOCK_LEN: usize = T::BLOCK_LEN;
+    const DIGEST_LEN: usize = DIGEST_LEN;
+}
+
+impl<T, const DIGEST_LEN: usize> const Default for Output<T, DIGEST_LEN>
+where
+    T: Digest + ~const Default,
+{
+    fn default() -> Self { Self::new() }
+}
+
+impl<T, const DIGEST_LEN: usize> const Reset for Output<T, DIGEST_LEN>
+where
+    T: Digest + ~const Reset,
+{
+    fn reset(&mut self) { self.inner.reset(); }
+}
+
+impl<T, const DIGEST_LEN: usize> Update for Output<T, DIGEST_LEN>
+where
+    T: Digest,
+{
+    fn update(&mut self, data: &[u8]) { self.inner.update(data); }
+}
+
+impl<T, const DIGEST_LEN: usize> FinishInternal for Output<T, DIGEST_LEN>
+where
+    T: Digest,
+{
+    fn finish_internal(&mut self) -> &[u8] { &self.inner.finish_internal()[0..DIGEST_LEN] }
 }

@@ -1,6 +1,6 @@
 use oxicrypt::digest::Digest;
 use oxicrypt::digest::DigestMeta;
-use oxicrypt::sha::Sha256;
+use oxicrypt::merkle_damgard::Sha256;
 
 fn main()
 {
