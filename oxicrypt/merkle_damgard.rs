@@ -33,7 +33,7 @@ pub trait Compress<Int>
 where
     Int: PrimInt,
 {
-    fn compress(h: *mut Int, b: *const u8);
+    unsafe fn compress(h: *mut Int, b: *const u8);
 }
 
 /// Initialization vector used by the algorithm.
@@ -102,7 +102,10 @@ where
     }
 
     #[inline(always)]
-    pub fn compress(&mut self) { Compress::compress(self.state.as_mut_ptr(), self.block.as_ptr()); }
+    pub fn compress(&mut self)
+    {
+        unsafe { Compress::compress(self.state.as_mut_ptr(), self.block.as_ptr()) };
+    }
 
     /// Update the inner block and compress the state when the block is full
     /// according to the specifications of the Merkle–Damgård construction.
@@ -276,22 +279,22 @@ pub struct CompressMd5();
 
 impl Compress<u32> for CompressSha1
 {
-    fn compress(h: *mut u32, b: *const u8) { unsafe { sha_generic_sha1_compress(h, b) }; }
+    unsafe fn compress(h: *mut u32, b: *const u8) { unsafe { sha_generic_sha1_compress(h, b) }; }
 }
 
 impl Compress<u32> for CompressSha256
 {
-    fn compress(h: *mut u32, b: *const u8) { unsafe { sha_generic_sha256_compress(h, b) }; }
+    unsafe fn compress(h: *mut u32, b: *const u8) { unsafe { sha_generic_sha256_compress(h, b) }; }
 }
 
 impl Compress<u64> for CompressSha512
 {
-    fn compress(h: *mut u64, b: *const u8) { unsafe { sha_generic_sha512_compress(h, b) }; }
+    unsafe fn compress(h: *mut u64, b: *const u8) { unsafe { sha_generic_sha512_compress(h, b) }; }
 }
 
 impl Compress<u32> for CompressMd5
 {
-    fn compress(h: *mut u32, b: *const u8) { unsafe { md5_generic_md5_compress(h, b) }; }
+    unsafe fn compress(h: *mut u32, b: *const u8) { unsafe { md5_generic_md5_compress(h, b) }; }
 }
 
 macro_rules! impl_iv {
