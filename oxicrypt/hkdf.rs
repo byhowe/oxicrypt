@@ -30,7 +30,6 @@ use crate::Implementation;
 
 /// HKDF-Expand.
 #[derive(Debug, Clone, Copy)]
-#[cfg_attr(feature = "c", repr(C))]
 pub struct Hkdf<D, const M: u64, const O: usize, const B: usize>
 where
     D: Debug + Clone + Copy,

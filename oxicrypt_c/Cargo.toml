@@ -15,8 +15,6 @@ name = "oxicrypt"
 path = "src/lib.rs"
 crate-type = ["cdylib", "staticlib"]
 
-[dependencies.oxicrypt]
-version = "0.1.0"
-path = ".."
-default-features = false
-features = ["c"]
+[dependencies]
+oxicrypt = { version = "0.1.0", path = ".." }
+oxicrypt_core = { version = "0.1.0", path = "../oxicrypt_core" }

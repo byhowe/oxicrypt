@@ -44,9 +44,6 @@ default = ["alloc"]
 alloc = []
 std = ["alloc"]
 
-# Enable C/C++ API.
-c = []
-
 [profile.dev]
 panic = "abort"
 

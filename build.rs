@@ -2,18 +2,6 @@ use std::env;
 use std::fs;
 use std::path::PathBuf;
 
-fn check_c()
-{
-    let is_c = env::var("CARGO_FEATURE_C").is_ok();
-    let is_alloc = env::var("CARGO_FEATURE_ALLOC").is_ok();
-    if is_c && is_alloc {
-        println!(
-            "cargo:warning=`c` feature and `alloc` feature cannot be enabled at the same time"
-        );
-        panic!("`c` feature and `alloc` feature cannot be enabled at the same time");
-    }
-}
-
 fn export_test_vector_paths()
 {
     let manifest_path: PathBuf = env::var("CARGO_MANIFEST_DIR").unwrap().parse().unwrap();
@@ -42,6 +30,5 @@ fn export_test_vector_paths()
 
 fn main()
 {
-    check_c();
     export_test_vector_paths();
 }
