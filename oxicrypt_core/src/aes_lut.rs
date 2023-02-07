@@ -19,7 +19,7 @@ const SBOX: [u8; 256] = [
 ];
 
 #[rustfmt::skip]
-const INV_SBOX: [u8; 256] = [
+const IROUNDSV_SBOX: [u8; 256] = [
   0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb,
   0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb,
   0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42, 0xfa, 0xc3, 0x4e,
@@ -159,7 +159,7 @@ const MUL14: [u8; 256] = [
 ];
 
 #[rustfmt::skip]
-const RCON: [u8; 10] = [
+const RCOROUNDS: [u8; 10] = [
   0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36,
 ];
 
@@ -278,7 +278,7 @@ unsafe fn sub_bytes(block: *mut u8)
 unsafe fn inverse_sub_bytes(block: *mut u8)
 {
     for i in 0..16 {
-        *block.add(i) = INV_SBOX[*block.add(i) as usize];
+        *block.add(i) = IROUNDSV_SBOX[*block.add(i) as usize];
     }
 }
 
@@ -333,12 +333,12 @@ unsafe fn inverse_mix_columns(block: *mut u8)
 }
 
 #[inline(always)]
-unsafe fn expand_key<const N: usize>(key: *const u8, key_schedule: *mut u8)
+unsafe fn expand_key<const ROUNDS: usize>(key: *const u8, key_schedule: *mut u8)
 {
-    let nk = N - 6;
+    let nk = ROUNDS - 6;
     core::intrinsics::copy_nonoverlapping(key, key_schedule, nk * 4);
 
-    for i in nk..(N + 1) * 4 {
+    for i in nk..(ROUNDS + 1) * 4 {
         let k = (i - 1) * 4;
         let mut t = [
             *key_schedule.add(k + 0),
@@ -354,10 +354,10 @@ unsafe fn expand_key<const N: usize>(key: *const u8, key_schedule: *mut u8)
             t[2] = SBOX[t[3] as usize];
             t[3] = SBOX[t0 as usize];
 
-            t[0] ^= RCON[i / nk - 1];
+            t[0] ^= RCOROUNDS[i / nk - 1];
         }
 
-        if N == 14 && i % nk == 4 {
+        if ROUNDS == 14 && i % nk == 4 {
             t[0] = SBOX[t[0] as usize];
             t[1] = SBOX[t[1] as usize];
             t[2] = SBOX[t[2] as usize];
@@ -372,35 +372,35 @@ unsafe fn expand_key<const N: usize>(key: *const u8, key_schedule: *mut u8)
 }
 
 #[inline(always)]
-unsafe fn aes_inverse_key<const N: usize>(key_schedule: *mut u8)
+unsafe fn aes_inverse_key<const ROUNDS: usize>(key_schedule: *mut u8)
 {
     let mut k0: [u8; 16] = *key_schedule.cast::<[u8; 16]>().add(0);
-    let mut k1: [u8; 16] = *key_schedule.cast::<[u8; 16]>().add(N);
+    let mut k1: [u8; 16] = *key_schedule.cast::<[u8; 16]>().add(ROUNDS);
     *key_schedule.cast::<[u8; 16]>().add(0) = k1;
-    *key_schedule.cast::<[u8; 16]>().add(N) = k0;
+    *key_schedule.cast::<[u8; 16]>().add(ROUNDS) = k0;
 
     // Compiler is able to unroll this loop.
-    for i in 1..N / 2 {
+    for i in 1..ROUNDS / 2 {
         k0 = *key_schedule.cast::<[u8; 16]>().add(i);
-        k1 = *key_schedule.cast::<[u8; 16]>().add(N - i);
+        k1 = *key_schedule.cast::<[u8; 16]>().add(ROUNDS - i);
         inverse_mix_columns(k0.as_mut_ptr());
         inverse_mix_columns(k1.as_mut_ptr());
         *key_schedule.cast::<[u8; 16]>().add(i) = k1;
-        *key_schedule.cast::<[u8; 16]>().add(N - i) = k0;
+        *key_schedule.cast::<[u8; 16]>().add(ROUNDS - i) = k0;
     }
 
-    k0 = *key_schedule.cast::<[u8; 16]>().add(N / 2);
+    k0 = *key_schedule.cast::<[u8; 16]>().add(ROUNDS / 2);
     inverse_mix_columns(k0.as_mut_ptr());
-    *key_schedule.cast::<[u8; 16]>().add(N / 2) = k0;
+    *key_schedule.cast::<[u8; 16]>().add(ROUNDS / 2) = k0;
 }
 
 #[inline(always)]
-unsafe fn aes_encrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
+unsafe fn aes_encrypt1<const ROUNDS: usize>(block: *mut u8, key_schedule: *const u8)
 {
     add_round_key(block, key_schedule.add(0)); // whitening round (round 0)
 
     // Compiler is able to unroll this loop.
-    for i in 1..N {
+    for i in 1..ROUNDS {
         shift_rows(block);
         sub_bytes(block);
         mix_columns(block);
@@ -409,16 +409,16 @@ unsafe fn aes_encrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 
     sub_bytes(block);
     shift_rows(block);
-    add_round_key(block, key_schedule.add(N * 16));
+    add_round_key(block, key_schedule.add(ROUNDS * 16));
 }
 
 #[inline(always)]
-unsafe fn aes_decrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
+unsafe fn aes_decrypt1<const ROUNDS: usize>(block: *mut u8, key_schedule: *const u8)
 {
     add_round_key(block, key_schedule.add(0)); // whitening round (round 0)
 
     // Compiler is able to unroll this loop.
-    for i in 1..N {
+    for i in 1..ROUNDS {
         inverse_shift_rows(block);
         inverse_sub_bytes(block);
         inverse_mix_columns(block);
@@ -427,73 +427,64 @@ unsafe fn aes_decrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 
     inverse_sub_bytes(block);
     inverse_shift_rows(block);
-    add_round_key(block, key_schedule.add(N * 16));
+    add_round_key(block, key_schedule.add(ROUNDS * 16));
 }
 
-// AES EXPAND KEY
+// AES EXPAROUNDSD KEY
 
-pub unsafe fn aes_lut_aes128_expand_key(key: *const u8, key_schedule: *mut u8)
+pub unsafe fn aes128_expand_key(key: *const u8, key_schedule: *mut u8)
 {
     expand_key::<10>(key, key_schedule);
 }
 
-pub unsafe fn aes_lut_aes192_expand_key(key: *const u8, key_schedule: *mut u8)
+pub unsafe fn aes192_expand_key(key: *const u8, key_schedule: *mut u8)
 {
     expand_key::<12>(key, key_schedule);
 }
 
-pub unsafe fn aes_lut_aes256_expand_key(key: *const u8, key_schedule: *mut u8)
+pub unsafe fn aes256_expand_key(key: *const u8, key_schedule: *mut u8)
 {
     expand_key::<14>(key, key_schedule);
 }
 
 // AES INVERSE KEY
 
-pub unsafe fn aes_lut_aes128_inverse_key(key_schedule: *mut u8)
-{
-    aes_inverse_key::<10>(key_schedule);
-}
+pub unsafe fn aes128_inverse_key(key_schedule: *mut u8) { aes_inverse_key::<10>(key_schedule); }
 
-pub unsafe fn aes_lut_aes192_inverse_key(key_schedule: *mut u8)
-{
-    aes_inverse_key::<12>(key_schedule);
-}
+pub unsafe fn aes192_inverse_key(key_schedule: *mut u8) { aes_inverse_key::<12>(key_schedule); }
 
-pub unsafe fn aes_lut_aes256_inverse_key(key_schedule: *mut u8)
-{
-    aes_inverse_key::<14>(key_schedule);
-}
+pub unsafe fn aes256_inverse_key(key_schedule: *mut u8) { aes_inverse_key::<14>(key_schedule); }
 
 // AES ENCRYPT
 
-pub unsafe fn aes_lut_aes128_encrypt1(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_encrypt1(block: *mut u8, key_schedule: *const u8)
 {
     aes_encrypt1::<10>(block, key_schedule);
 }
 
-pub unsafe fn aes_lut_aes192_encrypt1(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_encrypt1(block: *mut u8, key_schedule: *const u8)
 {
     aes_encrypt1::<12>(block, key_schedule);
 }
 
-pub unsafe fn aes_lut_aes256_encrypt1(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_encrypt1(block: *mut u8, key_schedule: *const u8)
 {
     aes_encrypt1::<14>(block, key_schedule);
 }
 
 // AES DECRYPT
 
-pub unsafe fn aes_lut_aes128_decrypt1(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_decrypt1(block: *mut u8, key_schedule: *const u8)
 {
     aes_decrypt1::<10>(block, key_schedule);
 }
 
-pub unsafe fn aes_lut_aes192_decrypt1(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_decrypt1(block: *mut u8, key_schedule: *const u8)
 {
     aes_decrypt1::<12>(block, key_schedule);
 }
 
-pub unsafe fn aes_lut_aes256_decrypt1(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_decrypt1(block: *mut u8, key_schedule: *const u8)
 {
     aes_decrypt1::<14>(block, key_schedule);
 }
@@ -511,7 +502,7 @@ mod tests
     {
         for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
             let mut key_schedule = [0; 176];
-            unsafe { aes_lut_aes128_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
+            unsafe { aes128_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
             assert_eq!(key_schedule, vectors.expanded_key);
         }
     }
@@ -521,7 +512,7 @@ mod tests
     {
         for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
             let mut key_schedule = [0; 208];
-            unsafe { aes_lut_aes192_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
+            unsafe { aes192_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
             assert_eq!(key_schedule, vectors.expanded_key);
         }
     }
@@ -531,7 +522,7 @@ mod tests
     {
         for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
             let mut key_schedule = [0; 240];
-            unsafe { aes_lut_aes256_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
+            unsafe { aes256_expand_key(vectors.key.as_ptr(), key_schedule.as_mut_ptr()) };
             assert_eq!(key_schedule, vectors.expanded_key);
         }
     }
@@ -541,7 +532,7 @@ mod tests
     {
         for vectors in AesVectorsIterator::<{ Aes::Aes128 }>::new() {
             let mut key_schedule = vectors.expanded_key;
-            unsafe { aes_lut_aes128_inverse_key(key_schedule.as_mut_ptr()) };
+            unsafe { super::aes128_inverse_key(key_schedule.as_mut_ptr()) };
             assert_eq!(key_schedule, vectors.inversed_key);
         }
     }
@@ -551,7 +542,7 @@ mod tests
     {
         for vectors in AesVectorsIterator::<{ Aes::Aes192 }>::new() {
             let mut key_schedule = vectors.expanded_key;
-            unsafe { aes_lut_aes192_inverse_key(key_schedule.as_mut_ptr()) };
+            unsafe { super::aes192_inverse_key(key_schedule.as_mut_ptr()) };
             assert_eq!(key_schedule, vectors.inversed_key);
         }
     }
@@ -561,7 +552,7 @@ mod tests
     {
         for vectors in AesVectorsIterator::<{ Aes::Aes256 }>::new() {
             let mut key_schedule = vectors.expanded_key;
-            unsafe { aes_lut_aes256_inverse_key(key_schedule.as_mut_ptr()) };
+            unsafe { super::aes256_inverse_key(key_schedule.as_mut_ptr()) };
             assert_eq!(key_schedule, vectors.inversed_key);
         }
     }
@@ -573,7 +564,7 @@ mod tests
             let mut block1 = vectors.plaintext_chunks()[0..1].to_vec();
 
             unsafe {
-                aes_lut_aes128_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes128_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);
@@ -587,7 +578,7 @@ mod tests
             let mut block1 = vectors.plaintext_chunks()[0..1].to_vec();
 
             unsafe {
-                aes_lut_aes192_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes192_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);
@@ -601,7 +592,7 @@ mod tests
             let mut block1 = vectors.plaintext_chunks()[0..1].to_vec();
 
             unsafe {
-                aes_lut_aes256_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes256_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);
@@ -615,7 +606,7 @@ mod tests
             let mut block1 = vectors.ciphertext_chunks()[0..1].to_vec();
 
             unsafe {
-                aes_lut_aes128_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+                aes128_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.plaintext_chunks()[0..1]);
@@ -629,7 +620,7 @@ mod tests
             let mut block1 = vectors.ciphertext_chunks()[0..1].to_vec();
 
             unsafe {
-                aes_lut_aes192_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+                aes192_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.plaintext_chunks()[0..1]);
@@ -643,7 +634,7 @@ mod tests
             let mut block1 = vectors.ciphertext_chunks()[0..1].to_vec();
 
             unsafe {
-                aes_lut_aes256_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
+                aes256_decrypt1(block1.as_mut_ptr() as _, vectors.inversed_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.plaintext_chunks()[0..1]);

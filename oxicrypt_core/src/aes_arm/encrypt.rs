@@ -1,20 +1,17 @@
-#[cfg(not(any(target_arch = "arm", target_arch = "aarch64", doc)))]
-compile_error!("`aes_arm_aes_aes_encrypt` module is only available for `arm` and `aarch64`");
-
 #[cfg(target_arch = "aarch64")]
 use core::arch::aarch64::*;
 #[cfg(target_arch = "arm")]
 use core::arch::arm::*;
 
 #[inline(always)]
-unsafe fn encrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
+unsafe fn encrypt1<const ROUNDS: usize>(block: *mut u8, key_schedule: *const u8)
 {
-    debug_assert!(N == 10 || N == 12 || N == 14);
+    debug_assert!(ROUNDS == 10 || ROUNDS == 12 || ROUNDS == 14);
 
     let mut k0: uint8x16_t = vld1q_u8(key_schedule.add(0 * 16));
     let mut b0: uint8x16_t = vld1q_u8(block.add(0 * 16));
 
-    for i in 1..N {
+    for i in 1..ROUNDS {
         b0 = vaeseq_u8(b0, k0);
         b0 = vaesmcq_u8(b0);
 
@@ -23,22 +20,22 @@ unsafe fn encrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
 
     b0 = vaeseq_u8(b0, k0);
 
-    k0 = vld1q_u8(key_schedule.add(N * 16));
+    k0 = vld1q_u8(key_schedule.add(ROUNDS * 16));
     b0 = veorq_u8(b0, k0);
 
     vst1q_u8(block, b0);
 }
 
 #[inline(always)]
-unsafe fn encrypt2<const N: usize>(block: *mut u8, key_schedule: *const u8)
+unsafe fn encrypt2<const ROUNDS: usize>(block: *mut u8, key_schedule: *const u8)
 {
-    debug_assert!(N == 10 || N == 12 || N == 14);
+    debug_assert!(ROUNDS == 10 || ROUNDS == 12 || ROUNDS == 14);
 
     let mut k0: uint8x16_t = vld1q_u8(key_schedule.add(0 * 16));
     let mut b0: uint8x16_t = vld1q_u8(block.add(0 * 16));
     let mut b1: uint8x16_t = vld1q_u8(block.add(1 * 16));
 
-    for i in 1..N {
+    for i in 1..ROUNDS {
         b0 = vaeseq_u8(b0, k0);
         b0 = vaesmcq_u8(b0);
         b1 = vaeseq_u8(b1, k0);
@@ -50,7 +47,7 @@ unsafe fn encrypt2<const N: usize>(block: *mut u8, key_schedule: *const u8)
     b0 = vaeseq_u8(b0, k0);
     b1 = vaeseq_u8(b1, k0);
 
-    k0 = vld1q_u8(key_schedule.add(N * 16));
+    k0 = vld1q_u8(key_schedule.add(ROUNDS * 16));
     b0 = veorq_u8(b0, k0);
     b1 = veorq_u8(b1, k0);
 
@@ -59,9 +56,9 @@ unsafe fn encrypt2<const N: usize>(block: *mut u8, key_schedule: *const u8)
 }
 
 #[inline(always)]
-unsafe fn encrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
+unsafe fn encrypt4<const ROUNDS: usize>(block: *mut u8, key_schedule: *const u8)
 {
-    debug_assert!(N == 10 || N == 12 || N == 14);
+    debug_assert!(ROUNDS == 10 || ROUNDS == 12 || ROUNDS == 14);
 
     let mut k0: uint8x16_t = vld1q_u8(key_schedule.add(0 * 16));
     let mut b0: uint8x16_t = vld1q_u8(block.add(0 * 16));
@@ -69,7 +66,7 @@ unsafe fn encrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
     let mut b2: uint8x16_t = vld1q_u8(block.add(2 * 16));
     let mut b3: uint8x16_t = vld1q_u8(block.add(3 * 16));
 
-    for i in 1..N {
+    for i in 1..ROUNDS {
         b0 = vaeseq_u8(b0, k0);
         b0 = vaesmcq_u8(b0);
         b1 = vaeseq_u8(b1, k0);
@@ -87,7 +84,7 @@ unsafe fn encrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
     b2 = vaeseq_u8(b2, k0);
     b3 = vaeseq_u8(b3, k0);
 
-    k0 = vld1q_u8(key_schedule.add(N * 16));
+    k0 = vld1q_u8(key_schedule.add(ROUNDS * 16));
     b0 = veorq_u8(b0, k0);
     b1 = veorq_u8(b1, k0);
     b2 = veorq_u8(b2, k0);
@@ -100,9 +97,9 @@ unsafe fn encrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
 }
 
 #[inline(always)]
-unsafe fn encrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
+unsafe fn encrypt8<const ROUNDS: usize>(block: *mut u8, key_schedule: *const u8)
 {
-    debug_assert!(N == 10 || N == 12 || N == 14);
+    debug_assert!(ROUNDS == 10 || ROUNDS == 12 || ROUNDS == 14);
 
     let mut k0: uint8x16_t = vld1q_u8(key_schedule.add(0 * 16));
     let mut b0: uint8x16_t = vld1q_u8(block.add(0 * 16));
@@ -114,7 +111,7 @@ unsafe fn encrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
     let mut b6: uint8x16_t = vld1q_u8(block.add(6 * 16));
     let mut b7: uint8x16_t = vld1q_u8(block.add(7 * 16));
 
-    for i in 1..N {
+    for i in 1..ROUNDS {
         b0 = vaeseq_u8(b0, k0);
         b0 = vaesmcq_u8(b0);
         b1 = vaeseq_u8(b1, k0);
@@ -144,7 +141,7 @@ unsafe fn encrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
     b6 = vaeseq_u8(b6, k0);
     b7 = vaeseq_u8(b7, k0);
 
-    k0 = vld1q_u8(key_schedule.add(N * 16));
+    k0 = vld1q_u8(key_schedule.add(ROUNDS * 16));
     b0 = veorq_u8(b0, k0);
     b1 = veorq_u8(b1, k0);
     b2 = veorq_u8(b2, k0);
@@ -169,7 +166,7 @@ unsafe fn encrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
 #[target_feature(enable = "neon")]
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "arm", target_arch = "aarch64")))]
-pub unsafe fn aes_arm_aes_aes128_encrypt1(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_encrypt1(block: *mut u8, key_schedule: *const u8)
 {
     encrypt1::<10>(block, key_schedule);
 }
@@ -177,7 +174,7 @@ pub unsafe fn aes_arm_aes_aes128_encrypt1(block: *mut u8, key_schedule: *const u
 #[target_feature(enable = "neon")]
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "arm", target_arch = "aarch64")))]
-pub unsafe fn aes_arm_aes_aes128_encrypt2(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_encrypt2(block: *mut u8, key_schedule: *const u8)
 {
     encrypt2::<10>(block, key_schedule);
 }
@@ -185,7 +182,7 @@ pub unsafe fn aes_arm_aes_aes128_encrypt2(block: *mut u8, key_schedule: *const u
 #[target_feature(enable = "neon")]
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "arm", target_arch = "aarch64")))]
-pub unsafe fn aes_arm_aes_aes128_encrypt4(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_encrypt4(block: *mut u8, key_schedule: *const u8)
 {
     encrypt4::<10>(block, key_schedule);
 }
@@ -193,7 +190,7 @@ pub unsafe fn aes_arm_aes_aes128_encrypt4(block: *mut u8, key_schedule: *const u
 #[target_feature(enable = "neon")]
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "arm", target_arch = "aarch64")))]
-pub unsafe fn aes_arm_aes_aes128_encrypt8(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_encrypt8(block: *mut u8, key_schedule: *const u8)
 {
     encrypt8::<10>(block, key_schedule);
 }
@@ -203,7 +200,7 @@ pub unsafe fn aes_arm_aes_aes128_encrypt8(block: *mut u8, key_schedule: *const u
 #[target_feature(enable = "neon")]
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "arm", target_arch = "aarch64")))]
-pub unsafe fn aes_arm_aes_aes192_encrypt1(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_encrypt1(block: *mut u8, key_schedule: *const u8)
 {
     encrypt1::<12>(block, key_schedule);
 }
@@ -211,7 +208,7 @@ pub unsafe fn aes_arm_aes_aes192_encrypt1(block: *mut u8, key_schedule: *const u
 #[target_feature(enable = "neon")]
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "arm", target_arch = "aarch64")))]
-pub unsafe fn aes_arm_aes_aes192_encrypt2(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_encrypt2(block: *mut u8, key_schedule: *const u8)
 {
     encrypt2::<12>(block, key_schedule);
 }
@@ -219,7 +216,7 @@ pub unsafe fn aes_arm_aes_aes192_encrypt2(block: *mut u8, key_schedule: *const u
 #[target_feature(enable = "neon")]
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "arm", target_arch = "aarch64")))]
-pub unsafe fn aes_arm_aes_aes192_encrypt4(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_encrypt4(block: *mut u8, key_schedule: *const u8)
 {
     encrypt4::<12>(block, key_schedule);
 }
@@ -227,7 +224,7 @@ pub unsafe fn aes_arm_aes_aes192_encrypt4(block: *mut u8, key_schedule: *const u
 #[target_feature(enable = "neon")]
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "arm", target_arch = "aarch64")))]
-pub unsafe fn aes_arm_aes_aes192_encrypt8(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_encrypt8(block: *mut u8, key_schedule: *const u8)
 {
     encrypt8::<12>(block, key_schedule);
 }
@@ -237,7 +234,7 @@ pub unsafe fn aes_arm_aes_aes192_encrypt8(block: *mut u8, key_schedule: *const u
 #[target_feature(enable = "neon")]
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "arm", target_arch = "aarch64")))]
-pub unsafe fn aes_arm_aes_aes256_encrypt1(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_encrypt1(block: *mut u8, key_schedule: *const u8)
 {
     encrypt1::<14>(block, key_schedule);
 }
@@ -245,7 +242,7 @@ pub unsafe fn aes_arm_aes_aes256_encrypt1(block: *mut u8, key_schedule: *const u
 #[target_feature(enable = "neon")]
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "arm", target_arch = "aarch64")))]
-pub unsafe fn aes_arm_aes_aes256_encrypt2(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_encrypt2(block: *mut u8, key_schedule: *const u8)
 {
     encrypt2::<14>(block, key_schedule);
 }
@@ -253,7 +250,7 @@ pub unsafe fn aes_arm_aes_aes256_encrypt2(block: *mut u8, key_schedule: *const u
 #[target_feature(enable = "neon")]
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "arm", target_arch = "aarch64")))]
-pub unsafe fn aes_arm_aes_aes256_encrypt4(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_encrypt4(block: *mut u8, key_schedule: *const u8)
 {
     encrypt4::<14>(block, key_schedule);
 }
@@ -261,7 +258,7 @@ pub unsafe fn aes_arm_aes_aes256_encrypt4(block: *mut u8, key_schedule: *const u
 #[target_feature(enable = "neon")]
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "arm", target_arch = "aarch64")))]
-pub unsafe fn aes_arm_aes_aes256_encrypt8(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_encrypt8(block: *mut u8, key_schedule: *const u8)
 {
     encrypt8::<14>(block, key_schedule);
 }
@@ -284,22 +281,10 @@ mod tests
             let mut block8 = vectors.plaintext_chunks()[0..8].to_vec();
 
             unsafe {
-                aes_arm_aes_aes128_encrypt1(
-                    block1.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_arm_aes_aes128_encrypt2(
-                    block2.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_arm_aes_aes128_encrypt4(
-                    block4.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_arm_aes_aes128_encrypt8(
-                    block8.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
+                aes128_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes128_encrypt2(block2.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes128_encrypt4(block4.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes128_encrypt8(block8.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);
@@ -319,22 +304,10 @@ mod tests
             let mut block8 = vectors.plaintext_chunks()[0..8].to_vec();
 
             unsafe {
-                aes_arm_aes_aes192_encrypt1(
-                    block1.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_arm_aes_aes192_encrypt2(
-                    block2.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_arm_aes_aes192_encrypt4(
-                    block4.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_arm_aes_aes192_encrypt8(
-                    block8.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
+                aes192_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes192_encrypt2(block2.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes192_encrypt4(block4.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes192_encrypt8(block8.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);
@@ -354,22 +327,10 @@ mod tests
             let mut block8 = vectors.plaintext_chunks()[0..8].to_vec();
 
             unsafe {
-                aes_arm_aes_aes256_encrypt1(
-                    block1.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_arm_aes_aes256_encrypt2(
-                    block2.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_arm_aes_aes256_encrypt4(
-                    block4.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_arm_aes_aes256_encrypt8(
-                    block8.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
+                aes256_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes256_encrypt2(block2.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes256_encrypt4(block4.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes256_encrypt8(block8.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);

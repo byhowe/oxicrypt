@@ -16,7 +16,7 @@ use core::slice;
 
 use num_traits::NumCast;
 use num_traits::PrimInt;
-use oxicrypt_core::*;
+use oxicrypt_core::md_compress;
 
 use crate::digest::DigestMeta;
 use crate::digest::FinishInternal;
@@ -279,22 +279,22 @@ pub struct CompressMd5();
 
 impl Compress<u32> for CompressSha1
 {
-    unsafe fn compress(h: *mut u32, b: *const u8) { unsafe { sha_generic_sha1_compress(h, b) }; }
+    unsafe fn compress(h: *mut u32, b: *const u8) { unsafe { md_compress::sha1(h, b) }; }
 }
 
 impl Compress<u32> for CompressSha256
 {
-    unsafe fn compress(h: *mut u32, b: *const u8) { unsafe { sha_generic_sha256_compress(h, b) }; }
+    unsafe fn compress(h: *mut u32, b: *const u8) { unsafe { md_compress::sha256(h, b) }; }
 }
 
 impl Compress<u64> for CompressSha512
 {
-    unsafe fn compress(h: *mut u64, b: *const u8) { unsafe { sha_generic_sha512_compress(h, b) }; }
+    unsafe fn compress(h: *mut u64, b: *const u8) { unsafe { md_compress::sha512(h, b) }; }
 }
 
 impl Compress<u32> for CompressMd5
 {
-    unsafe fn compress(h: *mut u32, b: *const u8) { unsafe { md5_generic_md5_compress(h, b) }; }
+    unsafe fn compress(h: *mut u32, b: *const u8) { unsafe { md_compress::md5(h, b) }; }
 }
 
 macro_rules! impl_iv {

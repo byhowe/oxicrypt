@@ -33,7 +33,7 @@ macro_rules! sha2_64_f {
 /// `block` must point to an array with a length of 128 (128 bytes).
 #[allow(clippy::many_single_char_names)]
 #[allow(unused_assignments)]
-pub const unsafe fn sha_generic_sha512_compress(state: *mut u64, block: *const u8)
+pub const unsafe fn sha512(state: *mut u64, block: *const u8)
 {
     let mut a: u64 = *state.add(0);
     let mut b: u64 = *state.add(1);

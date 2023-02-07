@@ -1,36 +1,33 @@
-#[cfg(not(any(target_arch = "x86", target_arch = "x86_64", doc)))]
-compile_error!("`aes_x86_aesni_aes_encrypt` module is only available for `x86` and `x86_64`");
-
 #[cfg(target_arch = "x86")]
 use core::arch::x86::*;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::*;
 
 #[inline(always)]
-unsafe fn encrypt1<const N: usize>(block: *mut u8, key_schedule: *const u8)
+unsafe fn encrypt1<const ROUNDS: usize>(block: *mut u8, key_schedule: *const u8)
 {
-    debug_assert!(N == 10 || N == 12 || N == 14);
+    debug_assert!(ROUNDS == 10 || ROUNDS == 12 || ROUNDS == 14);
 
     let mut k0: __m128i = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(0));
     let mut b0: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(0));
 
     b0 = _mm_xor_si128(b0, k0);
 
-    for i in 1..N {
+    for i in 1..ROUNDS {
         k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(i));
         b0 = _mm_aesenc_si128(b0, k0);
     }
 
-    k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(N));
+    k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(ROUNDS));
     b0 = _mm_aesenclast_si128(b0, k0);
 
     _mm_storeu_si128(block.cast::<__m128i>().add(0), b0);
 }
 
 #[inline(always)]
-unsafe fn encrypt2<const N: usize>(block: *mut u8, key_schedule: *const u8)
+unsafe fn encrypt2<const ROUNDS: usize>(block: *mut u8, key_schedule: *const u8)
 {
-    debug_assert!(N == 10 || N == 12 || N == 14);
+    debug_assert!(ROUNDS == 10 || ROUNDS == 12 || ROUNDS == 14);
 
     let mut k0: __m128i = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(0));
     let mut b0: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(0));
@@ -39,13 +36,13 @@ unsafe fn encrypt2<const N: usize>(block: *mut u8, key_schedule: *const u8)
     b0 = _mm_xor_si128(b0, k0);
     b1 = _mm_xor_si128(b1, k0);
 
-    for i in 1..N {
+    for i in 1..ROUNDS {
         k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(i));
         b0 = _mm_aesenc_si128(b0, k0);
         b1 = _mm_aesenc_si128(b1, k0);
     }
 
-    k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(N));
+    k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(ROUNDS));
     b0 = _mm_aesenclast_si128(b0, k0);
     b1 = _mm_aesenclast_si128(b1, k0);
 
@@ -54,9 +51,9 @@ unsafe fn encrypt2<const N: usize>(block: *mut u8, key_schedule: *const u8)
 }
 
 #[inline(always)]
-unsafe fn encrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
+unsafe fn encrypt4<const ROUNDS: usize>(block: *mut u8, key_schedule: *const u8)
 {
-    debug_assert!(N == 10 || N == 12 || N == 14);
+    debug_assert!(ROUNDS == 10 || ROUNDS == 12 || ROUNDS == 14);
 
     let mut k0: __m128i = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(0));
     let mut b0: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(0));
@@ -69,7 +66,7 @@ unsafe fn encrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
     b2 = _mm_xor_si128(b2, k0);
     b3 = _mm_xor_si128(b3, k0);
 
-    for i in 1..N {
+    for i in 1..ROUNDS {
         k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(i));
         b0 = _mm_aesenc_si128(b0, k0);
         b1 = _mm_aesenc_si128(b1, k0);
@@ -77,7 +74,7 @@ unsafe fn encrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
         b3 = _mm_aesenc_si128(b3, k0);
     }
 
-    k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(N));
+    k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(ROUNDS));
     b0 = _mm_aesenclast_si128(b0, k0);
     b1 = _mm_aesenclast_si128(b1, k0);
     b2 = _mm_aesenclast_si128(b2, k0);
@@ -90,9 +87,9 @@ unsafe fn encrypt4<const N: usize>(block: *mut u8, key_schedule: *const u8)
 }
 
 #[inline(always)]
-unsafe fn encrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
+unsafe fn encrypt8<const ROUNDS: usize>(block: *mut u8, key_schedule: *const u8)
 {
-    debug_assert!(N == 10 || N == 12 || N == 14);
+    debug_assert!(ROUNDS == 10 || ROUNDS == 12 || ROUNDS == 14);
 
     let mut k0: __m128i = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(0));
     let mut b0: __m128i = _mm_loadu_si128(block.cast::<__m128i>().add(0));
@@ -113,7 +110,7 @@ unsafe fn encrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
     b6 = _mm_xor_si128(b6, k0);
     b7 = _mm_xor_si128(b7, k0);
 
-    for i in 1..N {
+    for i in 1..ROUNDS {
         k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(i));
         b0 = _mm_aesenc_si128(b0, k0);
         b1 = _mm_aesenc_si128(b1, k0);
@@ -125,7 +122,7 @@ unsafe fn encrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
         b7 = _mm_aesenc_si128(b7, k0);
     }
 
-    k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(N));
+    k0 = _mm_loadu_si128(key_schedule.cast::<__m128i>().add(ROUNDS));
     b0 = _mm_aesenclast_si128(b0, k0);
     b1 = _mm_aesenclast_si128(b1, k0);
     b2 = _mm_aesenclast_si128(b2, k0);
@@ -149,28 +146,28 @@ unsafe fn encrypt8<const N: usize>(block: *mut u8, key_schedule: *const u8)
 
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-pub unsafe fn aes_x86_aesni_aes128_encrypt1(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_encrypt1(block: *mut u8, key_schedule: *const u8)
 {
     encrypt1::<10>(block, key_schedule);
 }
 
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-pub unsafe fn aes_x86_aesni_aes128_encrypt2(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_encrypt2(block: *mut u8, key_schedule: *const u8)
 {
     encrypt2::<10>(block, key_schedule);
 }
 
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-pub unsafe fn aes_x86_aesni_aes128_encrypt4(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_encrypt4(block: *mut u8, key_schedule: *const u8)
 {
     encrypt4::<10>(block, key_schedule);
 }
 
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-pub unsafe fn aes_x86_aesni_aes128_encrypt8(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes128_encrypt8(block: *mut u8, key_schedule: *const u8)
 {
     encrypt8::<10>(block, key_schedule);
 }
@@ -179,28 +176,28 @@ pub unsafe fn aes_x86_aesni_aes128_encrypt8(block: *mut u8, key_schedule: *const
 
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-pub unsafe fn aes_x86_aesni_aes192_encrypt1(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_encrypt1(block: *mut u8, key_schedule: *const u8)
 {
     encrypt1::<12>(block, key_schedule);
 }
 
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-pub unsafe fn aes_x86_aesni_aes192_encrypt2(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_encrypt2(block: *mut u8, key_schedule: *const u8)
 {
     encrypt2::<12>(block, key_schedule);
 }
 
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-pub unsafe fn aes_x86_aesni_aes192_encrypt4(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_encrypt4(block: *mut u8, key_schedule: *const u8)
 {
     encrypt4::<12>(block, key_schedule);
 }
 
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-pub unsafe fn aes_x86_aesni_aes192_encrypt8(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes192_encrypt8(block: *mut u8, key_schedule: *const u8)
 {
     encrypt8::<12>(block, key_schedule);
 }
@@ -209,28 +206,28 @@ pub unsafe fn aes_x86_aesni_aes192_encrypt8(block: *mut u8, key_schedule: *const
 
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-pub unsafe fn aes_x86_aesni_aes256_encrypt1(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_encrypt1(block: *mut u8, key_schedule: *const u8)
 {
     encrypt1::<14>(block, key_schedule);
 }
 
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-pub unsafe fn aes_x86_aesni_aes256_encrypt2(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_encrypt2(block: *mut u8, key_schedule: *const u8)
 {
     encrypt2::<14>(block, key_schedule);
 }
 
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-pub unsafe fn aes_x86_aesni_aes256_encrypt4(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_encrypt4(block: *mut u8, key_schedule: *const u8)
 {
     encrypt4::<14>(block, key_schedule);
 }
 
 #[target_feature(enable = "aes")]
 #[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
-pub unsafe fn aes_x86_aesni_aes256_encrypt8(block: *mut u8, key_schedule: *const u8)
+pub unsafe fn aes256_encrypt8(block: *mut u8, key_schedule: *const u8)
 {
     encrypt8::<14>(block, key_schedule);
 }
@@ -253,22 +250,10 @@ mod tests
             let mut block8 = vectors.plaintext_chunks()[0..8].to_vec();
 
             unsafe {
-                aes_x86_aesni_aes128_encrypt1(
-                    block1.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_x86_aesni_aes128_encrypt2(
-                    block2.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_x86_aesni_aes128_encrypt4(
-                    block4.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_x86_aesni_aes128_encrypt8(
-                    block8.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
+                aes128_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes128_encrypt2(block2.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes128_encrypt4(block4.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes128_encrypt8(block8.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);
@@ -288,22 +273,10 @@ mod tests
             let mut block8 = vectors.plaintext_chunks()[0..8].to_vec();
 
             unsafe {
-                aes_x86_aesni_aes192_encrypt1(
-                    block1.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_x86_aesni_aes192_encrypt2(
-                    block2.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_x86_aesni_aes192_encrypt4(
-                    block4.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_x86_aesni_aes192_encrypt8(
-                    block8.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
+                aes192_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes192_encrypt2(block2.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes192_encrypt4(block4.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes192_encrypt8(block8.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);
@@ -323,22 +296,10 @@ mod tests
             let mut block8 = vectors.plaintext_chunks()[0..8].to_vec();
 
             unsafe {
-                aes_x86_aesni_aes256_encrypt1(
-                    block1.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_x86_aesni_aes256_encrypt2(
-                    block2.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_x86_aesni_aes256_encrypt4(
-                    block4.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
-                aes_x86_aesni_aes256_encrypt8(
-                    block8.as_mut_ptr() as _,
-                    vectors.expanded_key.as_ptr(),
-                );
+                aes256_encrypt1(block1.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes256_encrypt2(block2.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes256_encrypt4(block4.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
+                aes256_encrypt8(block8.as_mut_ptr() as _, vectors.expanded_key.as_ptr());
             }
 
             assert_eq!(block1, vectors.ciphertext_chunks()[0..1]);

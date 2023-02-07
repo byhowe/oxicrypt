@@ -9,48 +9,15 @@
 #![no_std]
 #![feature(doc_cfg)]
 #![feature(const_mut_refs)]
+#![feature(stdsimd)]
 #![allow(clippy::identity_op)]
 #![allow(clippy::zero_prefixed_literal)]
 
-use cfg_if::cfg_if;
-
-mod aes_lut_aes_core;
-mod md5_generic_md5_compress;
-mod sha_generic_sha1_compress;
-mod sha_generic_sha256_compress;
-mod sha_generic_sha512_compress;
-
-pub use aes_lut_aes_core::*;
-pub use md5_generic_md5_compress::md5_generic_md5_compress;
-pub use sha_generic_sha1_compress::sha_generic_sha1_compress;
-pub use sha_generic_sha256_compress::sha_generic_sha256_compress;
-pub use sha_generic_sha512_compress::sha_generic_sha512_compress;
-
-cfg_if! {
-  if #[cfg(any(target_arch = "x86", target_arch = "x86_64", doc))] {
-    // full set of AES-NI powered aes functions
-    mod aes_x86_aesni_aes_encrypt;
-    mod aes_x86_aesni_aes_decrypt;
-    mod aes_x86_aesni_aes_inverse_key;
-    mod aes_x86_aesni_aes_expand_key;
-
-    pub use aes_x86_aesni_aes_encrypt::*;
-    pub use aes_x86_aesni_aes_decrypt::*;
-    pub use aes_x86_aesni_aes_inverse_key::*;
-    pub use aes_x86_aesni_aes_expand_key::*;
-  }
-}
-
-cfg_if! {
-  if #[cfg(any(target_arch = "arm", target_arch = "aarc64", doc))] {
-    mod aes_arm_aes_aes_encrypt;
-    mod aes_arm_aes_aes_decrypt;
-    // mod aes_arm_aes_aes_inverse_key;
-    // mod aes_arm_aes_aes_expand_key;
-
-    pub use aes_arm_aes_aes_encrypt::*;
-    pub use aes_arm_aes_aes_decrypt::*;
-    // pub use aes_arm_aes_aes_inverse_key::*;
-    // pub use aes_arm_aes_aes_expand_key::*;
-  }
-}
+#[cfg(any(target_arch = "arm", target_arch = "aarch64", doc))]
+#[doc(cfg(any(target_arch = "arm", target_arch = "aarch64")))]
+pub mod aes_arm;
+pub mod aes_lut;
+#[cfg(any(target_arch = "x86", target_arch = "x86_64", doc))]
+#[doc(cfg(any(target_arch = "x86", target_arch = "x86_64")))]
+pub mod aesni;
+pub mod md_compress;

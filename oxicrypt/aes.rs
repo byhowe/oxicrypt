@@ -2,7 +2,11 @@
 
 use core::mem::MaybeUninit;
 
-use oxicrypt_core::*;
+#[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
+use oxicrypt_core::aes_arm;
+use oxicrypt_core::aes_lut;
+#[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+use oxicrypt_core::aesni;
 use Variant::*;
 
 use crate::runtime::Feature;
@@ -254,21 +258,15 @@ where
         if Feature::Aesni.is_available() {
             #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
             match Self::VARIANT {
-                | Aes128 => unsafe {
-                    aes_x86_aesni_aes128_expand_key(key.as_ptr(), self.as_mut_ptr())
-                },
-                | Aes192 => unsafe {
-                    aes_x86_aesni_aes192_expand_key(key.as_ptr(), self.as_mut_ptr())
-                },
-                | Aes256 => unsafe {
-                    aes_x86_aesni_aes256_expand_key(key.as_ptr(), self.as_mut_ptr())
-                },
+                | Aes128 => unsafe { aesni::aes128_expand_key(key.as_ptr(), self.as_mut_ptr()) },
+                | Aes192 => unsafe { aesni::aes192_expand_key(key.as_ptr(), self.as_mut_ptr()) },
+                | Aes256 => unsafe { aesni::aes256_expand_key(key.as_ptr(), self.as_mut_ptr()) },
             }
         } else {
             match Self::VARIANT {
-                | Aes128 => unsafe { aes_lut_aes128_expand_key(key.as_ptr(), self.as_mut_ptr()) },
-                | Aes192 => unsafe { aes_lut_aes192_expand_key(key.as_ptr(), self.as_mut_ptr()) },
-                | Aes256 => unsafe { aes_lut_aes256_expand_key(key.as_ptr(), self.as_mut_ptr()) },
+                | Aes128 => unsafe { aes_lut::aes128_expand_key(key.as_ptr(), self.as_mut_ptr()) },
+                | Aes192 => unsafe { aes_lut::aes192_expand_key(key.as_ptr(), self.as_mut_ptr()) },
+                | Aes256 => unsafe { aes_lut::aes256_expand_key(key.as_ptr(), self.as_mut_ptr()) },
             }
         }
     }
@@ -319,15 +317,15 @@ where
         if Feature::Aesni.is_available() {
             #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
             match Self::VARIANT {
-                | Aes128 => unsafe { aes_x86_aesni_aes128_inverse_key(self.as_mut_ptr()) },
-                | Aes192 => unsafe { aes_x86_aesni_aes192_inverse_key(self.as_mut_ptr()) },
-                | Aes256 => unsafe { aes_x86_aesni_aes256_inverse_key(self.as_mut_ptr()) },
+                | Aes128 => unsafe { aesni::aes128_inverse_key(self.as_mut_ptr()) },
+                | Aes192 => unsafe { aesni::aes192_inverse_key(self.as_mut_ptr()) },
+                | Aes256 => unsafe { aesni::aes256_inverse_key(self.as_mut_ptr()) },
             }
         } else {
             match Self::VARIANT {
-                | Aes128 => unsafe { aes_lut_aes128_inverse_key(self.as_mut_ptr()) },
-                | Aes192 => unsafe { aes_lut_aes192_inverse_key(self.as_mut_ptr()) },
-                | Aes256 => unsafe { aes_lut_aes256_inverse_key(self.as_mut_ptr()) },
+                | Aes128 => unsafe { aes_lut::aes128_inverse_key(self.as_mut_ptr()) },
+                | Aes192 => unsafe { aes_lut::aes192_inverse_key(self.as_mut_ptr()) },
+                | Aes256 => unsafe { aes_lut::aes256_inverse_key(self.as_mut_ptr()) },
             }
         }
     }
@@ -379,45 +377,33 @@ where
                 match block.len() / 16 {
                     | n if n >= 8 => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_x86_aesni_aes128_encrypt8(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_x86_aesni_aes192_encrypt8(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_x86_aesni_aes256_encrypt8(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aesni::aes128_encrypt8(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aesni::aes192_encrypt8(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aesni::aes256_encrypt8(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[8 * 16..];
                     },
                     | n if n >= 4 => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_x86_aesni_aes128_encrypt4(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_x86_aesni_aes192_encrypt4(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_x86_aesni_aes256_encrypt4(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aesni::aes128_encrypt4(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aesni::aes192_encrypt4(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aesni::aes256_encrypt4(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[4 * 16..];
                     },
                     | n if n >= 2 => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_x86_aesni_aes128_encrypt2(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_x86_aesni_aes192_encrypt2(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_x86_aesni_aes256_encrypt2(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aesni::aes128_encrypt2(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aesni::aes192_encrypt2(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aesni::aes256_encrypt2(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[2 * 16..];
                     },
                     | _ => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_x86_aesni_aes128_encrypt1(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_x86_aesni_aes192_encrypt1(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_x86_aesni_aes256_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aesni::aes128_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aesni::aes192_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aesni::aes256_encrypt1(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[1 * 16..];
                     },
@@ -429,45 +415,33 @@ where
                 match block.len() / 16 {
                     | n if n >= 8 => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_arm_aes_aes128_encrypt8(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_arm_aes_aes192_encrypt8(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_arm_aes_aes256_encrypt8(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aes_arm::aes128_encrypt8(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aes_arm::aes192_encrypt8(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aes_arm::aes256_encrypt8(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[8 * 16..];
                     },
                     | n if n >= 4 => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_arm_aes_aes128_encrypt4(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_arm_aes_aes192_encrypt4(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_arm_aes_aes256_encrypt4(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aes_arm::aes128_encrypt4(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aes_arm::aes192_encrypt4(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aes_arm::aes256_encrypt4(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[4 * 16..];
                     },
                     | n if n >= 2 => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_arm_aes_aes128_encrypt2(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_arm_aes_aes192_encrypt2(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_arm_aes_aes256_encrypt2(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aes_arm::aes128_encrypt2(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aes_arm::aes192_encrypt2(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aes_arm::aes256_encrypt2(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[2 * 16..];
                     },
                     | _ => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_arm_aes_aes128_encrypt1(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_arm_aes_aes192_encrypt1(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_arm_aes_aes256_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aes_arm::aes128_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aes_arm::aes192_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aes_arm::aes256_encrypt1(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[1 * 16..];
                     },
@@ -476,9 +450,9 @@ where
         } else {
             for block in block.as_chunks_unchecked_mut::<16>() {
                 match Self::VARIANT {
-                    | Aes128 => aes_lut_aes128_encrypt1(block.as_mut_ptr(), self.as_ptr()),
-                    | Aes192 => aes_lut_aes192_encrypt1(block.as_mut_ptr(), self.as_ptr()),
-                    | Aes256 => aes_lut_aes256_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+                    | Aes128 => aes_lut::aes128_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+                    | Aes192 => aes_lut::aes192_encrypt1(block.as_mut_ptr(), self.as_ptr()),
+                    | Aes256 => aes_lut::aes256_encrypt1(block.as_mut_ptr(), self.as_ptr()),
                 }
             }
         }
@@ -497,45 +471,33 @@ where
                 match block.len() / 16 {
                     | n if n >= 8 => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_x86_aesni_aes128_decrypt8(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_x86_aesni_aes192_decrypt8(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_x86_aesni_aes256_decrypt8(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aesni::aes128_decrypt8(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aesni::aes192_decrypt8(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aesni::aes256_decrypt8(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[8 * 16..];
                     },
                     | n if n >= 4 => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_x86_aesni_aes128_decrypt4(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_x86_aesni_aes192_decrypt4(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_x86_aesni_aes256_decrypt4(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aesni::aes128_decrypt4(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aesni::aes192_decrypt4(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aesni::aes256_decrypt4(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[4 * 16..];
                     },
                     | n if n >= 2 => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_x86_aesni_aes128_decrypt2(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_x86_aesni_aes192_decrypt2(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_x86_aesni_aes256_decrypt2(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aesni::aes128_decrypt2(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aesni::aes192_decrypt2(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aesni::aes256_decrypt2(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[2 * 16..];
                     },
                     | _ => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_x86_aesni_aes128_decrypt1(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_x86_aesni_aes192_decrypt1(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_x86_aesni_aes256_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aesni::aes128_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aesni::aes192_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aesni::aes256_decrypt1(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[1 * 16..];
                     },
@@ -547,45 +509,33 @@ where
                 match block.len() / 16 {
                     | n if n >= 8 => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_arm_aes_aes128_decrypt8(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_arm_aes_aes192_decrypt8(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_arm_aes_aes256_decrypt8(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aes_arm::aes128_decrypt8(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aes_arm::aes192_decrypt8(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aes_arm::aes256_decrypt8(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[8 * 16..];
                     },
                     | n if n >= 4 => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_arm_aes_aes128_decrypt4(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_arm_aes_aes192_decrypt4(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_arm_aes_aes256_decrypt4(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aes_arm::aes128_decrypt4(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aes_arm::aes192_decrypt4(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aes_arm::aes256_decrypt4(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[4 * 16..];
                     },
                     | n if n >= 2 => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_arm_aes_aes128_decrypt2(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_arm_aes_aes192_decrypt2(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_arm_aes_aes256_decrypt2(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aes_arm::aes128_decrypt2(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aes_arm::aes192_decrypt2(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aes_arm::aes256_decrypt2(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[2 * 16..];
                     },
                     | _ => {
                         match Self::VARIANT {
-                            | Aes128 =>
-                                aes_arm_aes_aes128_decrypt1(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes192 =>
-                                aes_arm_aes_aes192_decrypt1(block.as_mut_ptr(), self.as_ptr()),
-                            | Aes256 =>
-                                aes_arm_aes_aes256_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes128 => aes_arm::aes128_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes192 => aes_arm::aes192_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+                            | Aes256 => aes_arm::aes256_decrypt1(block.as_mut_ptr(), self.as_ptr()),
                         }
                         block = &mut block[1 * 16..];
                     },
@@ -594,9 +544,9 @@ where
         } else {
             for block in block.as_chunks_unchecked_mut::<16>() {
                 match Self::VARIANT {
-                    | Aes128 => aes_lut_aes128_decrypt1(block.as_mut_ptr(), self.as_ptr()),
-                    | Aes192 => aes_lut_aes192_decrypt1(block.as_mut_ptr(), self.as_ptr()),
-                    | Aes256 => aes_lut_aes256_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+                    | Aes128 => aes_lut::aes128_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+                    | Aes192 => aes_lut::aes192_decrypt1(block.as_mut_ptr(), self.as_ptr()),
+                    | Aes256 => aes_lut::aes256_decrypt1(block.as_mut_ptr(), self.as_ptr()),
                 }
             }
         }
