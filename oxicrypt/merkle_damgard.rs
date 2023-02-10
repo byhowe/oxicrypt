@@ -333,7 +333,7 @@ pub type Md5 = MerkleDamgard<u32, u64, IvMd5, CompressMd5, Le, 4, 64>;
 
 // Initial state for the SHA-1 algorithm.
 #[rustfmt::skip]
-const SHA_INITIAL_H1: [u32; 5] = [
+pub const SHA_INITIAL_H1: [u32; 5] = [
     0x67452301,
     0xefcdab89,
     0x98badcfe,
@@ -343,7 +343,7 @@ const SHA_INITIAL_H1: [u32; 5] = [
 
 /// Initial state for the SHA-224 algorithm.
 #[rustfmt::skip]
-const SHA_INITIAL_H224: [u32; 8] = [
+pub const SHA_INITIAL_H224: [u32; 8] = [
     0xc1059ed8,
     0x367cd507,
     0x3070dd17,
@@ -356,7 +356,7 @@ const SHA_INITIAL_H224: [u32; 8] = [
 
 /// Initial state for the SHA-256 algorithm.
 #[rustfmt::skip]
-const SHA_INITIAL_H256: [u32; 8] = [
+pub const SHA_INITIAL_H256: [u32; 8] = [
     0x6a09e667,
     0xbb67ae85,
     0x3c6ef372,
@@ -369,7 +369,7 @@ const SHA_INITIAL_H256: [u32; 8] = [
 
 /// Initial state for the SHA-384 algorithm.
 #[rustfmt::skip]
-const SHA_INITIAL_H384: [u64; 8] = [
+pub const SHA_INITIAL_H384: [u64; 8] = [
     0xcbbb9d5dc1059ed8,
     0x629a292a367cd507,
     0x9159015a3070dd17,
@@ -382,7 +382,7 @@ const SHA_INITIAL_H384: [u64; 8] = [
 
 /// Initial state for the SHA-512 algorithm.
 #[rustfmt::skip]
-const SHA_INITIAL_H512: [u64; 8] = [
+pub const SHA_INITIAL_H512: [u64; 8] = [
     0x6a09e667f3bcc908,
     0xbb67ae8584caa73b,
     0x3c6ef372fe94f82b,
@@ -395,7 +395,7 @@ const SHA_INITIAL_H512: [u64; 8] = [
 
 /// Initial state for the SHA-512/224 algorithm.
 #[rustfmt::skip]
-const SHA_INITIAL_H512_224: [u64; 8] = [
+pub const SHA_INITIAL_H512_224: [u64; 8] = [
     0x8c3d37c819544da2,
     0x73e1996689dcd4d6,
     0x1dfab7ae32ff9c82,
@@ -408,7 +408,7 @@ const SHA_INITIAL_H512_224: [u64; 8] = [
 
 /// Initial state for the SHA-512/256 algorithm.
 #[rustfmt::skip]
-const SHA_INITIAL_H512_256: [u64; 8] = [
+pub const SHA_INITIAL_H512_256: [u64; 8] = [
     0x22312194fc2bf72c,
     0x9f555fa3c84c64c2,
     0x2393b86b6f53b151,
