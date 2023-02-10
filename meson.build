@@ -5,7 +5,7 @@ project(
   license : 'MIT',
 )
 
-cargo_args = ['rustc', '--package=oxicrypt_c']
+cargo_args = ['rustc', '--package=oxicrypt_c', '--target-dir=builddir']
 
 if get_option('debug')
   message('Debug mode is enabled')
@@ -34,19 +34,24 @@ run_command(cargo, cargo_args, check : true)
 
 libraries = []
 if get_option('default_library') == 'shared' or get_option('default_library') == 'both'
-  libraries += [join_paths('target', target, 'liboxicrypt.' + ext_dynamic)]
+  libraries += [join_paths('builddir', target, 'liboxicrypt.' + ext_dynamic)]
 endif
 
 if get_option('default_library') == 'static' or get_option('default_library') == 'both'
-  libraries += [join_paths('target', target, 'liboxicrypt.' + ext_static)]
+  libraries += [join_paths('builddir', target, 'liboxicrypt.' + ext_static)]
 endif
 
 install_data(libraries, install_dir : get_option('libdir'))
 
 headers = [
   join_paths('include', 'oxicrypt', 'oxicrypt.h'),
+  join_paths('include', 'oxicrypt', 'digest.h'),
   join_paths('include', 'oxicrypt', 'aes.h'),
-  join_paths('include', 'oxicrypt', 'sha.h'),
+  join_paths('include', 'oxicrypt', 'hmac.h'),
+  join_paths('include', 'oxicrypt', 'core', 'aes_arm.h'),
+  join_paths('include', 'oxicrypt', 'core', 'aes_lut.h'),
+  join_paths('include', 'oxicrypt', 'core', 'aesni.h'),
+  join_paths('include', 'oxicrypt', 'core', 'md_compress.h'),
 ]
 
 install_headers(headers, subdir : 'oxicrypt')

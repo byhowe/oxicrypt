@@ -430,7 +430,7 @@ unsafe fn aes_decrypt1<const ROUNDS: usize>(block: *mut u8, key_schedule: *const
     add_round_key(block, key_schedule.add(ROUNDS * 16));
 }
 
-// AES EXPAROUNDSD KEY
+// AES EXPAND KEY
 
 pub unsafe fn aes128_expand_key(key: *const u8, key_schedule: *mut u8)
 {

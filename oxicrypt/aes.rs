@@ -99,6 +99,7 @@ impl Variant
 /// keep track of wheter it was created for encryption or decryption, so you
 /// must be careful when using it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(transparent)]
 pub struct Key<const BITS: usize>
 where
     [(); Bits::<BITS>::variant().key_sched_len()]:,

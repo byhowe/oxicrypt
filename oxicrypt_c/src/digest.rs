@@ -3,31 +3,6 @@ use core::slice;
 
 use oxicrypt::digest::*;
 use oxicrypt::merkle_damgard::*;
-use oxicrypt_core::*;
-
-#[no_mangle]
-pub unsafe extern "C" fn oxi_digest_compress_md5(state: *mut u32, block: *const u8)
-{
-    md5_generic_md5_compress(state, block);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn oxi_digest_compress_sha1(state: *mut u32, block: *const u8)
-{
-    sha_generic_sha1_compress(state, block);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn oxi_digest_compress_sha256(state: *mut u32, block: *const u8)
-{
-    sha_generic_sha256_compress(state, block);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn oxi_digest_compress_sha512(state: *mut u64, block: *const u8)
-{
-    sha_generic_sha512_compress(state, block);
-}
 
 macro_rules! impl_digest {
     (
@@ -48,7 +23,7 @@ macro_rules! impl_digest {
         }
 
         #[no_mangle]
-        pub unsafe extern "C" fn $drop(_ctx: Box<$ctx>) {}
+        pub unsafe extern "C" fn $drop(_ctx: Option<Box<$ctx>>) {}
 
         #[no_mangle]
         pub unsafe extern "C" fn $reset(ctx: &mut $ctx) { ctx.reset(); }

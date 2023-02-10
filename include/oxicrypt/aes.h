@@ -1,143 +1,63 @@
 #ifndef OXICRYPT_AES_H_
 #define OXICRYPT_AES_H_
 
-#if defined(__x86_64__) || defined(__i386__)
-#define OXI_HAVE_X86
-#endif
-
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
-#include "oxicrypt.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Useful constants. */
+/* Useful constants */
+const size_t OXI_AES_BLOCK_LEN = 16;
 
-#define OXI_AES_BLOCK_LEN 16
+const size_t OXI_AES128_ROUNDS = 10;
+const size_t OXI_AES128_KEY_LEN = 16;
+const size_t OXI_AES128_KEY_SCHEDULE_LEN = 176;
 
-#define OXI_AES128_ROUNDS 10
-#define OXI_AES128_KEY_LEN 16
-#define OXI_AES128_KEY_SCHEDULE_LEN 176
+const size_t OXI_AES192_ROUNDS = 12;
+const size_t OXI_AES192_KEY_LEN = 24;
+const size_t OXI_AES192_KEY_SCHEDULE_LEN = 208;
 
-#define OXI_AES192_ROUNDS 12
-#define OXI_AES192_KEY_LEN 24
-#define OXI_AES192_KEY_SCHEDULE_LEN 208
+const size_t OXI_AES256_ROUNDS = 14;
+const size_t OXI_AES256_KEY_LEN = 32;
+const size_t OXI_AES256_KEY_SCHEDULE_LEN = 240;
 
-#define OXI_AES256_ROUNDS 14
-#define OXI_AES256_KEY_LEN 32
-#define OXI_AES256_KEY_SCHEDULE_LEN 240
+/* Key schedules */
+typedef void oxi_aes128_key_t;
+typedef void oxi_aes192_key_t;
+typedef void oxi_aes256_key_t;
 
-/* Raw AES functions. */
+oxi_aes128_key_t* oxi_aes128_new();
+oxi_aes192_key_t* oxi_aes192_new();
+oxi_aes256_key_t* oxi_aes256_new();
 
-void oxi_aes128_expand_key_lut(const uint8_t* key, uint8_t* key_schedule);
-void oxi_aes128_inverse_key_lut(uint8_t* key_schedule);
-void oxi_aes128_encrypt1_lut(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes128_decrypt1_lut(uint8_t* block, const uint8_t* key_schedule);
+void oxi_aes128_drop(oxi_aes128_key_t* ctx);
+void oxi_aes192_drop(oxi_aes192_key_t* ctx);
+void oxi_aes256_drop(oxi_aes256_key_t* ctx);
 
-void oxi_aes192_expand_key_lut(const uint8_t* key, uint8_t* key_schedule);
-void oxi_aes192_inverse_key_lut(uint8_t* key_schedule);
-void oxi_aes192_encrypt1_lut(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes192_decrypt1_lut(uint8_t* block, const uint8_t* key_schedule);
+/* AES SET ENCRYPT KEY */
+void oxi_aes128_set_encrypt_key(oxi_aes128_key_t* ctx, const uint8_t* key);
+void oxi_aes192_set_encrypt_key(oxi_aes192_key_t* ctx, const uint8_t* key);
+void oxi_aes256_set_encrypt_key(oxi_aes256_key_t* ctx, const uint8_t* key);
 
-void oxi_aes256_expand_key_lut(const uint8_t* key, uint8_t* key_schedule);
-void oxi_aes256_inverse_key_lut(uint8_t* key_schedule);
-void oxi_aes256_encrypt1_lut(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes256_decrypt1_lut(uint8_t* block, const uint8_t* key_schedule);
+/* AES SET DECRYPT KEY */
+void oxi_aes128_set_decrypt_key(oxi_aes128_key_t* ctx, const uint8_t* key);
+void oxi_aes192_set_decrypt_key(oxi_aes192_key_t* ctx, const uint8_t* key);
+void oxi_aes256_set_decrypt_key(oxi_aes256_key_t* ctx, const uint8_t* key);
 
-#ifdef OXI_HAVE_X86
-void oxi_aes128_expand_key_aesni(const uint8_t* key, uint8_t* key_schedule);
-void oxi_aes128_inverse_key_aesni(uint8_t* key_schedule);
-void oxi_aes128_encrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes128_encrypt2_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes128_encrypt4_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes128_encrypt8_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes128_decrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes128_decrypt2_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes128_decrypt4_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes128_decrypt8_aesni(uint8_t* block, const uint8_t* key_schedule);
+/* AES INVERSE KEY */
+void oxi_aes128_inverse_key(oxi_aes128_key_t* ctx);
+void oxi_aes192_inverse_key(oxi_aes192_key_t* ctx);
+void oxi_aes256_inverse_key(oxi_aes256_key_t* ctx);
 
-void oxi_aes192_expand_key_aesni(const uint8_t* key, uint8_t* key_schedule);
-void oxi_aes192_inverse_key_aesni(uint8_t* key_schedule);
-void oxi_aes192_encrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes192_encrypt2_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes192_encrypt4_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes192_encrypt8_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes192_decrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes192_decrypt2_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes192_decrypt4_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes192_decrypt8_aesni(uint8_t* block, const uint8_t* key_schedule);
-
-void oxi_aes256_expand_key_aesni(const uint8_t* key, uint8_t* key_schedule);
-void oxi_aes256_inverse_key_aesni(uint8_t* key_schedule);
-void oxi_aes256_encrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes256_encrypt2_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes256_encrypt4_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes256_encrypt8_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes256_decrypt1_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes256_decrypt2_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes256_decrypt4_aesni(uint8_t* block, const uint8_t* key_schedule);
-void oxi_aes256_decrypt8_aesni(uint8_t* block, const uint8_t* key_schedule);
-#endif
-
-/* Key schedules. */
-
-typedef struct oxi_aes128_key_t {
-  uint8_t k[176];
-} oxi_aes128_key_t;
-
-typedef struct oxi_aes192_key_t {
-  uint8_t k[208];
-} oxi_aes192_key_t;
-
-typedef struct oxi_aes256_key_t {
-  uint8_t k[240];
-} oxi_aes256_key_t;
-
-void oxi_aes128_set_encrypt_key(oxi_aes128_key_t* ctx, oxi_implementation_t implementation, const uint8_t* key);
-void oxi_aes128_set_decrypt_key(oxi_aes128_key_t* ctx, oxi_implementation_t implementation, const uint8_t* key);
-void oxi_aes128_inverse_key(oxi_aes128_key_t* ctx, oxi_implementation_t implementation);
-void oxi_aes128_encrypt(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block, size_t blocklen);
-void oxi_aes128_encrypt1(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes128_encrypt2(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes128_encrypt4(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes128_encrypt8(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes128_decrypt(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block, size_t blocklen);
-void oxi_aes128_decrypt1(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes128_decrypt2(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes128_decrypt4(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes128_decrypt8(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-
-void oxi_aes192_set_encrypt_key(oxi_aes192_key_t* ctx, oxi_implementation_t implementation, const uint8_t* key);
-void oxi_aes192_set_decrypt_key(oxi_aes192_key_t* ctx, oxi_implementation_t implementation, const uint8_t* key);
-void oxi_aes192_inverse_key(oxi_aes192_key_t* ctx, oxi_implementation_t implementation);
-void oxi_aes192_encrypt(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block, size_t blocklen);
-void oxi_aes192_encrypt1(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes192_encrypt2(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes192_encrypt4(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes192_encrypt8(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes192_decrypt(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block, size_t blocklen);
-void oxi_aes192_decrypt1(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes192_decrypt2(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes192_decrypt4(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes192_decrypt8(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-
-void oxi_aes256_set_encrypt_key(oxi_aes256_key_t* ctx, oxi_implementation_t implementation, const uint8_t* key);
-void oxi_aes256_set_decrypt_key(oxi_aes256_key_t* ctx, oxi_implementation_t implementation, const uint8_t* key);
-void oxi_aes256_inverse_key(oxi_aes256_key_t* ctx, oxi_implementation_t implementation);
-void oxi_aes256_encrypt(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block, size_t blocklen);
-void oxi_aes256_encrypt1(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes256_encrypt2(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes256_encrypt4(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes256_encrypt8(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes256_decrypt(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block, size_t blocklen);
-void oxi_aes256_decrypt1(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes256_decrypt2(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes256_decrypt4(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
-void oxi_aes256_decrypt8(const oxi_aes128_key_t* ctx, oxi_implementation_t implementation, uint8_t* block);
+/* AES ENCRYPT/DECRYPT */
+void oxi_aes128_encrypt(const oxi_aes128_key_t* ctx, uint8_t* block, size_t blocklen);
+void oxi_aes192_encrypt(const oxi_aes128_key_t* ctx, uint8_t* block, size_t blocklen);
+void oxi_aes256_encrypt(const oxi_aes128_key_t* ctx, uint8_t* block, size_t blocklen);
+void oxi_aes128_decrypt(const oxi_aes128_key_t* ctx, uint8_t* block, size_t blocklen);
+void oxi_aes192_decrypt(const oxi_aes128_key_t* ctx, uint8_t* block, size_t blocklen);
+void oxi_aes256_decrypt(const oxi_aes128_key_t* ctx, uint8_t* block, size_t blocklen);
 
 #ifdef __cplusplus
 }

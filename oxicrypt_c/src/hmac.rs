@@ -25,7 +25,7 @@ macro_rules! impl_hmac {
         }
 
         #[no_mangle]
-        pub unsafe extern "C" fn $drop(_ctx: Box<Hmac<$ctx>>) {}
+        pub unsafe extern "C" fn $drop(_ctx: Option<Box<Hmac<$ctx>>>) {}
 
         #[no_mangle]
         pub unsafe extern "C" fn $set_key(ctx: &mut Hmac<$ctx>, key: *const u8, key_len: usize)
