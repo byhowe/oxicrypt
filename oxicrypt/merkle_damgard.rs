@@ -109,7 +109,7 @@ where
 
     /// Update the inner block and compress the state when the block is full
     /// according to the specifications of the Merkle–Damgård construction.
-    pub fn update(&mut self, mut data: &[u8])
+    fn update_(&mut self, mut data: &[u8])
     {
         // Loop until all the data is processed.
         while !data.is_empty() {
@@ -138,7 +138,7 @@ where
         }
     }
 
-    pub fn finish(&mut self)
+    fn finish_(&mut self)
     {
         // total number of bits processed
         let len = (self.count * BLOCK_LEN + self.index) * 8;
@@ -244,7 +244,7 @@ where
     Compress: self::Compress<State>,
     Endian: ~const self::Endian,
 {
-    fn update(&mut self, data: &[u8]) { self.update(data); }
+    fn update(&mut self, data: &[u8]) { self.update_(data); }
 }
 
 impl<State, Length, IV, Compress, Endian, const STATE_LEN: usize, const BLOCK_LEN: usize>
@@ -259,7 +259,7 @@ where
 {
     fn finish_internal(&mut self) -> &[u8]
     {
-        self.finish();
+        self.finish_();
         unsafe { slice::from_raw_parts(self.state.as_ptr().cast(), Self::DIGEST_LEN) }
     }
 }

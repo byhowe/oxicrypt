@@ -16,49 +16,6 @@ use crate::digest::DigestMeta;
 use crate::digest::FinishInternal;
 use crate::digest::Update;
 
-/// Oneshot HMAC function.
-pub fn hmac<D>(data: &[u8], key: &[u8]) -> [u8; D::DIGEST_LEN]
-where
-    D: Digest + Copy,
-    [u8; D::BLOCK_LEN]:,
-    [u8; D::DIGEST_LEN]:,
-{
-    let mut ctx = Hmac::<D>::with_key(key);
-    ctx.update(data);
-    ctx.finish_();
-    ctx.ctx.finish()
-}
-
-/// Oneshot HMAC function that puts the result in `buf`.
-///
-/// Same principles apply as [`FinishToSlice`](`crate::digest::FinishToSlice`).
-pub fn hmac_to_slice<D>(data: &[u8], key: &[u8], buf: &mut [u8])
-where
-    D: Digest + Copy,
-    [u8; D::BLOCK_LEN]:,
-    [u8; D::DIGEST_LEN]:,
-{
-    let mut ctx = Hmac::<D>::with_key(key);
-    ctx.update(data);
-    ctx.finish_to_slice(buf);
-}
-
-/// Oneshot HMAC function that returns a boxed array.
-#[cfg(any(feature = "alloc", doc))]
-#[doc(cfg(feature = "alloc"))]
-pub fn hmac_boxed<D: Digest + Default>(data: &[u8], key: &[u8]) -> Box<[u8]>
-where
-    D: Digest + Copy,
-    [u8; D::BLOCK_LEN]:,
-    [u8; D::DIGEST_LEN]:,
-{
-    use crate::digest::FinishBoxed;
-
-    let mut ctx = Hmac::<D>::with_key(key);
-    ctx.update(data);
-    ctx.finish_boxed()
-}
-
 /// HMAC-X context.
 #[derive(Debug, Clone, Copy)]
 pub struct Hmac<D>
@@ -129,6 +86,38 @@ where
         self.ikey.iter_mut().for_each(|b0| *b0 ^= 0x36 ^ 0x5c);
         self.ctx.update(&self.ikey);
         self.ctx.update(&i_digest);
+    }
+
+    /// Oneshot HMAC function.
+    pub fn oneshot(data: &[u8], key: &[u8]) -> [u8; D::DIGEST_LEN]
+    {
+        let mut ctx = Self::with_key(key);
+        ctx.update(data);
+        ctx.finish_();
+        ctx.ctx.finish()
+    }
+
+    /// Oneshot HMAC function that puts the result in `buf`.
+    ///
+    /// Same principles apply as
+    /// [`FinishToSlice`](`crate::digest::FinishToSlice`).
+    pub fn oneshot_to_slice(data: &[u8], key: &[u8], buf: &mut [u8])
+    {
+        let mut ctx = Self::with_key(key);
+        ctx.update(data);
+        ctx.finish_to_slice(buf);
+    }
+
+    /// Oneshot HMAC function that returns a boxed array.
+    #[cfg(any(feature = "alloc", doc))]
+    #[doc(cfg(feature = "alloc"))]
+    pub fn oneshot_boxed(data: &[u8], key: &[u8]) -> Box<[u8]>
+    {
+        use crate::digest::FinishBoxed;
+
+        let mut ctx = Self::with_key(key);
+        ctx.update(data);
+        ctx.finish_boxed()
     }
 }
 
