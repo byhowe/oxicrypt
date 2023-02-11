@@ -55,7 +55,7 @@ macro_rules! impl_hmac {
             digest_len: usize,
         )
         {
-            hmac_to_slice::<$ctx>(
+            Hmac::<$ctx>::oneshot_to_slice(
                 slice::from_raw_parts(data, data_len),
                 slice::from_raw_parts(key, key_len),
                 slice::from_raw_parts_mut(digest, digest_len),

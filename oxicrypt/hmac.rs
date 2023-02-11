@@ -15,6 +15,7 @@ use crate::digest::Digest;
 use crate::digest::DigestMeta;
 use crate::digest::FinishInternal;
 use crate::digest::Update;
+use crate::merkle_damgard;
 
 /// HMAC-X context.
 #[derive(Debug, Clone, Copy)]
@@ -27,6 +28,23 @@ where
     ikey: [u8; D::BLOCK_LEN],
     ctx:  D,
 }
+
+/// HMAC-MD5
+pub type HmacMd5 = Hmac<merkle_damgard::Md5>;
+/// HMAC-SHA-1
+pub type HmacSha1 = Hmac<merkle_damgard::Sha1>;
+/// HMAC-SHA-224
+pub type HmacSha224 = Hmac<merkle_damgard::Sha224>;
+/// HMAC-SHA-256
+pub type HmacSha256 = Hmac<merkle_damgard::Sha256>;
+/// HMAC-SHA-384
+pub type HmacSha384 = Hmac<merkle_damgard::Sha384>;
+/// HMAC-SHA-512
+pub type HmacSha512 = Hmac<merkle_damgard::Sha512>;
+/// HMAC-SHA-512/224
+pub type HmacSha512_224 = Hmac<merkle_damgard::Sha512_224>;
+/// HMAC-SHA-512/256
+pub type HmacSha512_256 = Hmac<merkle_damgard::Sha512_256>;
 
 impl<D> DigestMeta for Hmac<D>
 where
