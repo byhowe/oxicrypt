@@ -3,13 +3,13 @@
 use pyo3::prelude::*;
 
 #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
-mod aes_arm_aes;
+mod aes_arm;
 mod aes_lut;
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-mod aes_x86_aesni;
+mod aesni;
 mod digest;
 mod hmac;
-mod digest_compress;
+mod md_compress;
 
 /// Version of the library.
 #[pyfunction]
@@ -25,10 +25,10 @@ fn oxicrypt(py: Python, m: &PyModule) -> PyResult<()>
     let m_core = PyModule::new(py, "core")?;
     aes_lut::register(py, m_core)?;
     #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-    aes_x86_aesni::register(py, m_core)?;
+    aesni::register(py, m_core)?;
     #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
-    aes_arm_aes::register(py, m_core)?;
-    digest_compress::register(py, m_core)?;
+    aes_arm::register(py, m_core)?;
+    md_compress::register(py, m_core)?;
     m.add_submodule(m_core)?;
 
     // register the digest library
