@@ -28,7 +28,4 @@ fn export_test_vector_paths()
     }
 }
 
-fn main()
-{
-    export_test_vector_paths();
-}
+fn main() { export_test_vector_paths(); }

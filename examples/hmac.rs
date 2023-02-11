@@ -4,9 +4,9 @@ use std::io::stdin;
 use std::io::stdout;
 use std::io::Write;
 
+use oxicrypt::digest::Digest;
 use oxicrypt::hmac::Hmac;
 use oxicrypt::merkle_damgard::Sha256;
-use oxicrypt::digest::Digest;
 
 fn main() -> std::io::Result<()>
 {

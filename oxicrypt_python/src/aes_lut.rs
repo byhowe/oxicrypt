@@ -1,7 +1,7 @@
+use oxicrypt_core::aes_lut;
 use pyo3::prelude::*;
 use pyo3::types::PyByteArray;
 use pyo3::types::PyBytes;
-use oxicrypt_core::aes_lut;
 
 #[pyfunction]
 unsafe fn aes128_encrypt1(block: &PyByteArray, key_schedule: &PyBytes)

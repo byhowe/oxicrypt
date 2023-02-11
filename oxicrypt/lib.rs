@@ -1,5 +1,6 @@
 #![no_std]
 // #![deny(incomplete_features)]
+#![feature(adt_const_params)]
 #![feature(box_syntax)]
 #![feature(const_maybe_uninit_assume_init)]
 #![feature(const_mut_refs)]
@@ -25,7 +26,7 @@ pub mod digest;
 // pub mod hkdf;
 pub mod hmac;
 pub mod merkle_damgard;
-pub mod runtime;
 pub mod num;
+pub mod runtime;
 
 #[cfg(test)] pub(crate) mod test_vectors;
