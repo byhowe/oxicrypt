@@ -8,6 +8,7 @@ mod aes_lut;
 #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
 mod aes_x86_aesni;
 mod digest;
+mod hmac;
 mod digest_compress;
 
 /// Version of the library.
@@ -34,6 +35,11 @@ fn oxicrypt(py: Python, m: &PyModule) -> PyResult<()>
     let m_digest = PyModule::new(py, "digest")?;
     digest::register(py, m_digest)?;
     m.add_submodule(m_digest)?;
+
+    // register the hmac library
+    let m_hmac = PyModule::new(py, "hmac")?;
+    hmac::register(py, m_hmac)?;
+    m.add_submodule(m_hmac)?;
 
     Ok(())
 }
