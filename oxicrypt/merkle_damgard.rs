@@ -23,10 +23,7 @@ use crate::digest::FinishInternal;
 use crate::digest::Output;
 use crate::digest::Reset;
 use crate::digest::Update;
-use crate::num::Be;
 use crate::num::ByteOrder;
-use crate::num::Endian;
-use crate::num::Le;
 
 /// Compression function used by Merkle–Damgård.
 pub trait Compress<Int>
@@ -55,7 +52,7 @@ pub struct MerkleDamgard<
     Length,
     IV,
     Compress,
-    Endian,
+    const ENDIAN: ByteOrder,
     const STATE_LEN: usize,
     const BLOCK_LEN: usize,
 > where
@@ -64,7 +61,6 @@ pub struct MerkleDamgard<
     Length: PrimInt,
     IV: ~const InitializationVector<State, STATE_LEN>,
     Compress: self::Compress<State>,
-    Endian: ~const self::Endian,
 {
     pub state: [State; STATE_LEN],
     pub block: [u8; BLOCK_LEN],
@@ -73,18 +69,23 @@ pub struct MerkleDamgard<
     _length:   PhantomData<Length>,
     _iv:       PhantomData<IV>,
     _compress: PhantomData<Compress>,
-    _endian:   PhantomData<Endian>,
 }
 
-impl<State, Length, IV, Compress, Endian, const STATE_LEN: usize, const BLOCK_LEN: usize>
-    MerkleDamgard<State, Length, IV, Compress, Endian, STATE_LEN, BLOCK_LEN>
+impl<
+    State,
+    Length,
+    IV,
+    Compress,
+    const ENDIAN: ByteOrder,
+    const STATE_LEN: usize,
+    const BLOCK_LEN: usize,
+> MerkleDamgard<State, Length, IV, Compress, ENDIAN, STATE_LEN, BLOCK_LEN>
 where
     State: PrimInt,
     [State; STATE_LEN]:,
     Length: PrimInt,
     IV: ~const InitializationVector<State, STATE_LEN>,
     Compress: self::Compress<State>,
-    Endian: ~const self::Endian,
 {
     #[inline(always)]
     pub const fn new() -> Self
@@ -97,7 +98,6 @@ where
             _length:   PhantomData,
             _iv:       PhantomData,
             _compress: PhantomData,
-            _endian:   PhantomData,
         }
     }
 
@@ -162,7 +162,7 @@ where
         self.block[self.index..BLOCK_LEN - mem::size_of::<Length>()].fill(0);
 
         // write the bit counter
-        let len = match Endian::endian() {
+        let len = match ENDIAN {
             | ByteOrder::Little => <Length as NumCast>::from(len).unwrap().to_le(),
             | ByteOrder::Big => <Length as NumCast>::from(len).unwrap().to_be(),
         };
@@ -181,7 +181,7 @@ where
 
         // check endiannes
         self.state.iter_mut().for_each(|h0| {
-            *h0 = match Endian::endian() {
+            *h0 = match ENDIAN {
                 | ByteOrder::Little => h0.to_le(),
                 | ByteOrder::Big => h0.to_be(),
             };
@@ -189,42 +189,60 @@ where
     }
 }
 
-impl<State, Length, IV, Compress, Endian, const STATE_LEN: usize, const BLOCK_LEN: usize> const
-    DigestMeta for MerkleDamgard<State, Length, IV, Compress, Endian, STATE_LEN, BLOCK_LEN>
+impl<
+    State,
+    Length,
+    IV,
+    Compress,
+    const ENDIAN: ByteOrder,
+    const STATE_LEN: usize,
+    const BLOCK_LEN: usize,
+> const DigestMeta for MerkleDamgard<State, Length, IV, Compress, ENDIAN, STATE_LEN, BLOCK_LEN>
 where
     State: PrimInt,
     [State; STATE_LEN]:,
     Length: PrimInt,
     IV: ~const InitializationVector<State, STATE_LEN>,
     Compress: self::Compress<State>,
-    Endian: ~const self::Endian,
 {
     const BLOCK_LEN: usize = BLOCK_LEN;
     const DIGEST_LEN: usize = mem::size_of::<State>() * STATE_LEN;
 }
 
-impl<State, Length, IV, Compress, Endian, const STATE_LEN: usize, const BLOCK_LEN: usize> const
-    Default for MerkleDamgard<State, Length, IV, Compress, Endian, STATE_LEN, BLOCK_LEN>
+impl<
+    State,
+    Length,
+    IV,
+    Compress,
+    const ENDIAN: ByteOrder,
+    const STATE_LEN: usize,
+    const BLOCK_LEN: usize,
+> const Default for MerkleDamgard<State, Length, IV, Compress, ENDIAN, STATE_LEN, BLOCK_LEN>
 where
     State: PrimInt,
     [State; STATE_LEN]:,
     Length: PrimInt,
     IV: ~const InitializationVector<State, STATE_LEN>,
     Compress: self::Compress<State>,
-    Endian: ~const self::Endian,
 {
     fn default() -> Self { Self::new() }
 }
 
-impl<State, Length, IV, Compress, Endian, const STATE_LEN: usize, const BLOCK_LEN: usize> const
-    Reset for MerkleDamgard<State, Length, IV, Compress, Endian, STATE_LEN, BLOCK_LEN>
+impl<
+    State,
+    Length,
+    IV,
+    Compress,
+    const ENDIAN: ByteOrder,
+    const STATE_LEN: usize,
+    const BLOCK_LEN: usize,
+> const Reset for MerkleDamgard<State, Length, IV, Compress, ENDIAN, STATE_LEN, BLOCK_LEN>
 where
     State: PrimInt,
     [State; STATE_LEN]:,
     Length: PrimInt,
     IV: ~const InitializationVector<State, STATE_LEN>,
     Compress: self::Compress<State>,
-    Endian: ~const self::Endian,
 {
     fn reset(&mut self)
     {
@@ -234,28 +252,40 @@ where
     }
 }
 
-impl<State, Length, IV, Compress, Endian, const STATE_LEN: usize, const BLOCK_LEN: usize> Update
-    for MerkleDamgard<State, Length, IV, Compress, Endian, STATE_LEN, BLOCK_LEN>
+impl<
+    State,
+    Length,
+    IV,
+    Compress,
+    const ENDIAN: ByteOrder,
+    const STATE_LEN: usize,
+    const BLOCK_LEN: usize,
+> Update for MerkleDamgard<State, Length, IV, Compress, ENDIAN, STATE_LEN, BLOCK_LEN>
 where
     State: PrimInt,
     [State; STATE_LEN]:,
     Length: PrimInt,
     IV: ~const InitializationVector<State, STATE_LEN>,
     Compress: self::Compress<State>,
-    Endian: ~const self::Endian,
 {
     fn update(&mut self, data: &[u8]) { self.update_(data); }
 }
 
-impl<State, Length, IV, Compress, Endian, const STATE_LEN: usize, const BLOCK_LEN: usize>
-    FinishInternal for MerkleDamgard<State, Length, IV, Compress, Endian, STATE_LEN, BLOCK_LEN>
+impl<
+    State,
+    Length,
+    IV,
+    Compress,
+    const ENDIAN: ByteOrder,
+    const STATE_LEN: usize,
+    const BLOCK_LEN: usize,
+> FinishInternal for MerkleDamgard<State, Length, IV, Compress, ENDIAN, STATE_LEN, BLOCK_LEN>
 where
     State: PrimInt,
     [State; STATE_LEN]:,
     Length: PrimInt,
     IV: ~const InitializationVector<State, STATE_LEN>,
     Compress: self::Compress<State>,
-    Endian: ~const self::Endian,
 {
     fn finish_internal(&mut self) -> &[u8]
     {
@@ -320,16 +350,18 @@ impl_iv!(const IvSha512_256: [u64; 8] = SHA_INITIAL_H512_256);
 impl_iv!(const IvMd5: [u32; 4] = MD5_INITIAL_H);
 
 // MerkleDamgard<State, Length, IV, Compress, Endian, STATE_LEN, BLOCK_LEN>
-pub type Sha1 = MerkleDamgard<u32, u64, IvSha1, CompressSha1, Be, 5, 64>;
-pub type Sha224 = Output<MerkleDamgard<u32, u64, IvSha224, CompressSha256, Be, 8, 64>, 28>;
-pub type Sha256 = MerkleDamgard<u32, u64, IvSha256, CompressSha256, Be, 8, 64>;
-pub type Sha384 = Output<MerkleDamgard<u64, u128, IvSha384, CompressSha512, Be, 8, 128>, 48>;
-pub type Sha512 = MerkleDamgard<u64, u128, IvSha512, CompressSha512, Be, 8, 128>;
+pub type Sha1 = MerkleDamgard<u32, u64, IvSha1, CompressSha1, { ByteOrder::Big }, 5, 64>;
+pub type Sha224 =
+    Output<MerkleDamgard<u32, u64, IvSha224, CompressSha256, { ByteOrder::Big }, 8, 64>, 28>;
+pub type Sha256 = MerkleDamgard<u32, u64, IvSha256, CompressSha256, { ByteOrder::Big }, 8, 64>;
+pub type Sha384 =
+    Output<MerkleDamgard<u64, u128, IvSha384, CompressSha512, { ByteOrder::Big }, 8, 128>, 48>;
+pub type Sha512 = MerkleDamgard<u64, u128, IvSha512, CompressSha512, { ByteOrder::Big }, 8, 128>;
 pub type Sha512_224 =
-    Output<MerkleDamgard<u64, u128, IvSha512_224, CompressSha512, Be, 8, 128>, 28>;
+    Output<MerkleDamgard<u64, u128, IvSha512_224, CompressSha512, { ByteOrder::Big }, 8, 128>, 28>;
 pub type Sha512_256 =
-    Output<MerkleDamgard<u64, u128, IvSha512_256, CompressSha512, Be, 8, 128>, 32>;
-pub type Md5 = MerkleDamgard<u32, u64, IvMd5, CompressMd5, Le, 4, 64>;
+    Output<MerkleDamgard<u64, u128, IvSha512_256, CompressSha512, { ByteOrder::Big }, 8, 128>, 32>;
+pub type Md5 = MerkleDamgard<u32, u64, IvMd5, CompressMd5, { ByteOrder::Little }, 4, 64>;
 
 // Initial state for the SHA-1 algorithm.
 #[rustfmt::skip]
