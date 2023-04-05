@@ -1,7 +1,6 @@
 #![no_std]
 // #![deny(incomplete_features)]
 #![feature(adt_const_params)]
-#![feature(box_syntax)]
 #![feature(const_maybe_uninit_assume_init)]
 #![feature(const_mut_refs)]
 #![feature(const_trait_impl)]

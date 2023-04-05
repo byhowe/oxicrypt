@@ -1,5 +1,3 @@
-#![feature(box_syntax)]
-
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
@@ -18,7 +16,7 @@ fn main()
     let mut aes128 = File::create(outpath.join("aes128.bin")).unwrap();
     aes128.write_all(&VECTORS_LEN.to_be_bytes()).unwrap();
     for _ in 0..VECTORS_LEN {
-        let mut vectors = box AesVectors::<{ Aes::Aes128 }>::default();
+        let mut vectors = Box::new(AesVectors::<{ Aes::Aes128 }>::default());
         vectors.set_random();
         let n = vectors.write_to_bytes(&mut buffer);
         aes128.write_all(&buffer[0..n]).unwrap();
@@ -27,7 +25,7 @@ fn main()
     let mut aes192 = File::create(outpath.join("aes192.bin")).unwrap();
     aes192.write_all(&VECTORS_LEN.to_be_bytes()).unwrap();
     for _ in 0..VECTORS_LEN {
-        let mut vectors = box AesVectors::<{ Aes::Aes192 }>::default();
+        let mut vectors = Box::new(AesVectors::<{ Aes::Aes192 }>::default());
         vectors.set_random();
         let n = vectors.write_to_bytes(&mut buffer);
         aes192.write_all(&buffer[0..n]).unwrap();
@@ -36,7 +34,7 @@ fn main()
     let mut aes256 = File::create(outpath.join("aes256.bin")).unwrap();
     aes256.write_all(&VECTORS_LEN.to_be_bytes()).unwrap();
     for _ in 0..VECTORS_LEN {
-        let mut vectors = box AesVectors::<{ Aes::Aes256 }>::default();
+        let mut vectors = Box::new(AesVectors::<{ Aes::Aes256 }>::default());
         vectors.set_random();
         let n = vectors.write_to_bytes(&mut buffer);
         aes256.write_all(&buffer[0..n]).unwrap();
