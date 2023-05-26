@@ -24,6 +24,7 @@ use crate::digest::Output;
 use crate::digest::Reset;
 use crate::digest::Update;
 use crate::num::ByteOrder;
+use crate::traits::New;
 
 /// Compression function used by Merkle–Damgård.
 pub trait Compress<Int>
@@ -217,7 +218,7 @@ impl<
     const ENDIAN: ByteOrder,
     const STATE_LEN: usize,
     const BLOCK_LEN: usize,
-> const Default for MerkleDamgard<State, Length, IV, Compress, ENDIAN, STATE_LEN, BLOCK_LEN>
+> const New for MerkleDamgard<State, Length, IV, Compress, ENDIAN, STATE_LEN, BLOCK_LEN>
 where
     State: PrimInt,
     [State; STATE_LEN]:,
@@ -225,7 +226,7 @@ where
     IV: ~const InitializationVector<State, STATE_LEN>,
     Compress: self::Compress<State>,
 {
-    fn default() -> Self { Self::new() }
+    fn new() -> Self { Self::new() }
 }
 
 impl<

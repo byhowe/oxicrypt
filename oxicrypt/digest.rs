@@ -5,6 +5,8 @@ use alloc::boxed::Box;
 use core::cmp;
 use core::mem::MaybeUninit;
 
+use crate::traits::New;
+
 #[cfg(not(any(feature = "alloc", doc)))]
 pub trait Digest = DigestMeta
     + Reset
@@ -161,11 +163,11 @@ pub trait OneshotToSlice
 
 impl<T> Oneshot for T
 where
-    T: Default + Update + Finish,
+    T: New + Update + Finish,
 {
     fn oneshot(data: &[u8]) -> [u8; Self::DIGEST_LEN]
     {
-        let mut ctx = T::default();
+        let mut ctx = T::new();
         ctx.update(data);
         ctx.finish()
     }
@@ -174,11 +176,11 @@ where
 #[cfg(any(feature = "alloc", doc))]
 impl<T> OneshotBoxed for T
 where
-    T: Default + Update + FinishBoxed,
+    T: New + Update + FinishBoxed,
 {
     fn oneshot_boxed(data: &[u8]) -> Box<[u8]>
     {
-        let mut ctx = T::default();
+        let mut ctx = T::new();
         ctx.update(data);
         ctx.finish_boxed()
     }
@@ -186,11 +188,11 @@ where
 
 impl<T> OneshotToSlice for T
 where
-    T: Default + Update + FinishToSlice,
+    T: New + Update + FinishToSlice,
 {
     fn oneshot_to_slice(data: &[u8], buf: &mut [u8])
     {
-        let mut ctx = T::default();
+        let mut ctx = T::new();
         ctx.update(data);
         ctx.finish_to_slice(buf);
     }
@@ -206,14 +208,9 @@ where
 
 impl<T, const DIGEST_LEN: usize> Output<T, DIGEST_LEN>
 where
-    T: Digest + ~const Default,
+    T: Digest + ~const New,
 {
-    pub const fn new() -> Self
-    {
-        Self {
-            inner: T::default(),
-        }
-    }
+    pub const fn new() -> Self { Self { inner: T::new() } }
 }
 
 impl<T, const DIGEST_LEN: usize> const DigestMeta for Output<T, DIGEST_LEN>
@@ -224,11 +221,11 @@ where
     const DIGEST_LEN: usize = DIGEST_LEN;
 }
 
-impl<T, const DIGEST_LEN: usize> const Default for Output<T, DIGEST_LEN>
+impl<T, const DIGEST_LEN: usize> const New for Output<T, DIGEST_LEN>
 where
-    T: Digest + ~const Default,
+    T: Digest + ~const New,
 {
-    fn default() -> Self { Self::new() }
+    fn new() -> Self { Self::new() }
 }
 
 impl<T, const DIGEST_LEN: usize> const Reset for Output<T, DIGEST_LEN>

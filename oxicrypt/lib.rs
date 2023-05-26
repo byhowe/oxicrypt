@@ -27,5 +27,6 @@ pub mod hmac;
 pub mod merkle_damgard;
 pub mod num;
 pub mod runtime;
+pub mod traits;
 
 #[cfg(test)] pub(crate) mod test_vectors;
