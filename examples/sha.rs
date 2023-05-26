@@ -1,5 +1,4 @@
 use oxicrypt::digest::Digest;
-use oxicrypt::digest::DigestMeta;
 use oxicrypt::merkle_damgard::Sha256;
 
 fn main()
