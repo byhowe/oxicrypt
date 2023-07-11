@@ -1,9 +1,13 @@
+use core::marker::ConstParamTy;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ByteOrder
 {
     Little,
     Big,
 }
+
+impl ConstParamTy for ByteOrder {}
 
 impl ByteOrder
 {

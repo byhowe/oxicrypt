@@ -1,5 +1,6 @@
 //! High level AES API.
 
+use core::marker::ConstParamTy;
 use core::mem::MaybeUninit;
 
 #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
@@ -20,6 +21,8 @@ pub enum Variant
     Aes192,
     Aes256,
 }
+
+impl ConstParamTy for Variant {}
 
 impl Variant
 {
